@@ -5,7 +5,7 @@ const Alumno = require('../models/alumno');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const timeStamp = require('../middlewares/timeStamp');
 
-const actualizaMateria = require('../pluggins/actualizarMateria');
+const actualizarMateria = require('../pluggins/actualizarMateria');
 
 const app = express()
 
@@ -40,33 +40,23 @@ app.post('/alumno', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let alumno = new Alumno({
             nombre: body.nombre,
-            materias: [],
             usuarios: []
         })
         ///////Aún no sé implantar un array
 
-    alumno.materias.push(body.materia1);
-
     alumno.usuarios.push(timeStamp);
 
-    alumno.save((err, alumnoSaved) => {
+    alumno.save((err, alumnoGuardado) => {
 
         if (err) {
 
             return res.status(500).json({ ok: false, err })
         }
 
-        actualizaMateria(res, alumno, alumno.materias[0], 'alumno').then(materia => {
-
-            res.status(200).json({
-                ok: true,
-                mensaje: 'Alumno creado',
-                alumnoSaved,
-                materiaActualizada: materia.nombre
-            })
-        })
+        res.status(200).json({ ok: true, alumnoGuardado })
     })
 })
+
 
 app.put('./alumno/:id', (req, res) => {
 
@@ -96,7 +86,47 @@ app.put('./alumno/:id', (req, res) => {
 
             res.status(200).json({ ok: true, alumnoGuardado })
         })
+    })
+})
 
+
+app.put('/alumnoAnadirMateria/:id', [verifyToken, timeStamp], (req, res) => {
+
+    let id = req.params.id;
+    let materiaId = req.body.materia;
+
+    Alumno.findById(id, (err, alumnoDb) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: err
+            })
+        }
+        if (!alumnoDb) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ningún alumno con el id introducido '
+            })
+        }
+
+        alumnoDb.materias.push(materiaId)
+
+        alumnoDb.save((err, alumnoGuardado) => {
+
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    message: err
+                })
+            }
+
+            actualizarMateria(res, alumnoGuardado, materiaId, 'alumno').then((materiaUpdated) => {
+
+                res.status(200).json({ ok: true, alumnoGuardado, materiaActualizada: materiaUpdated.nombre })
+            })
+        })
     })
 })
 

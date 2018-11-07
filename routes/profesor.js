@@ -3,7 +3,7 @@ const express = require('express');
 const Profesor = require('../models/profesor');
 const Materia = require('../models/materia');
 const timeStamp = require('../middlewares/timeStamp');
-const { verifyToken } = require('../middlewares/auth');
+const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const actualizarMateria = require('../pluggins/actualizarMateria');
 
@@ -13,11 +13,10 @@ const app = express();
 app.get('/profesor', verifyToken, (req, res) => {
 
     let desde = req.query.desde || 0;
-
     let limite = req.query.limite || 5;
 
     Profesor.find({})
-        .populate('materias')
+        .populate('materias', 'nombre')
         .skip(desde)
         .limit(limite)
         .exec((err, profesoresDb) => {
@@ -55,8 +54,6 @@ app.post('/profesor', [verifyToken, timeStamp], (req, res) => {
 
     profesor.usuarios.push(timeStamp)
 
-    profesor.materias.push(body.materia1)
-
     profesor.save((err, profesorGuardado) => {
 
         if (err) {
@@ -64,16 +61,17 @@ app.post('/profesor', [verifyToken, timeStamp], (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
 
-        res.status(200).json({ ok: true, profesor })
+        res.status(200).json({ ok: true, profesorGuardado })
 
     })
 })
 
 
-app.put('/profesorAnadirMateria/:id', (req, res) => {
+app.put('/profesorAnadirMateria/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let id = req.params.id;
     let materiaId = req.body.materia;
+    let timeStamp = req.body.timeStamp;
 
     Profesor.findById(id, (err, profesorDb) => {
 
@@ -92,6 +90,7 @@ app.put('/profesorAnadirMateria/:id', (req, res) => {
         }
 
         profesorDb.materias.push(materiaId)
+        profesorDb.usuarios.push(timeStamp)
 
         profesorDb.save((err, profesorGuardado) => {
 
@@ -110,12 +109,12 @@ app.put('/profesorAnadirMateria/:id', (req, res) => {
     })
 })
 
-app.put('/profesor/:id', (req, res) => {
+
+app.put('/profesor/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let body = req.body;
-
     let id = req.params.id;
-
+    let timeStamp = req.timeStamp;
 
     Profesor.findById(id, (err, profesorDb) => {
 
@@ -134,7 +133,57 @@ app.put('/profesor/:id', (req, res) => {
             })
         }
         profesorDb.nombre = body.nombre;
+        profesorDb.usuarios.push(timeStamp)
+
+        profesorDb.save((err, profesorActualizado) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    message: err
+                })
+            }
+
+            res.status(200).json({ ok: true, profesorActualizado })
+        })
     })
 })
+
+
+app.delete('/profesor/:id', [verifyToken, verifyRole], (req, res) => {
+
+    let id = req.params.id;
+
+
+    Profesor.findByIdAndRemove(id, (err, profesorBorrado) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: err
+            })
+        }
+        if (!profesorBorrado) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ningún profesor con el id introducido '
+            })
+        }
+
+        let profesorBorradoId = profesorBorrado._id
+
+        Materia.update({}, { $pull: { profesores: profesorBorradoId } })
+            .exec((err, materiaActualizada) => {
+
+                if (err) {
+
+                    return res.status(500).json({ ok: false, mensaje: err })
+                }
+
+                res.status(200).json({ profesorBorrado, materiaActualizada })
+            })
+    })
+})
+
 
 module.exports = app;

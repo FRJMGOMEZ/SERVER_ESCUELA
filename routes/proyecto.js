@@ -10,7 +10,7 @@ const { actualizarParticipantes } = require('../pluggins/actualizarParticipantes
 
 const app = express();
 
-app.get('/proyecto', (req, res) => {
+app.get('/proyecto', verifyToken, (req, res) => {
 
     let desde = req.query.desde;
     let hasta = req.query.hasta;
@@ -35,18 +35,21 @@ app.get('/proyecto', (req, res) => {
         })
 })
 
-
-
 app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let body = req.body;
     let timeStamp = req.timeStamp;
+    let usuarioOnline = req.usuario.usuario
 
     let proyecto = new Proyecto({
         nombre: body.nombre,
         descripcion: body.descripcion,
         usuarios: []
     })
+
+    proyecto.participantes.push(usuarioOnline._id)
+
+
 
     proyecto.usuarios.push(timeStamp)
 
@@ -57,16 +60,20 @@ app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
 
-        res.status(200).json({ ok: true, proyectoGuardado })
+        actualizarParticipantes(res, usuarioOnline._id, proyectoGuardado._id).then(nombreUsuarioActualizado => {
+
+            res.status(200).json({ ok: true, proyectoGuardado, usuarioActualizado: nombreUsuarioActualizado })
+        })
     })
 
 })
 
 
-app.put('/anadirParticipante/:id', (req, res) => {
+app.put('/anadirParticipante/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let participanteId = req.body.participante;
     let id = req.params.id;
+    let timeStamp = req.timeStamp;
 
     Proyecto.findById(id, (err, proyectoDb) => {
 
@@ -82,6 +89,7 @@ app.put('/anadirParticipante/:id', (req, res) => {
         }
 
         proyectoDb.participantes.push(participanteId)
+        proyectoDb.usuarios.push(timeStamp)
 
         proyectoDb.save((err, proyectoGuardado) => {
 
@@ -99,10 +107,11 @@ app.put('/anadirParticipante/:id', (req, res) => {
     })
 })
 
-app.put('/proyecto/:id', (req, res) => {
+app.put('/proyecto/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let body = req.body;
     let id = req.params.id;
+    let timeStamp = req.timeStamp;
 
     Proyecto.findById(id, (err, proyectoDb) => {
 
@@ -117,6 +126,7 @@ app.put('/proyecto/:id', (req, res) => {
         }
         proyectoDb.nombre = body.nombre;
         proyectoDb.descripcion = body.descripcion;
+        proyectoDb.usuarios.push(timeStamp)
 
         proyectoDb.save((err, proyectoActualizado) => {
             if (err) {
@@ -130,62 +140,37 @@ app.put('/proyecto/:id', (req, res) => {
 })
 
 
+
+///////////////////// DELETE NO FUNCIONA /////////////////////////////
+
+
+
 app.delete('/proyecto/:id', (req, res) => {
 
     let id = req.params.id;
 
-    Proyecto.findByIdAndRemove(id, (err, proyectoBorrado) => {
+    Proyecto.findByIdAndRemove(id, async(err, proyectoBorrado) => {
 
-        borrarProyectoEnParticipante(proyectoBorrado._id, proyectoBorrado.participantes).then(nombresUsuariosActualizados => {
+        if (err) {
 
-            res.status(200).json({ nombresUsuariosActualizados })
+            res.status(500).json({ ok: false, mensaje: err })
+        }
 
-        })
-    })
-})
+        idProyectoBorrado = proyectoBorrado._id;
 
-let borrarProyectoEnParticipante = (idProyecto, participantes) => {
-
-    return new Promise((resolve, reject) => {
-
-        let usuariosActualizados = [];
-
-        for (let participanteId of participantes) {
-
-            Usuario.findById(participanteId, (err, usuarioDb) => {
+        Usuario.update({}, { $pull: { proyectos: idProyectoBorrado } })
+            .exec((err, usuarioActualizado) => {
 
                 if (err) {
 
                     reject(res.status(500).json({ ok: false, mensaje: err }))
                 }
 
-                if (!usuarioActualizado) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No existen usuarios con el id introducido' }))
-                }
-
-                usuarioDb.proyectos = usuarioDb.proyectos.filter((proyecto) => { return proyecto != idProyecto })
-
-                res.json({ usuarios: usuarioDb.proyectos })
-
-                usuarioDb.save((err, usuarioActualizado) => {
-
-                    if (err) {
-
-                        reject(res.status(500).json({ ok: false, mensaje: err }))
-                    }
-
-                    usuariosActualizados.push(usuarioActualizado.nombre)
-
-                })
-
+                res.json({ usuarioActualizado })
             })
-        }
-
-        resolve(usuariosActualizados)
     })
 
-}
+})
 
 
 module.exports = app;

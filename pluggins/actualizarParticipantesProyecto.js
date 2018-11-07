@@ -1,3 +1,6 @@
+const Usuario = require('../models/usuario');
+
+
 let actualizarParticipantes = (res, id, proyectoId) => {
 
     return new Promise((resolve, reject) => {

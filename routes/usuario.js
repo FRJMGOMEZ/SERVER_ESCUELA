@@ -20,7 +20,6 @@ app.get('/usuario', verifyToken, (req, res) => {
 
     .exec((err, usuarios) => {
 
-
         if (err) {
             return res.status(500).json({
                 ok: false,

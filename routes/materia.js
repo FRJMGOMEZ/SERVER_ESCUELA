@@ -17,6 +17,8 @@ app.get('/materia', verifyToken, (req, res) => {
 
     Materia.find({})
         .populate('usuarios.id', 'nombre')
+        .populate('alumnos', 'nombre')
+        .populate('alumnos', 'nombre')
         .skip(desde)
         .limit(limite)
         .exec((err, materias) => {
@@ -44,9 +46,12 @@ app.get('/materia', verifyToken, (req, res) => {
 app.post('/materia', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let timeStamp = req.timeStamp;
+
     let body = req.body;
+
     let materia = new Materia({
         nombre: body.nombre,
+        usuarios: []
     })
 
     materia.usuarios.push(timeStamp)

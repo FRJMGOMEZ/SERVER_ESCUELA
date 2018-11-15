@@ -1,11 +1,15 @@
 const express = require('express');
 
 const Alumno = require('../models/alumno');
+const Materia = require('../models/materia');
+const Ficha = require('../models/ficha');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const timeStamp = require('../middlewares/timeStamp');
 
+
 const actualizarMateria = require('../pluggins/actualizarMateria');
+
 
 const app = express()
 
@@ -13,13 +17,14 @@ const app = express()
 app.get('/alumno', [verifyToken, timeStamp], (req, res) => {
 
     let desde = req.query.desde;
-    let hasta = req.query.hasta;
+    desde = Number(desde)
+    let limite = req.query.limite;
+    limite = Number(limite)
 
     Alumno.find({})
         .skip(desde)
-        .limit(hasta)
-        .populate('materias', 'nombre')
-        .populate('usuarios.id', 'nombre')
+        .limit(limite)
+        .populate('materias', 'nombre _id')
         .exec((err, alumnosDb) => {
 
             if (err) { return res.status(500).json({ ok: false, mensaje: err }) }
@@ -40,7 +45,8 @@ app.post('/alumno', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let alumno = new Alumno({
             nombre: body.nombre,
-            usuarios: []
+            usuarios: [],
+            materias: []
         })
         ///////Aún no sé implantar un array
 
@@ -58,7 +64,7 @@ app.post('/alumno', [verifyToken, verifyRole, timeStamp], (req, res) => {
 })
 
 
-app.put('./alumno/:id', (req, res) => {
+app.put('/alumno/:id', (req, res) => {
 
     let id = req.params.id;
     let body = req.body;
@@ -130,6 +136,52 @@ app.put('/alumnoAnadirMateria/:id', [verifyToken, timeStamp], (req, res) => {
     })
 })
 
+app.delete('/alumno/:id', (req, res) => {
+
+    let id = req.params.id;
+
+    Alumno.findByIdAndDelete(id, (err, alumnoBorrado) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: err
+            })
+        }
+        if (!alumnoBorrado) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ningún alumno con el id introducido '
+            })
+        }
+
+        let alumnoBorradoId = alumnoBorrado._id
+
+        Materia.updateOne({}, { $pull: { alumnos: alumnoBorradoId } })
+            .exec((err, materiaActualizada) => {
+
+                if (err) {
+
+                    return res.status(500).json({ ok: false, mensaje: err })
+                }
+
+                let fichaId = alumnoBorrado.ficha;
+
+
+                ////El alumno siempre debe de tener ficha
+
+                Ficha.findByIdAndUpdate({ _id: fichaId }, { estado: false }, (err, fichaActualizada) => {
+
+                    if (err) {
+
+                        return res.status(500).json({ ok: false, mensaje: err })
+                    }
+                    res.status(200).json({ alumnoBorrado, materiaActualizada, fichaActualizada })
+                })
+            })
+    })
+})
 
 
 module.exports = app;

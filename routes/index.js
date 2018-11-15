@@ -9,6 +9,8 @@ app.use(require('./clase'))
 app.use(require('./alumno'));
 app.use(require('./ficha'));
 app.use(require('./proyecto'));
-
+app.use(require('./upload'));
+app.use(require('./images'));
+app.use(require('./search'));
 
 module.exports = app;

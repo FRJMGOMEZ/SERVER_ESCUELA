@@ -2,6 +2,9 @@ const express = require('express');
 
 const Profesor = require('../models/profesor');
 const Materia = require('../models/materia');
+const Ficha = require('../models/ficha');
+
+
 const timeStamp = require('../middlewares/timeStamp');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -20,6 +23,8 @@ app.get('/profesor', verifyToken, (req, res) => {
         .skip(desde)
         .limit(limite)
         .exec((err, profesoresDb) => {
+
+            console.log(profesoresDb)
 
             if (err) {
                 return res.status(500).json({
@@ -89,23 +94,26 @@ app.put('/profesorAnadirMateria/:id', [verifyToken, verifyRole, timeStamp], (req
             })
         }
 
-        profesorDb.materias.push(materiaId)
-        profesorDb.usuarios.push(timeStamp)
+        if (profesorDb.materias.indexOf(materiaId) < 0) {
 
-        profesorDb.save((err, profesorGuardado) => {
+            profesorDb.materias.push(materiaId)
+            profesorDb.usuarios.push(timeStamp)
 
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    message: err
+            profesorDb.save((err, profesorGuardado) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        message: err
+                    })
+                }
+
+                actualizarMateria(res, profesorGuardado, materiaId, 'profesor').then((materiaUpdated) => {
+
+                    res.status(200).json({ ok: true, profesorGuardado, materiaActualizada: materiaUpdated.nombre })
                 })
-            }
-
-            actualizarMateria(res, profesorGuardado, materiaId, 'profesor').then((materiaUpdated) => {
-
-                res.status(200).json({ ok: true, profesorGuardado, materiaActualizada: materiaUpdated.nombre })
             })
-        })
+        } else { res.status(403).json({ ok: false, mensaje: 'La materia ya ha sido asignada al profesor' }) }
     })
 })
 
@@ -180,7 +188,18 @@ app.delete('/profesor/:id', [verifyToken, verifyRole], (req, res) => {
                     return res.status(500).json({ ok: false, mensaje: err })
                 }
 
-                res.status(200).json({ profesorBorrado, materiaActualizada })
+                let fichaId = profesorBorrado.ficha;
+
+                Ficha.findByIdAndUpdate({ _id: fichaId }, { estado: false }, (err, fichaActualizada) => {
+
+                    if (err) {
+
+                        return res.status(500).json({ ok: false, mensaje: err })
+                    }
+
+                    res.status(200).json({ profesorBorrado, materiaActualizada, fichaActualizada })
+
+                })
             })
     })
 })

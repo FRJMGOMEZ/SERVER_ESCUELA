@@ -2,7 +2,9 @@ const express = require('express');
 const fileUpload = require('express-fileupload');
 const app = express();
 
-const Usuario = require('../models/user');
+const Usuario = require('../models/usuario');
+const Alumno = require('../models/alumno');
+const Profesor = require('../models/profesor');
 
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +15,7 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 app.use(fileUpload());
 
 
-app.put('/upload/:type/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/uploadImg/:type/:id', (req, res) => {
 
     let type = req.params.type;
     let id = req.params.id;
@@ -21,20 +23,20 @@ app.put('/upload/:type/:id', [verifyToken, verifyRole], (req, res) => {
     if (!req.files)
         return res.status(400).json({
             ok: false,
-            message: 'No files were uploaded.'
+            message: 'No se ha seleccionado ninguna imagen'
         });
 
     ////VALIDAMOS EL TIPO DE ARCHIVO////
-    let validTypes = ['usuarios', 'alumnos', 'clases', 'profesores'];
+    let validTypes = ['usuarios', 'alumnos', 'profesores'];
     if (validTypes.indexOf(type) < 0) {
         return res.status(403).json({
             ok: false,
-            message: `Tipo de registro inválido, os tipos válidos son: ${validTypes.join(', ')}`
+            message: `Tipo de registro inválido, los tipos válidos son: ${validTypes.join(', ')}`
         })
     }
 
     ////VALIDAMOS LA EXTENSION DEL ARCHIVO///
-    let file = req.files.archivo;
+    let file = req.files.img;
 
     let validExtensions = ['png', 'jpg', 'gif', 'jpeg'];
 
@@ -45,7 +47,7 @@ app.put('/upload/:type/:id', [verifyToken, verifyRole], (req, res) => {
     if (validExtensions.indexOf(extension) < 0) {
         return res.status(403).json({
             ok: false,
-            message: `The extension of the file is not allowed, the extensions allowed are ${extensionesValidas.join(', ')}`
+            message: `La extensión del archivo no es permitida, las extensiones permitidas son :${extensionesValidas.join(', ')}`
         })
     }
 
@@ -58,32 +60,27 @@ app.put('/upload/:type/:id', [verifyToken, verifyRole], (req, res) => {
         if (err)
             return res.status(500).json({
                 ok: false,
-                message: 'File could not been loaded '
+                message: 'El archivo no ha podido ser guardado'
             });
 
         switch (type) {
             case 'usuarios':
-                imageUser();
+                imagenUsuario(id, res, fileName);
                 break;
             case 'alumnos':
-                imagenAlumno();
+                imagenAlumno(id, res, fileName);
                 break;
             case 'profesores':
-                imagenAlumno();
-                break;
-            case 'clases':
-                imagenAlumno();
+                imagenProfesor(id, res, fileName);
                 break;
         }
     })
 });
 
 
+const imagenUsuario = (id, res, fileName) => {
 
-
-const imageUser = (id, res, fileName) => {
-
-    Usuario.findById(id, (error, userDb) => {
+    Usuario.findById(id, (error, usuarioDb) => {
 
         if (error) {
 
@@ -95,25 +92,25 @@ const imageUser = (id, res, fileName) => {
             })
         }
 
-        if (!userDb) {
+        if (!usuarioDb) {
 
             deleteImg(fileName, 'usuarios')
 
             return res.status(400).json({
                 ok: false,
-                message: 'User do not exist'
+                message: 'El usuario no existe'
             })
         }
 
-        deleteImg(userDb.img, 'usuarios');
+        deleteImg(usuarioDb.img, 'usuarios');
 
-        userDb.img = fileName;
+        usuarioDb.img = fileName;
 
-        userDb.save((error, userSaved) => {
+        usuarioDb.save((error, usuarioActualizado) => {
 
             res.json({
                 ok: true,
-                user: userSaved
+                usuarioActualizado
             })
         })
     })
@@ -121,37 +118,74 @@ const imageUser = (id, res, fileName) => {
 
 
 
-const imageProduct = (id, res, fileName) => {
+const imagenAlumno = (id, res, fileName) => {
 
-    Producto.findById(id, (error, productDb) => {
+    Alumno.findById(id, (error, alumnoDb) => {
 
         if (error) {
 
-            deleteImg(fileName, 'productos')
+            deleteImg(fileName, 'alumnos')
 
             return res.status(500).json({
                 ok: false,
                 message: error
             })
         }
-        if (!productDb) {
+        if (!alumnoDb) {
 
-            deleteImg(fileName, 'productos')
+            deleteImg(fileName, 'alumnos')
 
             return res.status(400).json({
                 ok: false,
-                message: 'Product do not exist'
+                message: 'El alumno no existe'
             })
         }
-        deleteImg(productDb.img, 'productos');
+        deleteImg(alumnoDb.img, 'alumnos');
 
-        productDb.img = fileName;
+        alumnoDb.img = fileName;
 
-        productDb.save((error, productSaved) => {
+        alumnoDb.save((error, alumnoActualizado) => {
 
             res.json({
                 ok: true,
-                product: productSaved
+                alumnoActualizado
+            })
+        })
+    })
+}
+
+
+const imagenProfesor = (id, res, fileName) => {
+
+    Profesor.findById(id, (error, profesorDb) => {
+
+        if (error) {
+
+            deleteImg(fileName, 'profesores')
+
+            return res.status(500).json({
+                ok: false,
+                message: error
+            })
+        }
+        if (!profesorDb) {
+
+            deleteImg(fileName, 'profesores')
+
+            return res.status(400).json({
+                ok: false,
+                message: 'El profesor no existe'
+            })
+        }
+        deleteImg(profesorDb.img, 'profesores');
+
+        profesorDb.img = fileName;
+
+        profesorDb.save((error, profesorActualizado) => {
+
+            res.json({
+                ok: true,
+                profesorActualizado
             })
         })
     })

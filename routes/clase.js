@@ -7,6 +7,7 @@ const timeStamp = require('../middlewares/timeStamp');
 
 const app = express()
 
+
 app.get('/clase', verifyToken, (req, res) => {
 
     let desde = req.query.desde || 0;
@@ -37,6 +38,7 @@ app.get('/clase', verifyToken, (req, res) => {
             })
         })
 })
+
 
 app.post('/clase', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
@@ -202,6 +204,33 @@ app.put('/clase/:id', [verifyToken, timeStamp], (req, res) => {
             res.status(200).json({ ok: true, claseActualizada })
         })
     })
+})
+
+
+app.delete('/clase/:id', (req, res) => {
+
+    let id = req.params.id;
+
+    Clase.findByIdAndRemove(id, (err, claseBorrada) => {
+
+        if (err) {
+
+            return res.status(500).json({ ok: false, mensaje: err })
+        }
+
+        if (!claseBorrada) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ninguna clase con el id introducido'
+            })
+        }
+
+        res.status(200).json({ ok: true, claseBorrada })
+
+    })
+
+
 })
 
 

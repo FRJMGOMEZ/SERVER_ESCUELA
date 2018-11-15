@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const profesorSchema = new Schema({
     nombre: { type: String, unique: true, required: true },
     img: { type: String, required: false },
-    materias: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }],
+    materias: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Materia' }],
     ficha: { type: mongoose.Schema.Types.ObjectId, ref: 'FichaProfesor' },
     usuarios: [{ id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }, fecha: String }]
 }, { collection: 'profesores' });

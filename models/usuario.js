@@ -11,7 +11,7 @@ const validRoles = {
 const usuarioSchema = new Schema({
     nombre: { type: String, unique: true, required: [true, "El nombre es necesario"] },
     email: { type: String, unique: true, required: [true, "El nombre es necesario"] },
-    contraseña: { type: String, required: [true, "Contraseña es necesaria"] },
+    password: { type: String, required: [true, "Contraseña es necesaria"] },
     img: { type: String, required: false, default: undefined },
     rol: {
         type: String,

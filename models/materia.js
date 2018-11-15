@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 const materiaSchema = new Schema({
     nombre: { type: String, unique: true, required: [true, "El nombre es necesario"] },
-    profesores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Pofesor' }],
+    profesores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profesor' }],
     alumnos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Alumno' }],
     usuarios: [{ id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }, fecha: String }]
 })

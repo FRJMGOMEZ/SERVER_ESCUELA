@@ -9,20 +9,27 @@ const timeStamp = require('../middlewares/timeStamp');
 
 const app = express();
 
+const actualizarAlumno = require('../pluggins/actualizarAlumno');
+
+const actualizarProfesor = require('../pluggins/actualizarProfesor');
 
 
-app.get('/materia', verifyToken, (req, res) => {
+app.get('/materia', (req, res) => {
 
-    let desde = req.query.desde || 0;
+    let desde = req.query.desde;
 
-    let limite = req.query.limite || 5;
+    desde = Number(desde)
+
+    let limite = req.query.limite;
+
+    limite = Number(limite)
 
     Materia.find({})
-        .populate('usuarios.id', 'nombre')
-        .populate('alumnos', 'nombre')
-        .populate('alumnos', 'nombre')
         .skip(desde)
         .limit(limite)
+        .populate('usuarios.id', 'nombre')
+        .populate('alumnos', 'nombre _id ficha')
+        .populate('profesores', 'nombre _id')
         .exec((err, materias) => {
 
             if (err) {
@@ -44,6 +51,7 @@ app.get('/materia', verifyToken, (req, res) => {
             })
         })
 })
+
 
 app.post('/materia', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
@@ -71,6 +79,7 @@ app.post('/materia', [verifyToken, verifyRole, timeStamp], (req, res) => {
         })
     })
 })
+
 
 
 app.put('/materia/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
@@ -107,6 +116,7 @@ app.put('/materia/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
     })
 
 })
+
 
 
 app.delete('/materia/:id', [verifyToken, verifyRole], (req, res) => {
@@ -149,5 +159,136 @@ app.delete('/materia/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
+
+
+app.put('/anadirOEliminarAlumno/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
+
+    let id = req.params.id;
+    let alumnoId = req.body.alumno;
+    let timeStamp = req.body.timeStamp;
+
+    Materia.findById(id, (err, materiaDb) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: err
+            })
+        }
+        if (!materiaDb) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ninguna materia con el id introducido '
+            })
+        }
+
+        if (materiaDb.alumnos.indexOf(alumnoId) < 0) {
+
+            materiaDb.alumnos.push(alumnoId)
+            materiaDb.usuarios.push(timeStamp)
+
+            materiaDb.save((err, materiaGuardada) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        message: err
+                    })
+                }
+
+                actualizarAlumno(res, materiaGuardada._id, alumnoId).then((alumnoActualizado) => {
+
+                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado.nombre })
+                })
+            })
+        } else {
+
+            materiaDb.alumnos = materiaDb.alumnos.filter((alumno) => { return alumno != alumnoId })
+
+            materiaDb.usuarios.push(timeStamp)
+
+            materiaDb.save((err, materiaGuardada) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        message: err
+                    })
+                }
+
+                actualizarAlumno(res, materiaGuardada._id, alumnoId).then((alumnoActualizado) => {
+
+                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado.nombre })
+                })
+            })
+        }
+    })
+})
+
+app.put('/anadirOEliminarProfesor/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
+
+    let id = req.params.id;
+    let profesorId = req.body.profesor;
+    let timeStamp = req.body.timeStamp;
+
+    Materia.findById(id, (err, materiaDb) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                message: err
+            })
+        }
+        if (!materiaDb) {
+
+            return res.status(404).json({
+                ok: false,
+                mensaje: 'No existe ninguna materia con el id introducido '
+            })
+        }
+
+        if (materiaDb.profesores.indexOf(profesorId) < 0) {
+
+            materiaDb.profesores.push(profesorId)
+            materiaDb.usuarios.push(timeStamp)
+
+            materiaDb.save((err, materiaGuardada) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        message: err
+                    })
+                }
+
+                actualizarProfesor(res, materiaGuardada._id, profesorId).then((profesorActualizado) => {
+
+                    res.status(200).json({ ok: true, materiaGuardada, profesorActualizado: profesorActualizado.nombre })
+                })
+            })
+        } else {
+
+            materiaDb.profesores = materiaDb.profesores.filter((profesor) => { return profesor != profesorId })
+
+            materiaDb.usuarios.push(timeStamp)
+
+            materiaDb.save((err, materiaGuardada) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        message: err
+                    })
+                }
+
+                actualizarProfesor(res, materiaGuardada._id, profesorId).then((profesorActualizado) => {
+
+                    res.status(200).json({ ok: true, materiaGuardada, profesorActualizado: profesorActualizado.nombre })
+                })
+            })
+        }
+    })
+})
 
 module.exports = app;

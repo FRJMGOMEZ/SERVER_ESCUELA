@@ -1,6 +1,6 @@
 let timeStamp = (req, res, next) => {
 
-    let usuario = req.usuario.usuario;
+    let usuario = req.usuario.usuarioDb;
 
     let date = new Date()
 

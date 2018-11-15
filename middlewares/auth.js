@@ -24,12 +24,13 @@ let verifyToken = (req, res, next) => {
 
 let verifyRole = (req, res, next) => {
 
-    if (req.params.id == req.usuario.usuario._id) {
+    if (req.usuario.usuarioDb.rol != 'ADMIN_ROLE') {
 
-        next()
-    }
+        if (req.params.id === req.usuario.usuarioDb._id) {
 
-    if (req.usuario.usuario.rol != 'ADMIN_ROLE') {
+            next()
+
+        }
 
         return res.status(401).json({
             ok: false,

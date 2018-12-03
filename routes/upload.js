@@ -27,7 +27,7 @@ app.put('/uploadImg/:type/:id', (req, res) => {
         });
 
     ////VALIDAMOS EL TIPO DE ARCHIVO////
-    let validTypes = ['usuarios', 'alumnos', 'profesores'];
+    let validTypes = ['usuarios', 'alumnos', 'profesores', 'proyectos'];
     if (validTypes.indexOf(type) < 0) {
         return res.status(403).json({
             ok: false,
@@ -72,6 +72,9 @@ app.put('/uploadImg/:type/:id', (req, res) => {
                 break;
             case 'profesores':
                 imagenProfesor(id, res, fileName);
+                break;
+            case 'proyectos':
+                imagenProyecto(id, res, fileName);
                 break;
         }
     })
@@ -188,6 +191,33 @@ const imagenProfesor = (id, res, fileName) => {
                 profesorActualizado
             })
         })
+    })
+}
+
+
+const imagenProyecto = (id, res, fileName) => {
+
+    Proyecto.findById(id, (error, proyectoDb) => {
+
+        if (error) {
+
+            deleteImg(fileName, 'proyectos')
+
+            return res.status(500).json({
+                ok: false,
+                message: error
+            })
+        }
+        if (!proyectoDb) {
+
+            deleteImg(fileName, 'proyectos')
+
+            return res.status(400).json({
+                ok: false,
+                message: 'El proyecto no existe'
+            })
+        }
+        ///////// Seguir aquí ///////////
     })
 }
 

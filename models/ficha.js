@@ -3,14 +3,14 @@ const uniqueValidator = require('mongoose-unique-validator')
 const Schema = mongoose.Schema;
 
 const fichaSchema = new Schema({
-    nombre: { type: String, unique: true, required: [true, 'El nombre es necesario'] },
-    apellido: { type: String },
-    email: { type: String, unique: true },
-    movil: { type: String, unique: true },
-    casa: { type: String },
-    domicilio: { type: String },
+    nombre: { type: String, required: [true, 'El nombre es necesario'] },
+    apellido: { type: String, required: false },
+    email: { type: String, required: false },
+    movil: { type: String, required: false },
+    casa: { type: String, required: false },
+    domicilio: { type: String, required: false },
     estado: { type: Boolean, default: true }
-}, { collection: 'Fichas' });
+}, { collection: 'fichas' });
 
 fichaSchema.plugin(uniqueValidator, { message: '{PATH} debe ser único' })
 

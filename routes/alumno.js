@@ -46,7 +46,8 @@ app.post('/alumno', [verifyToken, verifyRole, timeStamp], (req, res) => {
     let alumno = new Alumno({
             nombre: body.nombre,
             usuarios: [],
-            materias: []
+            materias: [],
+            ficha: body.ficha
         })
         ///////Aún no sé implantar un array
 
@@ -57,6 +58,7 @@ app.post('/alumno', [verifyToken, verifyRole, timeStamp], (req, res) => {
         if (err) {
 
             return res.status(500).json({ ok: false, err })
+
         }
 
         res.status(200).json({ ok: true, alumnoGuardado })

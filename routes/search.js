@@ -4,6 +4,7 @@ const Usuario = require('../models/usuario');
 const Profesor = require('../models/profesor');
 const Materia = require('../models/materia');
 const Ficha = require('../models/ficha');
+const Proyecto = require('../models/proyecto');
 
 ///Ficha y proyecto por populate.
 /// Materia y clase no hace falta hacer buscador. 
@@ -14,7 +15,7 @@ app.get('/search/:collection/:search', (req, res) => {
 
     let desde = req.query.desde;
     desde = Number(desde)
-    let limite = req.query.limite;
+    let limite = req.query.limite || 10;
     limite = Number(limite)
 
     let collection = req.params.collection;
@@ -45,6 +46,7 @@ app.get('/search/:collection/:search', (req, res) => {
     promise.then((response) => {
 
         res.status(200).json({
+            ok: true,
             [collection]: response
         })
     })
@@ -174,6 +176,11 @@ app.get('/searchById/:collection/:id', (req, res) => {
         case 'fichas':
             promise = buscarFichaId(res, id);
             break;
+        case 'proyecto':
+            promise = buscarProyectoId(res, id);
+            break;
+        case 'materias':
+            promise = buscarMateria(res, id);
         default:
             res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
             break;
@@ -186,7 +193,6 @@ app.get('/searchById/:collection/:id', (req, res) => {
         })
     })
 })
-
 
 const buscarAlumnoId = (res, id) => {
 
@@ -222,6 +228,7 @@ const buscarProfesorId = (res, id) => {
                 reject(res.status(500).json({ ok: false, mensaje: err }))
             }
 
+
             if (!profesorDb) {
 
                 reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron profesores con el id especificado' }))
@@ -238,20 +245,22 @@ const buscarUsuarioId = (res, id) => {
 
     return new Promise((resolve, reject) => {
 
-        Usuario.findById(id, (err, usuarioDb) => {
+        Usuario.findById(id)
+            .populate('proyectos', 'nombre _id')
+            .exec((err, usuarioDb) => {
 
-            if (err) {
+                if (err) {
 
-                reject(res.status(500).json({ ok: false, mensaje: err }))
-            }
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
 
-            if (!usuarioDb) {
+                if (!usuarioDb) {
 
-                reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron usuarios con el id especificado' }))
-            }
+                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron usuarios con el id especificado' }))
+                }
 
-            resolve(usuarioDb)
-        })
+                resolve(usuarioDb)
+            })
     })
 }
 
@@ -262,21 +271,37 @@ const buscarFichaId = (res, id) => {
         Ficha.findById(id, (err, fichaDb) => {
 
             if (err) {
-
                 reject(res.status(500).json({ ok: false, mensaje: err }))
             }
-
             if (!fichaDb) {
-
                 reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron fichas con el id especificado' }))
-
             }
 
             resolve(fichaDb)
 
         })
     })
-
 }
+
+
+const buscarMateriaId = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+
+        Materia.findById(id)
+            .exec((err, materiaDb) => {
+
+                if (err) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                if (!materiaDb) {
+                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ninguna materia con el id especificado' }))
+                }
+                resolve(materiaDb)
+            })
+    })
+}
+
+
 
 module.exports = app;

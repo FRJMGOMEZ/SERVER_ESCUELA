@@ -21,7 +21,7 @@ const usuarioSchema = new Schema({
     },
     estado: { type: Boolean, default: false },
     google: { type: Boolean, default: false },
-    proyectos: [{ type: mongoose.Schema.Types.ObjectId, fecha: String, ref: 'Proyecto' }],
+    proyectos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Proyecto' }],
     historial: [{ type: mongoose.Schema.Types.ObjectId, fecha: String, ref: 'AccionHistorial' }],
     usuarios: [{ type: mongoose.Schema.Types.ObjectId, fecha: String, ref: 'Usuario' }],
 });

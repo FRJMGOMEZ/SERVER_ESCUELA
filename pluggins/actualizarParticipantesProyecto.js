@@ -17,6 +17,8 @@ let actualizarParticipantes = (res, id, proyectoId) => {
                 reject(res.status(404).json({ ok: false, mensaje: 'No existen usuarios con el id introducido' }))
             }
 
+            console.log(usuarioDb)
+
             usuarioDb.proyectos.push(proyectoId)
 
             usuarioDb.save((err, usuarioGuardado) => {

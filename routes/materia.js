@@ -13,7 +13,6 @@ const actualizarAlumno = require('../pluggins/actualizarAlumno');
 
 const actualizarProfesor = require('../pluggins/actualizarProfesor');
 
-
 app.get('/materia', (req, res) => {
 
     let desde = req.query.desde;
@@ -81,7 +80,6 @@ app.post('/materia', [verifyToken, verifyRole, timeStamp], (req, res) => {
 })
 
 
-
 app.put('/materia/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
 
@@ -116,7 +114,6 @@ app.put('/materia/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
     })
 
 })
-
 
 
 app.delete('/materia/:id', [verifyToken, verifyRole], (req, res) => {
@@ -199,7 +196,7 @@ app.put('/anadirOEliminarAlumno/:id', [verifyToken, verifyRole, timeStamp], (req
 
                 actualizarAlumno(res, materiaGuardada._id, alumnoId).then((alumnoActualizado) => {
 
-                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado.nombre })
+                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado })
                 })
             })
         } else {
@@ -219,7 +216,7 @@ app.put('/anadirOEliminarAlumno/:id', [verifyToken, verifyRole, timeStamp], (req
 
                 actualizarAlumno(res, materiaGuardada._id, alumnoId).then((alumnoActualizado) => {
 
-                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado.nombre })
+                    res.status(200).json({ ok: true, materiaGuardada, alumnoActualizado: alumnoActualizado })
                 })
             })
         }

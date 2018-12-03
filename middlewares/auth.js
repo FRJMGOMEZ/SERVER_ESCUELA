@@ -28,8 +28,8 @@ let verifyRole = (req, res, next) => {
 
         if (req.params.id === req.usuario.usuarioDb._id) {
 
-            next()
-
+            next();
+            return
         }
 
         return res.status(401).json({

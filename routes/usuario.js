@@ -6,8 +6,9 @@ const Proyecto = require('../models/proyecto');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
-const app = express();
+const notificacion = require('../middlewares/notificacion');
 
+const app = express();
 
 app.get('/usuario', (req, res) => {
 
@@ -18,7 +19,7 @@ app.get('/usuario', (req, res) => {
     Usuario.find({})
         .skip(desde)
         .limit(limite)
-        .populate('proyectos', 'nombre')
+        .populate('proyectos', 'nombre _id descripcion img')
         .exec((err, usuariosDb) => {
 
             if (err) {
@@ -76,6 +77,8 @@ app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
 
+    console.log(body.email)
+
     Usuario.findById(id, (err, usuario) => {
 
         if (err) {
@@ -97,7 +100,6 @@ app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
         if (body.email) {
             usuario.email = body.email
         }
-
         if (body.password) {
             usuario.password = bcrypt.hashSync(body.password, 10)
         }
@@ -112,6 +114,11 @@ app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
                     ok: false,
                     mensaje: err
                 })
+            }
+
+            if (!usuarioActualizado) {
+
+                console.log('Porque')
             }
             res.status(200).json({ ok: true, usuarioActualizado })
         })
@@ -205,6 +212,36 @@ app.delete('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
 
                 res.status(200).json({ ok: true, usuarioBorrado, proyectoActualizado })
             })
+    })
+})
+
+
+/// Comparación contraseñas ///
+
+app.get('/usuario/:id/:password', [verifyToken, verifyRole], (req, res) => {
+
+    let id = req.params.id;
+    let password = req.params.password;
+
+    Usuario.findById(id, (err, usuarioDb) => {
+
+        if (err) {
+            return res.status(500).json({ ok: false, mensaje: err })
+        }
+
+        if (!usuarioDb) {
+
+            return res.status(404).json({ ok: false, mensaje: 'No existe ningún usuario con el id específicado' })
+
+        }
+
+        if (!bcrypt.compareSync(password, usuarioDb.password)) {
+
+            res.json({ mensaje: 'Las contraseña no coincide' })
+        } else {
+
+            res.json({ usuarioDb })
+        }
     })
 })
 

@@ -31,9 +31,10 @@ app.get('/ficha', (req, res) => {
 })
 
 
-app.post('/ficha/:id', (req, res) => {
 
-    let id = req.params.id;
+app.post('/ficha', (req, res) => {
+
+    let personId = req.query.id;
 
     let body = req.body;
 
@@ -46,52 +47,100 @@ app.post('/ficha/:id', (req, res) => {
         domicilio: body.domicilio
     })
 
-    ficha.save((err, fichaSaved) => {
+    Ficha.findOne({ nombre: ficha.nombre }, (err, fichaDb) => {
 
         if (err) {
 
             return res.status(500).json({ ok: false, mensaje: err })
         }
 
-        Promise.all([
-            updateProfesor(res, id, fichaSaved._id),
-            updateAlumno(res, id, fichaSaved._id)
-        ]).then(responses => {
+        if (fichaDb) {
 
-            let profesor = responses[0];
-            let alumno = responses[1];
+            Promise.all([
+                updateProfesor(res, personId, fichaDb._id),
+                updateAlumno(res, personId, fichaDb._id)
+            ]).then(responses => {
+
+                let profesor = responses[0];
+                let alumno = responses[1];
 
 
-            if (profesor === null) {
+                if (alumno) {
 
-                alumno.save((err, alumnoActualizado) => {
+                    alumno.save((err, alumnoActualizado) => {
 
-                    if (err) {
+                        if (err) {
 
-                        return res.status(500).json({ ok: false, mensaje: err })
+                            return res.status(500).json({ ok: false, mensaje: err })
 
-                    }
+                        }
 
-                    res.status(200).json({ ok: true, fichaSaved, alumnoActualizado: alumnoActualizado.nombre })
+                        res.status(200).json({ ok: true, fichaDb, alumnoActualizado: alumnoActualizado.nombre })
+                    })
+                } else if (profesor) {
+
+                    profesor.save((err, profesorActualizado) => {
+
+                        if (err) {
+
+                            return res.status(500).json({ ok: false, mensaje: err })
+
+                        }
+
+                        res.status(200).json({ ok: true, fichaDb, profesorActualizado: profesorActualizado.nombre })
+                    })
+
+                } else { res.status(200).json({ fichaDb }) }
+            })
+        } else {
+
+
+            ficha.save((err, fichaSaved) => {
+
+                if (err) {
+
+                    return res.status(500).json({ ok: false, mensaje: err })
+                }
+
+                Promise.all([
+                    updateProfesor(res, personId, fichaSaved._id),
+                    updateAlumno(res, personId, fichaSaved._id)
+                ]).then(responses => {
+
+                    let profesor = responses[0];
+                    let alumno = responses[1];
+
+
+                    if (alumno) {
+
+                        alumno.save((err, alumnoActualizado) => {
+
+                            if (err) {
+
+                                return res.status(500).json({ ok: false, mensaje: err })
+
+                            }
+
+                            res.status(200).json({ ok: true, fichaSaved, alumnoActualizado: alumnoActualizado.nombre })
+                        })
+                    } else if (profesor) {
+
+                        profesor.save((err, profesorActualizado) => {
+
+                            if (err) {
+
+                                return res.status(500).json({ ok: false, mensaje: err })
+                            }
+                            res.status(200).json({ ok: true, fichaSaved, profesorActualizado: profesorActualizado.nombre })
+                        })
+
+                    } else { res.status(200).json({ ok: true, fichaSaved }) }
                 })
-            }
-
-            if (alumno === null) {
-
-                profesor.save((err, profesorActualizado) => {
-
-                    if (err) {
-
-                        return res.status(500).json({ ok: false, mensaje: err })
-
-                    }
-
-                    res.status(200).json({ ok: true, fichaSaved, profesorActualizado: profesorActualizado.nombre })
-                })
-            }
-        })
+            })
+        }
     })
 })
+
 
 
 app.put('/ficha/:id', (req, res) => {

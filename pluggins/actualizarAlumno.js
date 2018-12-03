@@ -11,26 +11,36 @@ let actualizarAlumno = (res, materiaId, idAlumno) => {
                 reject(res.status(500).json({ ok: false, mensaje: err }))
             }
 
-            if (alumnoDb === null) {
+            if (!alumnoDb) {
                 reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron alumnos' }))
             }
+
             if (alumnoDb.materias.indexOf(materiaId) < 0) {
 
                 alumnoDb.materias.push(materiaId)
+
+                alumnoDb.save((err, alumnoActualizado) => {
+                    if (err) {
+
+                        reject(res.status(500).json({ ok: false, mensaje: err }))
+                    }
+                    resolve(alumnoActualizado)
+                })
+
             } else {
 
-                alumnoDb.materias = alumnoDb.materias.filter((materia) => { materia != materiaId })
+                let alumno = alumnoDb
+
+                alumno.materias = alumnoDb.materias.filter((materia) => { return JSON.stringify(materia) != JSON.stringify(materiaId); })
+
+                alumno.save((err, alumnoActualizado) => {
+                    if (err) {
+
+                        reject(res.status(500).json({ ok: false, mensaje: err }))
+                    }
+                    resolve(alumnoActualizado)
+                })
             }
-
-            alumnoDb.save((err, alumnoActualizado) => {
-
-                if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
-                }
-
-                resolve(alumnoActualizado)
-            })
         })
     })
 }

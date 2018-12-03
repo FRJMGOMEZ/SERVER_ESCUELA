@@ -6,46 +6,52 @@ let updateProfesor = (res, id, fichaId) => {
 
     return new Promise((resolve, reject) => {
 
-        Profesor.findById(id, (err, profesorDb) => {
+        if (id) {
 
-            if (err) {
+            Profesor.findById(id, (err, profesorDb) => {
 
-                reject(res.status(500).json({ ok: false, mensaje: err }))
-            }
+                if (err) {
 
-            if (profesorDb)
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
 
-            {
-                profesorDb.ficha = fichaId
-            }
+                if (profesorDb) {
 
-            resolve(profesorDb)
+                    profesorDb.ficha = fichaId;
+                    resolve(profesorDb)
+                }
 
-        })
+                resolve()
+
+            })
+        } else { resolve() }
     })
 }
 
 
 let updateAlumno = (res, id, fichaId) => {
 
-
     return new Promise((resolve, reject) => {
 
-        Alumno.findById(id, (err, alumnoDb) => {
+        if (id) {
 
-            if (err) {
+            Alumno.findById(id, (err, alumnoDb) => {
 
-                reject(res.status(500).json({ ok: false, mensaje: err }))
-            }
+                if (err) {
 
-            if (alumnoDb) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
 
-                alumnoDb.ficha = fichaId;
-            }
+                if (!alumnoDb) {
 
-            resolve(alumnoDb)
+                    resolve()
 
-        })
+                } else {
+                    alumnoDb.ficha = fichaId;
+                    resolve(alumnoDb)
+                }
+            })
+        } else { resolve() }
     })
 }
 

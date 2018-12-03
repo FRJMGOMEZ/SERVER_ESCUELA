@@ -39,7 +39,10 @@ app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let body = req.body;
     let timeStamp = req.timeStamp;
-    let usuarioOnline = req.usuario.usuario
+    let usuarioOnline = req.usuario.usuarioDb
+
+
+    console.log(usuarioOnline)
 
     let proyecto = new Proyecto({
         nombre: body.nombre,
@@ -48,8 +51,6 @@ app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
     })
 
     proyecto.participantes.push(usuarioOnline._id)
-
-
 
     proyecto.usuarios.push(timeStamp)
 

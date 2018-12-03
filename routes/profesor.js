@@ -161,7 +161,6 @@ app.delete('/profesor/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
 
-
     Profesor.findByIdAndRemove(id, (err, profesorBorrado) => {
 
         if (err) {

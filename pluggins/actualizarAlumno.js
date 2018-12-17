@@ -19,28 +19,18 @@ let actualizarAlumno = (res, materiaId, idAlumno) => {
 
                 alumnoDb.materias.push(materiaId)
 
-                alumnoDb.save((err, alumnoActualizado) => {
-                    if (err) {
-
-                        reject(res.status(500).json({ ok: false, mensaje: err }))
-                    }
-                    resolve(alumnoActualizado)
-                })
-
             } else {
 
-                let alumno = alumnoDb
-
-                alumno.materias = alumnoDb.materias.filter((materia) => { return JSON.stringify(materia) != JSON.stringify(materiaId); })
-
-                alumno.save((err, alumnoActualizado) => {
-                    if (err) {
-
-                        reject(res.status(500).json({ ok: false, mensaje: err }))
-                    }
-                    resolve(alumnoActualizado)
-                })
+                alumnoDb.materias = alumnoDb.materias.filter((materia) => { return JSON.stringify(materia) != JSON.stringify(materiaId); })
             }
+
+            alumnoDb.save((err, alumnoActualizado) => {
+                if (err) {
+
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                resolve(alumnoActualizado)
+            })
         })
     })
 }

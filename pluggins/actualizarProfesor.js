@@ -20,17 +20,17 @@ let actualizarProfesor = (res, materiaId, idProfesor) => {
                 profesorDb.materias.push(materiaId)
             } else {
 
-                profesorDb.materias = profesorDb.materias.filter((materias) => { return materias != materiaId })
+                profesorDb.materias = profesorDb.materias.filter((materias) => { return JSON.stringify(materias) != JSON.stringify(materiaId) })
             }
 
-            profesorDb.save((err, alumnoActualizado) => {
+            profesorDb.save((err, profesorActualizado) => {
 
                 if (err) {
 
                     reject(res.status(500).json({ ok: false, mensaje: err }))
                 }
 
-                resolve(alumnoActualizado)
+                resolve(profesorActualizado)
             })
         })
     })

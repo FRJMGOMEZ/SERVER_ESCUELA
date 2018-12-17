@@ -261,7 +261,7 @@ app.put('/anadirOEliminarProfesor/:id', [verifyToken, verifyRole, timeStamp], (r
 
                 actualizarProfesor(res, materiaGuardada._id, profesorId).then((profesorActualizado) => {
 
-                    res.status(200).json({ ok: true, materiaGuardada, profesorActualizado: profesorActualizado.nombre })
+                    res.status(200).json({ ok: true, materiaGuardada, profesorActualizado })
                 })
             })
         } else {

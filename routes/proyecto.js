@@ -35,14 +35,12 @@ app.get('/proyecto', verifyToken, (req, res) => {
         })
 })
 
+
 app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let body = req.body;
     let timeStamp = req.timeStamp;
     let usuarioOnline = req.usuario.usuarioDb
-
-
-    console.log(usuarioOnline)
 
     let proyecto = new Proyecto({
         nombre: body.nombre,
@@ -51,6 +49,7 @@ app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
     })
 
     proyecto.participantes.push(usuarioOnline._id)
+    proyecto.administradores.push(usuarioOnline._id)
 
     proyecto.usuarios.push(timeStamp)
 
@@ -61,16 +60,16 @@ app.post('/proyecto', [verifyToken, verifyRole, timeStamp], (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
 
-        actualizarParticipantes(res, usuarioOnline._id, proyectoGuardado._id).then(nombreUsuarioActualizado => {
+        actualizarParticipantes(res, usuarioOnline._id, proyectoGuardado._id).then(usuarioActualizado => {
 
-            res.status(200).json({ ok: true, proyectoGuardado, usuarioActualizado: nombreUsuarioActualizado })
+            res.status(200).json({ ok: true, proyectoGuardado, usuarioActualizado })
         })
     })
 
 })
 
 
-app.put('/anadirParticipante/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
+app.put('/anadirOExpulsarParticipante/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
 
     let participanteId = req.body.participante;
     let id = req.params.id;
@@ -89,7 +88,14 @@ app.put('/anadirParticipante/:id', [verifyToken, verifyRole, timeStamp], (req, r
             return res.status(404).json({ ok: false, mensaje: 'No existen proyectos con el id introducido' })
         }
 
-        proyectoDb.participantes.push(participanteId)
+        if (proyectoDb['participantes'].indexOf(participanteId) < 0) {
+
+            proyectoDb.participantes.push(participanteId)
+        } else {
+
+            proyectoDb.participantes = proyectoDb.participantes.filter((participante) => { return participante != participanteId })
+        }
+
         proyectoDb.usuarios.push(timeStamp)
 
         proyectoDb.save((err, proyectoGuardado) => {
@@ -99,9 +105,9 @@ app.put('/anadirParticipante/:id', [verifyToken, verifyRole, timeStamp], (req, r
                 return res.status(500).json({ ok: false, mensaje: err })
             }
 
-            actualizarParticipantes(res, participanteId, proyectoGuardado._id).then(nombreUsuarioActualizado => {
+            actualizarParticipantes(res, participanteId, proyectoGuardado._id).then(usuarioActualizado => {
 
-                res.status(200).json({ ok: true, proyectoGuardado, usuarioActualizado: nombreUsuarioActualizado })
+                res.status(200).json({ ok: true, proyectoGuardado, usuarioActualizado })
 
             })
         })
@@ -140,37 +146,111 @@ app.put('/proyecto/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
     })
 })
 
+app.put('/anadirEliminarAdmin/:id', [verifyToken, verifyRole, timeStamp], (req, res) => {
+
+    let participanteId = req.body.participante;
+    let id = req.params.id;
+
+    Proyecto.findById(id, (err, proyectoDb) => {
+
+        if (err) {
+
+            return res.status(500).json({ ok: false, mensaje: err })
+        }
+
+        if (!proyectoDb) {
+
+            return res.status(404).json({ ok: false, mensaje: 'No existen proyectos con el id introducido' })
+        }
 
 
-///////////////////// DELETE NO FUNCIONA /////////////////////////////
+        if (proyectoDb.administradores.indexOf(participanteId) < 0) {
+
+            proyectoDb.administradores.push(participanteId)
+        } else {
+
+            proyectoDb.administradores = proyectoDb.administradores.filter((admnistrador) => { return JSON.stringify(admnistrador) != JSON.stringify(participanteId) })
+        }
+
+        proyectoDb.save((err, proyectoGuardado) => {
+
+            if (err) {
+
+                return res.status(500).json({ ok: false, mensaje: err })
+            }
+
+            res.status(200).json({ ok: true, proyectoGuardado })
+        })
+    })
+})
 
 
+app.put('/proyecto/:id', [verifyToken, verifyRole], (req, res) => {
 
-app.delete('/proyecto/:id', (req, res) => {
+    let body = req.body;
+    let id = req.params.id;
+    let timeStamp = req.timeStamp;
+
+    Proyecto.findById(id, (err, proyectoDb) => {
+
+        if (err) {
+
+            return res.status(500).json({ ok: false, mensaje: err })
+        }
+
+        if (!proyectoDb) {
+
+            return res.status(404).json({ ok: false, mensaje: 'No existen proyectos con el id introducido' })
+        }
+        proyectoDb.nombre = body.nombre;
+        proyectoDb.descripcion = body.descripcion;
+        proyectoDb.usuarios.push(timeStamp)
+
+        proyectoDb.save((err, proyectoActualizado) => {
+            if (err) {
+
+                return res.status(500).json({ ok: false, mensaje: err })
+            }
+
+            res.status(200).json({ ok: true, proyectoActualizado })
+        })
+    })
+})
+
+app.put('/cambiarEstado/:id', (req, res) => {
 
     let id = req.params.id;
 
-    Proyecto.findByIdAndRemove(id, async(err, proyectoBorrado) => {
+    Proyecto.findById(id, (err, proyectoDb) => {
 
         if (err) {
 
             res.status(500).json({ ok: false, mensaje: err })
         }
 
-        idProyectoBorrado = proyectoBorrado._id;
+        if (!proyectoDb) {
 
-        Usuario.update({}, { $pull: { proyectos: idProyectoBorrado } })
-            .exec((err, usuarioActualizado) => {
+            res.status(404).json({ ok: false, mensaje: 'No existen proyectos con el id introducido' })
+        }
 
-                if (err) {
+        if (proyectoDb.activo === true) {
 
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
-                }
+            proyectoDb.activo = false
+        } else {
 
-                res.json({ usuarioActualizado })
-            })
+            proyectoDb.activo = true
+        }
+
+        proyectoDb.save((err, proyectoGuardado) => {
+
+            if (err) {
+
+                res.status(500).json({ ok: false, mensaje: err })
+            }
+
+            res.status(200).json({ ok: true, proyectoGuardado })
+        })
     })
-
 })
 
 

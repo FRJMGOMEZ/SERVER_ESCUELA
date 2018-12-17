@@ -19,12 +19,10 @@ app.get('/profesor', verifyToken, (req, res) => {
     let limite = req.query.limite || 5;
 
     Profesor.find({})
-        .populate('materias', 'nombre')
+        .populate('materias', 'nombre _id')
         .skip(desde)
         .limit(limite)
         .exec((err, profesoresDb) => {
-
-            console.log(profesoresDb)
 
             if (err) {
                 return res.status(500).json({

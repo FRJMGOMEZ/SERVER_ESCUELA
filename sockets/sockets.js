@@ -2,6 +2,8 @@ const { io } = require('../app');
 
 const Users = require('../classes/users');
 
+const Mensaje = require('../models/mensaje');
+
 const users = new Users()
 
 const { crearMensaje } = require('../pluggins/crearMensaje');
@@ -9,17 +11,24 @@ const { crearMensaje } = require('../pluggins/crearMensaje');
 
 io.on('connection', (client) => {
 
-    console.log('Usuario conectado')
+    client.on('mensaje', async(mensaje) => {
 
-    client.on('mensaje', async(data, callback) => {
+        Mensaje.findById(mensaje._id)
+            .populate('usuario', 'nombre _id')
+            .exec((err, mensajeDb) => {
 
-        console.log(data)
+                if (err) {
 
+                    console.log('error')
+                } else {
+
+                    io.emit('mensaje', mensajeDb)
+                }
+            })
     })
 
     client.on('disconnect', async() => {
 
-        console.log('Usuario desconectado')
     })
 
 })

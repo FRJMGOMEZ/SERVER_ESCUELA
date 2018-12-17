@@ -13,4 +13,5 @@ const materiaSchema = new Schema({
 materiaSchema.plugin(uniqueValidator, { message: '{PATH} debe ser único' })
 
 
+
 module.exports = mongoose.model('Materia', materiaSchema);

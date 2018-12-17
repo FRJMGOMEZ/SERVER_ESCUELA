@@ -27,7 +27,7 @@ app.post('/login', verifyStatus, (req, res) => {
             if (!usuarioDb) {
                 return res.status(400).json({
                     ok: false,
-                    message: 'No hay usuarios con los datos introducidos'
+                    message: 'No hay usuarios con los datos introducidos (usuario)'
                 })
             }
             if (!bcrypt.compareSync(body.password, usuarioDb.password)) {
@@ -35,7 +35,7 @@ app.post('/login', verifyStatus, (req, res) => {
                     .status(400)
                     .json({
                         ok: false,
-                        message: "No hay usuarios con los datos introducidos"
+                        message: "No hay usuarios con los datos introducidos (password)"
                     });
             }
             usuarioDb.password = ':)';

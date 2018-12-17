@@ -5,6 +5,7 @@ const Profesor = require('../models/profesor');
 const Materia = require('../models/materia');
 const Ficha = require('../models/ficha');
 const Proyecto = require('../models/proyecto');
+const Calendario = require('../models/calendario');
 
 ///Ficha y proyecto por populate.
 /// Materia y clase no hace falta hacer buscador. 
@@ -180,7 +181,11 @@ app.get('/searchById/:collection/:id', (req, res) => {
             promise = buscarProyectoId(res, id);
             break;
         case 'materias':
-            promise = buscarMateria(res, id);
+            promise = buscarMateriaId(res, id);
+            break;
+        case 'calendario':
+            promise = buscarCalendarioId(res, id);
+            break;
         default:
             res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
             break;
@@ -246,7 +251,7 @@ const buscarUsuarioId = (res, id) => {
     return new Promise((resolve, reject) => {
 
         Usuario.findById(id)
-            .populate('proyectos', 'nombre _id')
+            .populate('proyectos', 'nombre _id descripcion img activo')
             .exec((err, usuarioDb) => {
 
                 if (err) {
@@ -299,6 +304,44 @@ const buscarMateriaId = (res, id) => {
                 }
                 resolve(materiaDb)
             })
+    })
+}
+
+
+const buscarProyectoId = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+
+        Proyecto.findById(id)
+            .populate('participantes', 'nombre _id')
+            .populate('administradores', 'nombre _id')
+            .exec((err, proyectoDb) => {
+
+                if (err) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                if (!proyectoDb) {
+                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun proyecto con el id especificado' }))
+                }
+                resolve(proyectoDb)
+            })
+    })
+}
+
+const buscarCalendarioId = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+
+        Calendario.findById(id, (err, calendarioDb) => {
+
+            if (err) {
+                reject(res.status(500).json({ ok: false, mensaje: err }))
+            }
+            if (!calendarioDb) {
+                reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun calendario con el id especificado' }))
+            }
+            resolve(calendarioDb)
+        })
     })
 }
 

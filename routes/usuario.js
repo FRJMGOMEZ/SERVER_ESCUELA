@@ -70,14 +70,11 @@ app.post('/usuario', (req, res) => {
     })
 })
 
-
 app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
 
     let body = req.body;
-
-    console.log(body.email)
 
     Usuario.findById(id, (err, usuario) => {
 
@@ -100,9 +97,7 @@ app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
         if (body.email) {
             usuario.email = body.email
         }
-        if (body.password) {
-            usuario.password = bcrypt.hashSync(body.password, 10)
-        }
+
         if (body.rol) {
             usuario.rol = body.rol
         }
@@ -116,10 +111,7 @@ app.put('/usuario/:id', [verifyToken, verifyRole], (req, res) => {
                 })
             }
 
-            if (!usuarioActualizado) {
-
-                console.log('Porque')
-            }
+            if (!usuarioActualizado) {}
             res.status(200).json({ ok: true, usuarioActualizado })
         })
     })

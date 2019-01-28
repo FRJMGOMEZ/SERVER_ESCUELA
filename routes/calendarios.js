@@ -5,36 +5,70 @@ const { verifyToken } = require('../middlewares/auth');
 
 const app = express()
 
-app.get('/calendario', (req, res) => {
+app.get('/calendarios', (req, res) => {
 
-    Calendario.find({}, (err, calendariosDb) => {
+    Calendario.find({})
+        .populate('monday', 'date _id')
+        .populate('tuesday', 'date _id')
+        .populate('wednesday', 'date _id')
+        .populate('thursday', 'date _id')
+        .populate('friday', 'date _id')
+        .populate('saturday', 'date _id')
+        .populate('sunday', 'date _id')
+        .exec((err, calendariosDb) => {
 
-        if (err) {
+            if (err) {
 
-            res.status(500).json({ ok: false, mensajes: err })
-        }
+                res.status(500).json({ ok: false, mensajes: err })
+            }
 
-        res.status(200).json({ ok: true, calendariosDb })
-    })
+            res.status(200).json({ ok: true, calendariosDb })
+        })
 })
 
 app.post('/calendario', (req, res) => {
 
-    let calendario = new Calendario({})
+    let body = req.body;
+
+    let calendario = new Calendario({
+        monday: body.days[0],
+        tuesday: body.days[1],
+        wednesday: body.days[2],
+        thursday: body.days[3],
+        friday: body.days[4],
+        saturday: body.days[5],
+        sunday: body.days[6]
+    })
+
     calendario.fecha = new Date().toUTCString()
 
-    calendario.save((err, calendarioGuardado) => {
+    calendario.save((err, calendarSaved) => {
 
         if (err) {
 
             res.status(500).json({ ok: false, mensaje: err })
         }
-        res.status(200).json({ ok: true, calendarioGuardado })
+
+        Calendario.findById(calendarSaved._id)
+            .populate('monday', 'date _id')
+            .populate('tuesday', 'date _id')
+            .populate('wednesday', 'date _id')
+            .populate('thursday', 'date _id')
+            .populate('friday', 'date _id')
+            .populate('saturday', 'date _id')
+            .populate('sunday', 'date _id')
+            .exec((err, calendarDb) => {
+
+                if (err) {
+                    res.status(500).json({ ok: false, mensaje: err })
+                }
+                res.status(200).json({ ok: true, calendarSaved: calendarDb })
+            })
     })
 })
 
 
-app.put('/anadirEvento:id', verifyToken, (req, res) => {
+app.put('/addDay/:id', verifyToken, (req, res) => {
 
     let evento = req.body.evento;
     let dia = req.body.dia;
@@ -54,29 +88,29 @@ app.put('/anadirEvento:id', verifyToken, (req, res) => {
         }
         switch (dia) {
             case 'lunes':
-                calendario.lunes.push(evento);
+                calendarioDb.lunes.push(evento);
                 break;
             case 'martes':
-                calendario.martes.push(evento);
+                calendarioDb.martes.push(evento);
                 break;
             case 'miercoles':
-                calendario.miercoles.push(evento);
+                calendarioDb.miercoles.push(evento);
                 break;
             case 'jueves':
-                calendario.jueves.push(evento);
+                calendarioDb.jueves.push(evento);
                 break;
             case 'viernes':
-                calendario.viernes.push(evento);
+                calendarioDb.viernes.push(evento);
                 break;
             case 'sabado':
-                calendario.sabado.push(evento);
+                calendarioDb.sabado.push(evento);
                 break;
             case 'domingo':
-                calendario.domingo.push(evento);
+                calendarioDb.domingo.push(evento);
                 break;
         }
 
-        calendario.save((err, calendarioGuardado) => {
+        calendarioDb.save((err, calendarioGuardado) => {
 
             if (err) {
 
@@ -87,4 +121,53 @@ app.put('/anadirEvento:id', verifyToken, (req, res) => {
         })
     })
 })
+
+app.get('/calendarByDay/:dayId/:dayOfTheWeek', (req, res) => {
+
+    let dayId = req.params.dayId;
+    let dayOfTheWeek = Number(req.params.dayOfTheWeek);
+
+    let request;
+    switch (dayOfTheWeek) {
+        case 1:
+            request = Calendario.find({ monday: dayId })
+            break;
+        case 2:
+            request = Calendario.find({ tuesday: dayId })
+            break;
+        case 3:
+            request = Calendario.find({ wednesday: dayId })
+            break;
+        case 4:
+            request = Calendario.find({ thursday: dayId })
+            break;
+        case 5:
+            request = Calendario.find({ friday: dayId })
+            break;
+        case 6:
+            request = Calendario.find({ saturday: dayId })
+            break;
+        case 0:
+            request = Calendario.find({ sunday: dayId })
+            break;
+    }
+
+    request.exec((err, calendarDb) => {
+
+        if (err) {
+
+            res.status(500).json({ ok: false, message: err })
+        }
+
+        if (!calendarDb) {
+
+            res.status(404).json({ ok: false, message: 'No calendars have been founded' })
+        }
+
+        res.status(200).json({ ok: true, calendar: calendarDb })
+
+    })
+})
+
+
 module.exports = app;

@@ -29,7 +29,7 @@ app.post('/instalacion', verifyToken, (req, res) => {
 
     let body = req.body;
 
-    let instalacion = new Instalacion({ nombre: body.nombre });
+    let instalacion = new Instalacion({ nombre: body.nombre, });
 
     instalacion.save((err, instalacionGuardada) => {
 
@@ -38,7 +38,7 @@ app.post('/instalacion', verifyToken, (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
 
-        res.status(200).json({ ok: false, instalacionGuardada })
+        res.status(200).json({ ok: true, instalacionGuardada })
     })
 })
 

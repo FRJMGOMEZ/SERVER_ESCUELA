@@ -6,6 +6,7 @@ const Materia = require('../models/materia');
 const Ficha = require('../models/ficha');
 const Proyecto = require('../models/proyecto');
 const Calendario = require('../models/calendario');
+const Day = require('../models/day');
 
 ///Ficha y proyecto por populate.
 /// Materia y clase no hace falta hacer buscador. 
@@ -186,6 +187,9 @@ app.get('/searchById/:collection/:id', (req, res) => {
         case 'calendario':
             promise = buscarCalendarioId(res, id);
             break;
+        case 'day':
+            promise = searchDayById(res, id);
+            break;
         default:
             res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
             break;
@@ -332,16 +336,54 @@ const buscarCalendarioId = (res, id) => {
 
     return new Promise((resolve, reject) => {
 
-        Calendario.findById(id, (err, calendarioDb) => {
+        Calendario.findById(id)
+            .populate('monday', 'date _id')
+            .populate('tuesday', 'date _id')
+            .populate('wednesday', 'date _id')
+            .populate('thursday', 'date _id')
+            .populate('friday', 'date _id')
+            .populate('saturday', 'date _id')
+            .populate('sunday', 'date _id')
+            .exec((err, calendarioDb) => {
 
-            if (err) {
-                reject(res.status(500).json({ ok: false, mensaje: err }))
-            }
-            if (!calendarioDb) {
-                reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun calendario con el id especificado' }))
-            }
-            resolve(calendarioDb)
-        })
+                if (err) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                if (!calendarioDb) {
+                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun calendario con el id especificado' }))
+                }
+                resolve(calendarioDb)
+            })
+    })
+}
+
+const searchDayById = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+
+        Day.findById(id)
+            .populate('0')
+            .populate('1')
+            .populate('2')
+            .populate('3')
+            .populate('4')
+            .populate('5')
+            .populate('6')
+            .populate('7')
+            .populate('8')
+            .populate('9')
+            .populate('10')
+            .populate('11')
+            .exec((err, dayDb) => {
+
+                if (err) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                if (!dayDb) {
+                    reject(res.status(404).json({ ok: false, mensaje: 'No day has been found whose ID match with yours' }))
+                }
+                resolve(dayDb)
+            })
     })
 }
 

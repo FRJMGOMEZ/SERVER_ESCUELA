@@ -15,5 +15,6 @@ app.use(require('./search'));
 app.use(require('./mensaje'));
 app.use(require('./eventos'));
 app.use(require('./calendarios'));
+app.use(require('./days'));
 
 module.exports = app;

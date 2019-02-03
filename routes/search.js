@@ -5,7 +5,8 @@ const Profesor = require('../models/profesor');
 const Materia = require('../models/materia');
 const Ficha = require('../models/ficha');
 const Proyecto = require('../models/proyecto');
-const Calendario = require('../models/calendario');
+const Calendario = require('../models/calendar');
+const Evento = require('../models/evento');
 const Day = require('../models/day');
 
 ///Ficha y proyecto por populate.
@@ -189,6 +190,9 @@ app.get('/searchById/:collection/:id', (req, res) => {
             break;
         case 'day':
             promise = searchDayById(res, id);
+            break;
+        case 'event':
+            promise = searchEventById(res, id);
             break;
         default:
             res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
@@ -383,6 +387,27 @@ const searchDayById = (res, id) => {
                     reject(res.status(404).json({ ok: false, mensaje: 'No day has been found whose ID match with yours' }))
                 }
                 resolve(dayDb)
+            })
+    })
+}
+
+const searchEventById = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+
+        Evento.findById(id)
+            .populate('instalacion', 'nombre')
+            .populate('profesores', 'nombre')
+            .populate('materias', 'nombre')
+            .exec((err, eventDb) => {
+
+                if (err) {
+                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                }
+                if (!eventDb) {
+                    reject(res.status(404).json({ ok: false, mensaje: 'No event has been found whose ID match with yours' }))
+                }
+                resolve(eventDb)
             })
     })
 }

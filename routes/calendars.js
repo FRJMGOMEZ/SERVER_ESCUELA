@@ -1,13 +1,12 @@
 const express = require('express');
-const Calendario = require('../models/calendario');
+const Calendar = require('../models/calendar');
 
 const { verifyToken } = require('../middlewares/auth');
 
 const app = express()
 
-app.get('/calendarios', (req, res) => {
-
-    Calendario.find({})
+app.get('/calendars', (req, res) => {
+    Calendar.find({})
         .populate('monday', 'date _id')
         .populate('tuesday', 'date _id')
         .populate('wednesday', 'date _id')
@@ -15,22 +14,19 @@ app.get('/calendarios', (req, res) => {
         .populate('friday', 'date _id')
         .populate('saturday', 'date _id')
         .populate('sunday', 'date _id')
-        .exec((err, calendariosDb) => {
-
+        .exec((err, calendarsDb) => {
             if (err) {
-
-                res.status(500).json({ ok: false, mensajes: err })
+                res.status(500).json({ ok: false, err })
             }
-
-            res.status(200).json({ ok: true, calendariosDb })
+            res.status(200).json({ ok: true, calendarsDb })
         })
 })
 
-app.post('/calendario', (req, res) => {
+app.post('/calendar', (req, res) => {
 
     let body = req.body;
 
-    let calendario = new Calendario({
+    let calendar = new Calendar({
         monday: body.days[0],
         tuesday: body.days[1],
         wednesday: body.days[2],
@@ -39,17 +35,12 @@ app.post('/calendario', (req, res) => {
         saturday: body.days[5],
         sunday: body.days[6]
     })
-
-    calendario.fecha = new Date().toUTCString()
-
-    calendario.save((err, calendarSaved) => {
-
+    calendar.date = new Date();
+    calendar.save((err, calendarSaved) => {
         if (err) {
-
-            res.status(500).json({ ok: false, mensaje: err })
+            res.status(500).json({ ok: false, err })
         }
-
-        Calendario.findById(calendarSaved._id)
+        calendar.populate()
             .populate('monday', 'date _id')
             .populate('tuesday', 'date _id')
             .populate('wednesday', 'date _id')
@@ -58,67 +49,11 @@ app.post('/calendario', (req, res) => {
             .populate('saturday', 'date _id')
             .populate('sunday', 'date _id')
             .exec((err, calendarDb) => {
-
                 if (err) {
-                    res.status(500).json({ ok: false, mensaje: err })
+                    res.status(500).json({ ok: false, err })
                 }
-                res.status(200).json({ ok: true, calendarSaved: calendarDb })
+                res.status(200).json({ ok: true, calendar: calendarDb })
             })
-    })
-})
-
-
-app.put('/addDay/:id', verifyToken, (req, res) => {
-
-    let evento = req.body.evento;
-    let dia = req.body.dia;
-
-    let id = req.params.id;
-
-    Calendario.findById(id, (err, calendarioDb) => {
-
-        if (err) {
-
-            res.status(500).json({ ok: false, mensaje: err })
-        }
-
-        if (!calendarioDb) {
-
-            res.status(404).json({ ok: false, mensaje: 'No se encontraron calendario con el id especificado' })
-        }
-        switch (dia) {
-            case 'lunes':
-                calendarioDb.lunes.push(evento);
-                break;
-            case 'martes':
-                calendarioDb.martes.push(evento);
-                break;
-            case 'miercoles':
-                calendarioDb.miercoles.push(evento);
-                break;
-            case 'jueves':
-                calendarioDb.jueves.push(evento);
-                break;
-            case 'viernes':
-                calendarioDb.viernes.push(evento);
-                break;
-            case 'sabado':
-                calendarioDb.sabado.push(evento);
-                break;
-            case 'domingo':
-                calendarioDb.domingo.push(evento);
-                break;
-        }
-
-        calendarioDb.save((err, calendarioGuardado) => {
-
-            if (err) {
-
-                res.status(500).json({ ok: false, mensaje: err })
-            }
-
-            res.status(200).json({ ok: true, calendarioGuardado })
-        })
     })
 })
 
@@ -151,21 +86,16 @@ app.get('/calendarByDay/:dayId/:dayOfTheWeek', (req, res) => {
             request = Calendario.find({ sunday: dayId })
             break;
     }
-
     request.exec((err, calendarDb) => {
-
         if (err) {
 
-            res.status(500).json({ ok: false, message: err })
+            res.status(500).json({ ok: false, err })
         }
-
         if (!calendarDb) {
 
             res.status(404).json({ ok: false, message: 'No calendars have been founded' })
         }
-
         res.status(200).json({ ok: true, calendar: calendarDb })
-
     })
 })
 

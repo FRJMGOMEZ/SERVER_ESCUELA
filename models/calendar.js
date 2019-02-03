@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const calendarioSchema = new Schema({
+const calendarSchema = new Schema({
     monday: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
     tuesday: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
     wednesday: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
@@ -13,4 +13,4 @@ const calendarioSchema = new Schema({
     date: { type: Date }
 });
 
-module.exports = mongoose.model('Calendario', calendarioSchema);
+module.exports = mongoose.model('Calendar', calendarSchema);

@@ -1,34 +1,20 @@
 const { io } = require('../app');
 
-const Users = require('../classes/users');
-
-const Mensaje = require('../models/mensaje');
-
-const users = new Users()
-
-const { crearMensaje } = require('../pluggins/crearMensaje');
-
+const Message = require('../models/message');
 
 io.on('connection', (client) => {
 
-    client.on('mensaje', async(mensaje) => {
-
-        Mensaje.findById(mensaje._id)
-            .populate('usuario', 'nombre _id')
-            .exec((err, mensajeDb) => {
-
+    client.on('message', async(message) => {
+        Message.findById(message._id)
+            .populate('user', 'name _id')
+            .exec((err, messageDb) => {
                 if (err) {
-
                     console.log('error')
                 } else {
-
-                    io.emit('mensaje', mensajeDb)
+                    io.emit('message', messageDb)
                 }
             })
     })
-
-    client.on('disconnect', async() => {
-
-    })
+    client.on('disconnect', async() => {})
 
 })

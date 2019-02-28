@@ -1,26 +1,21 @@
 const express = require('express');
-const Alumno = require('../models/alumno');
-const Usuario = require('../models/usuario');
-const Profesor = require('../models/profesor');
-const Materia = require('../models/materia');
-const Ficha = require('../models/ficha');
-const Proyecto = require('../models/proyecto');
-const Calendario = require('../models/calendar');
-const Evento = require('../models/evento');
+const Alumni = require('../models/alumni');
+const User = require('../models/user');
+const Professor = require('../models/professor');
+const Subject = require('../models/subject');
+const Indexcard = require('../models/indexcard');
+const Project = require('../models/project');
+const Week = require('../models/week');
+const Event = require('../models/event');
 const Day = require('../models/day');
-
-///Ficha y proyecto por populate.
-/// Materia y clase no hace falta hacer buscador. 
+const Facilitie = require('../models/facilitie');
 
 const app = express()
 
 app.get('/search/:collection/:search', (req, res) => {
 
-    let desde = req.query.desde;
-    desde = Number(desde)
-    let limite = req.query.limite || 10;
-    limite = Number(limite)
-
+    let from = Number(req.query.from);
+    let limit = Number(req.query.limit) || 5;
     let collection = req.params.collection;
     let search = req.params.search;
 
@@ -29,132 +24,112 @@ app.get('/search/:collection/:search', (req, res) => {
     let promise;
 
     switch (collection) {
-        case 'alumnos':
-            promise = buscarAlumnos(res, regExp, desde, limite);
+        case 'alumnis':
+            promise = searchAlumnis(res, regExp, from, limit);
             break;
-        case 'profesores':
-            promise = buscarProfesores(res, regExp, desde, limite);
+        case 'professors':
+            promise = searchProfessors(res, regExp, from, limit);
             break;
-        case 'usuarios':
-            promise = buscarUsuarios(res, regExp, desde, limite);
-            break;
-        case 'materias':
-            promise = buscarMaterias(res, regExp), desde, limite;
+        case 'users':
+            promise = searchUsers(res, regExp, from, limit);
             break;
         default:
-            res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
+            res.status(404).json({ ok: false, message: 'The collection required does not exist' });
             break;
     }
 
     promise.then((response) => {
-
-        res.status(200).json({
-            ok: true,
-            [collection]: response
+        countItems(collection).then((count) => {
+            res.status(200).json({
+                ok: true,
+                [collection]: response,
+                count
+            })
         })
     })
+
+
 })
 
-
-const buscarAlumnos = (res, regExp, desde, limite) => {
-
-    return new Promise((resolve, reject) => {
-
-        Alumno.find({ nombre: regExp })
-            .skip(desde)
-            .limit(limite)
-            .populate('materias', 'nombre _id')
-            .exec((err, alumnosDb) => {
-
-                if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
-                }
-
-                if (!alumnosDb) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron alumnos con el nombre especificado' }))
-                }
-
-                resolve(alumnosDb)
-            })
-    })
-}
-
-const buscarProfesores = (res, regExp, desde, limite) => {
+const countItems = (collection) => {
 
     return new Promise((resolve, reject) => {
-
-        Profesor.find({ nombre: regExp })
-            .skip(desde)
-            .limit(limite)
-            .populate('materias', 'nombre _id')
-            .exec((err, profesoresDb) => {
-
-                if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
-                }
-
-                if (!profesoresDb) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron profesores con el nombre especificado' }))
-                }
-
-                resolve(profesoresDb)
-            })
-
-    })
-
-
-}
-const buscarUsuarios = (res, regExp, desde, limite) => {
-
-    return new Promise((resolve, reject) => {
-
-        Usuario.find({ nombre: regExp }, (err, usuariosDb) => {
-
+        let request;
+        switch (collection) {
+            case 'alumnis':
+                request = Alumni;
+                break;
+            case 'professors':
+                request = Professor;
+                break;
+            case 'users':
+                request = User;
+                break;
+        }
+        request.count((err, count) => {
             if (err) {
-
-                reject(res.status(500).json({ ok: false, mensaje: err }))
+                reject(res.status(500).json({ ok: false, err }))
             }
-
-            if (!usuariosDb) {
-
-                reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron usuarios con el nombre especificado' }))
-            }
-
-            resolve(usuariosDb)
+            resolve(count)
         })
     })
 }
 
-const buscarMaterias = (res, regExp, desde, limite) => {
+
+const searchAlumnis = (res, regExp, from, limit) => {
 
     return new Promise((resolve, reject) => {
-
-        Materia.find({ nombre: regExp })
-            .skip(desde)
-            .limit(limite)
-            .populate('profesores', 'nombre _Id')
-            .populate('alumnos', 'nombre _id')
-            .exec((err, materiasDb) => {
-
+        Alumni.find({ name: regExp })
+            .skip(from)
+            .limit(limit)
+            .populate('subjects', 'name _id')
+            .exec((err, alumnisDb) => {
                 if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-
-                if (!materiasDb) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron materias con el nombre especificado' }))
+                if (!alumnisDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
                 }
-
-                resolve(materiasDb)
+                resolve(alumnisDb)
             })
     })
 }
 
+const searchProfessors = (res, regExp, from, limit) => {
+
+    return new Promise((resolve, reject) => {
+        Professor.find({ name: regExp })
+            .skip(from)
+            .limit(limit)
+            .populate('subjects', 'name _id')
+            .exec((err, professorsDb) => {
+                if (err) {
+                    reject(res.status(500).json({ ok: false, err }))
+                }
+                if (!professorsDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no professors with the ID provided' }))
+                }
+                resolve(professorsDb)
+            })
+    })
+}
+const searchUsers = (res, regExp, from, limit) => {
+
+    return new Promise((resolve, reject) => {
+        User.find({ name: regExp })
+            .skip(from)
+            .limit(limit)
+            .exec((err, usersDb) => {
+                if (err) {
+                    reject(res.status(500).json({ ok: false, err }))
+                }
+                if (!usersDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no professors with the ID provided' }))
+                }
+                resolve(usersDb)
+            })
+    })
+}
 
 
 app.get('/searchById/:collection/:id', (req, res) => {
@@ -163,30 +138,27 @@ app.get('/searchById/:collection/:id', (req, res) => {
     let id = req.params.id;
 
     let promise;
-
-
-    ////// Faltan las materias y clases 
     switch (collection) {
-        case 'alumnos':
-            promise = buscarAlumnoId(res, id);
+        case 'alumni':
+            promise = searchAlumniById(res, id);
             break;
-        case 'profesores':
-            promise = buscarProfesorId(res, id);
+        case 'professor':
+            promise = searchProfessorById(res, id);
             break;
-        case 'usuarios':
-            promise = buscarUsuarioId(res, id);
+        case 'user':
+            promise = searchUserById(res, id);
             break;
-        case 'fichas':
-            promise = buscarFichaId(res, id);
+        case 'indexcard':
+            promise = searchIndexcardById(res, id);
             break;
-        case 'proyecto':
-            promise = buscarProyectoId(res, id);
+        case 'project':
+            promise = searchProjectById(res, id);
             break;
-        case 'materias':
-            promise = buscarMateriaId(res, id);
+        case 'subject':
+            promise = searchSubjectById(res, id);
             break;
-        case 'calendario':
-            promise = buscarCalendarioId(res, id);
+        case 'week':
+            promise = searchWeekById(res, id);
             break;
         case 'day':
             promise = searchDayById(res, id);
@@ -194,169 +166,136 @@ app.get('/searchById/:collection/:id', (req, res) => {
         case 'event':
             promise = searchEventById(res, id);
             break;
+        case 'facilitie':
+            promise = searchFacilitieById(res, id);
+            break;
         default:
-            res.status(404).json({ ok: false, mensaje: 'No existe la colección requerida' });
+            res.status(404).json({ ok: false, mensaje: 'The collection searched does not exist' });
             break;
     }
-
     promise.then((response) => {
-
         res.status(200).json({
             [collection]: response
         })
     })
 })
 
-const buscarAlumnoId = (res, id) => {
-
+const searchAlumniById = (res, id) => {
     return new Promise((resolve, reject) => {
-
-        Alumno.findById(id)
-            .populate('materias', 'nombre')
-            .exec((err, alumnoDb) => {
-
+        Alumni.findById(id)
+            .populate('subjects', 'name')
+            .exec((err, alumniDb) => {
                 if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-
-                if (!alumnoDb) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron alumnos con el id especificado' }))
+                if (!alumniDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
                 }
-
-                resolve(alumnoDb)
+                resolve(alumniDb)
             })
     })
 }
 
-const buscarProfesorId = (res, id) => {
+const searchProfessorById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Profesor.findById(id, (err, profesorDb) => {
-
+        Professor.findById(id, (err, professorDb) => {
             if (err) {
-
-                reject(res.status(500).json({ ok: false, mensaje: err }))
+                reject(res.status(500).json({ ok: false, err }))
             }
-
-
-            if (!profesorDb) {
-
-                reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron profesores con el id especificado' }))
+            if (!professorDb) {
+                reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
             }
-
-            resolve(profesorDb)
+            resolve(professorDb)
         })
-
     })
-
-
 }
-const buscarUsuarioId = (res, id) => {
+const searchUserById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Usuario.findById(id)
-            .populate('proyectos', 'nombre _id descripcion img activo')
-            .exec((err, usuarioDb) => {
-
+        User.findById(id)
+            .populate('projects', 'name _id description img active')
+            .exec((err, userDb) => {
                 if (err) {
-
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-
-                if (!usuarioDb) {
-
-                    reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron usuarios con el id especificado' }))
+                if (!userDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no users with the ID provided' }))
                 }
-
-                resolve(usuarioDb)
+                resolve(userDb)
             })
     })
 }
 
-const buscarFichaId = (res, id) => {
+const searchIndexcardById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Ficha.findById(id, (err, fichaDb) => {
-
+        Indexcard.findById(id, (err, indexcardDb) => {
             if (err) {
-                reject(res.status(500).json({ ok: false, mensaje: err }))
+                reject(res.status(500).json({ ok: false, err }))
             }
-            if (!fichaDb) {
-                reject(res.status(404).json({ ok: false, mensaje: 'No se encontraron fichas con el id especificado' }))
+            if (!indexcardDb) {
+                reject(res.status(404).json({ ok: false, message: 'There are no indexcards with the ID provided' }))
             }
-
-            resolve(fichaDb)
-
+            resolve(indexcardDb)
         })
     })
 }
 
 
-const buscarMateriaId = (res, id) => {
+const searchSubjectById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Materia.findById(id)
-            .exec((err, materiaDb) => {
-
+        Subject.findById(id)
+            .exec((err, subjectDb) => {
                 if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-                if (!materiaDb) {
-                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ninguna materia con el id especificado' }))
+                if (!subjectDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no subjects with the ID provided' }))
                 }
-                resolve(materiaDb)
+                resolve(subjectDb)
             })
     })
 }
 
 
-const buscarProyectoId = (res, id) => {
+const searchProjectById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Proyecto.findById(id)
-            .populate('participantes', 'nombre _id')
-            .populate('administradores', 'nombre _id')
-            .exec((err, proyectoDb) => {
-
+        Project.findById(id)
+            .populate('participants', 'name _id')
+            .populate('administrators', 'name _id')
+            .exec((err, projectDb) => {
                 if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-                if (!proyectoDb) {
-                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun proyecto con el id especificado' }))
+                if (!projectDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' }))
                 }
-                resolve(proyectoDb)
+                resolve(projectDb)
             })
     })
 }
 
-const buscarCalendarioId = (res, id) => {
+const searchWeekById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-
-        Calendario.findById(id)
+        Week.findById(id)
             .populate('monday', 'date _id')
             .populate('tuesday', 'date _id')
             .populate('wednesday', 'date _id')
             .populate('thursday', 'date _id')
             .populate('friday', 'date _id')
             .populate('saturday', 'date _id')
-            .populate('sunday', 'date _id')
-            .exec((err, calendarioDb) => {
-
+            .populate('sunday', 'date _id').exec((err, weekDb) => {
                 if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
-                if (!calendarioDb) {
-                    reject(res.status(404).json({ ok: false, mensaje: 'No existe ningun calendario con el id especificado' }))
+                if (!weekDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no weeks with the ID provided' }))
                 }
-                resolve(calendarioDb)
+                resolve(weekDb)
             })
     })
 }
@@ -366,25 +305,24 @@ const searchDayById = (res, id) => {
     return new Promise((resolve, reject) => {
 
         Day.findById(id)
-            .populate('0')
-            .populate('1')
-            .populate('2')
-            .populate('3')
-            .populate('4')
-            .populate('5')
-            .populate('6')
-            .populate('7')
-            .populate('8')
-            .populate('9')
-            .populate('10')
-            .populate('11')
+            .populate('hour0')
+            .populate('hour1')
+            .populate('hour2')
+            .populate('hour3')
+            .populate('hour4')
+            .populate('hour5')
+            .populate('hour6')
+            .populate('hour7')
+            .populate('hour8')
+            .populate('hour9')
+            .populate('hour10')
+            .populate('hour11')
             .exec((err, dayDb) => {
-
                 if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
                 if (!dayDb) {
-                    reject(res.status(404).json({ ok: false, mensaje: 'No day has been found whose ID match with yours' }))
+                    reject(res.status(404).json({ ok: false, message: 'There are no days with the ID provided' }))
                 }
                 resolve(dayDb)
             })
@@ -395,20 +333,33 @@ const searchEventById = (res, id) => {
 
     return new Promise((resolve, reject) => {
 
-        Evento.findById(id)
-            .populate('instalacion', 'nombre')
-            .populate('profesores', 'nombre')
-            .populate('materias', 'nombre')
+        Event.findById(id)
+            .populate('facilitie', 'name _id')
             .exec((err, eventDb) => {
-
                 if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
+                    reject(res.status(500).json({ ok: false, err }))
                 }
                 if (!eventDb) {
-                    reject(res.status(404).json({ ok: false, mensaje: 'No event has been found whose ID match with yours' }))
+                    reject(res.status(404).json({ ok: false, message: 'There are no events with the ID provided' }))
                 }
                 resolve(eventDb)
             })
+    })
+}
+
+
+const searchFacilitieById = (res, id) => {
+
+    return new Promise((resolve, reject) => {
+        Facilitie.findById(id, (err, facilitieDb) => {
+            if (err) {
+                reject(res.status(500).json({ ok: false, err }))
+            }
+            if (!facilitieDb) {
+                reject(res.status(404).json({ ok: false, message: 'There are no facilities with the ID provided' }))
+            }
+            resolve(facilitieDb)
+        })
     })
 }
 

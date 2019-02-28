@@ -7,7 +7,7 @@ const validRoles = {
     message: '{VALUE} is not a valid role'
 };
 
-const indexCardSchema = new Schema({
+const indexcardSchema = new Schema({
     name: { type: String, required: [true, 'name is required'] },
     surname: { type: String, required: false },
     email: { type: String, required: false },
@@ -17,8 +17,9 @@ const indexCardSchema = new Schema({
     status: { type: Boolean, default: true },
     img: { type: String, required: false, default: undefined },
     role: { type: String, required: true, enum: validRoles }
-}, { collection: 'IndexCards' });
+});
 
-indexCardSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })
+indexcardSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })
 
-module.exports = mongoose.model('IndexCard', indexCardSchema);
+
+module.exports = mongoose.model('Indexcard', indexcardSchema);

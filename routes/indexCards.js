@@ -1,6 +1,6 @@
 const express = require('express');
 
-const IndexCard = require('../models/indexCard');
+const Indexcard = require('../models/indexcard');
 const Alumni = require('../models/alumni');
 const Professor = require('../models/professor');
 
@@ -8,63 +8,62 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/indexCards', [verifyToken, verifyRole], (req, res) => {
+app.get('/indexcards', [verifyToken, verifyRole], (req, res) => {
 
     let from = req.query.from;
     let limit = req.query.limit;
 
-    IndexCard.find({})
+    Indexcard.find({})
         .skip(from)
         .limit(limit)
-        .exec((err, indexCardsDb) => {
+        .exec((err, indexcardsDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
-            if (!IndexCardsDb) {
-                return res.status(404).json({ ok: false, mensaje: 'There are no indexCards with the ID provided' })
+            if (!indexcardsDb) {
+                return res.status(404).json({ ok: false, mensaje: 'There are no indexcards with the ID provided' })
             }
-            res.status(200).json({ ok: true, indexCardsDb })
+            res.status(200).json({ ok: true, indexcardsDb })
         })
 })
 
-app.post('/indexCard', [verifyToken, verifyRole], (req, res) => {
+app.post('/indexcard', [verifyToken, verifyRole], (req, res) => {
 
-    let personId = req.query.id;
     let body = req.body;
 
-    IndexCard.findOne({ name: body.name }, (err, indexCardDb) => {
+    Indexcard.findOne({ name: body.name }, (err, indexcardDb) => {
         if (err) {
             return res.status(500).json({ ok: false, mensaje: err })
         }
-        if (indexCardDb) {
+        if (indexcardDb) {
             Promise.all([
-                checkProfessor(res, personId),
-                checkAlumni(res, personId)
+                checkProfessor(res, indexcardDb.name),
+                checkAlumni(res, indexcardDb.name)
             ]).then(responses => {
-                let professor = responses[0];
-                let alumni = responses[1];
-                if (alumni) {
-                    Alumni.updateOne({ id }, { indexCard: indexCardDb._id })
+                let professorId = responses[0];
+                let alumniId = responses[1];
+                if (alumniId) {
+                    Alumni.updateOne({ id: alumniId }, { indexcard: indexcardDb._id })
                         .exec((err, alumniUpdated) => {
                             if (err) {
                                 return res.status(500).json({ ok: false, err })
                             }
-                            res.status(200).json({ ok: true, indexCard: IndexCardDb, alumni: alumniUpdated.name })
+                            res.status(200).json({ ok: true, indexcard: indexcardDb, alumni: alumniUpdated.name })
                         })
-                } else if (professor) {
-                    Professor.updateOne({ id }, { indexCard: indexCardDb._id })
+                } else if (professorId) {
+                    Professor.updateOne({ id: professorId }, { indexcard: indexcardDb._id })
                         .exec((err, professorUpdated) => {
                             if (err) {
                                 return res.status(500).json({ ok: false, err })
                             }
-                            res.status(200).json({ ok: true, indexCard: IndexCardDb, professor: professorUpdated.name })
+                            res.status(200).json({ ok: true, indexcard: indexcardDb, professor: professorUpdated.name })
                         })
                 } else {
-                    res.status(404).json({ ok: false, message: 'There are no previous professor/alumni record' })
+                    res.status(200).json({ ok: true, indexcard: indexcardDb })
                 }
             })
         } else {
-            let indexCard = new IndexCard({
+            let indexcard = new Indexcard({
                 role: body.role,
                 name: body.name,
                 surname: body.surname,
@@ -73,35 +72,34 @@ app.post('/indexCard', [verifyToken, verifyRole], (req, res) => {
                 home: body.home,
                 address: body.address,
             })
-            indexCard.save((err, IndexCardDb) => {
+            indexcard.save((err, indexcardDb) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
                 Promise.all([
-                    checkProfessor(res, personId),
-                    checkAlumni(res, personId)
+                    checkProfessor(res, indexcardDb.name),
+                    checkAlumni(res, indexcardDb.name)
                 ]).then(responses => {
-                    let professor = responses[0];
-                    let alumni = responses[1];
-
-                    if (alumni) {
-                        Alumni.updateOne({ id }, { indexCard: indexCardDb._id })
+                    let professorId = responses[0];
+                    let alumniId = responses[1];
+                    if (alumniId) {
+                        Alumni.updateOne({ id: alumniId }, { indexcard: indexcardDb._id })
                             .exec((err, alumniUpdated) => {
                                 if (err) {
                                     return res.status(500).json({ ok: false, err })
                                 }
-                                res.status(200).json({ ok: true, indexCard: IndexCardDb, alumni: alumniUpdated.name })
+                                res.status(200).json({ ok: true, indexcard: indexcardDb, alumni: alumniUpdated.name })
                             })
-                    } else if (professor) {
-                        Professor.updateOne({ id }, { indexCard: indexCardDb._id })
+                    } else if (professorId) {
+                        Professor.updateOne({ id: professorId }, { indexcard: indexcardDb._id })
                             .exec((err, professorUpdated) => {
                                 if (err) {
                                     return res.status(500).json({ ok: false, err })
                                 }
-                                res.status(200).json({ ok: true, indexCard: IndexCardDb, professor: professorUpdated.name })
+                                res.status(200).json({ ok: true, indexcard: indexcardDb, professor: professorUpdated.name })
                             })
                     } else {
-                        res.status(404).json({ ok: false, message: 'There are no previous professor/alumni record' })
+                        res.status(200).json({ ok: true, indexcard: indexcardDb })
                     }
                 })
             })
@@ -111,57 +109,57 @@ app.post('/indexCard', [verifyToken, verifyRole], (req, res) => {
 
 
 
-app.put('/indexCard/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let id = req.params.id;
 
-    IndexCard.findById(id, (err, indexCardDb) => {
+    Indexcard.findById(id, (err, indexcardDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        if (!indexCardDb) {
-            return res.status(404).json({ ok: false, menssage: `There are no IndexCards with the id:${id}` })
+        if (!indexcardDb) {
+            return res.status(404).json({ ok: false, menssage: `There are no indexcards with the id:${id}` })
         }
-        let previousName = indexCardDb.name;
-        indexCardDb.name = body.name
-        indexCardDb.surname = body.surname
-        IndexCardDb.email = body.email
-        IndexCardDb.mobile = body.mobile
-        IndexCardDb.home = body.home
-        IndexCardDb.address = body.address
+        let previousName = indexcardDb.name;
+        indexcardDb.name = body.name
+        indexcardDb.surname = body.surname
+        indexcardDb.email = body.email
+        indexcardDb.mobile = body.mobile
+        indexcardDb.home = body.home
+        indexcardDb.address = body.address
 
-        IndexCardDb.save((err, indexCardUpdated) => {
+        indexcardDb.save((err, indexcardUpdated) => {
             if (err) {
                 return res.status(500).json({ ok: false, mensaje: err })
             }
-            if (previousName != indexCardUpdated.name) {
+            if (previousName != indexcardUpdated.name) {
                 let request;
-                switch (indexCardUpdated.role) {
+                switch (indexcardUpdated.role) {
                     case 'ALUMNI':
-                        request = Alumni.updateOne({ name: previousName }, { name: indexCardUpdated.name })
+                        request = Alumni.findOneAndUpdate({ name: previousName }, { name: indexcardUpdated.name }, { upsert: true, new: true })
                         break;
                     case 'PROFESSOR':
-                        request = Professor.updateOne({ name: previousName }, { name: IndexCardUpdated.name })
+                        request = Professor.findOneAndUpdate({ name: previousName }, { name: indexcardUpdated.name }, { upsert: true, new: true })
                         break;
                 }
-                request.exec((err, item) => {
+                request.exec((err, itemUpdated) => {
                     if (err) {
                         return res.status(500).json({ ok: false, err })
                     }
-                    res.status(200).json({ ok: true, indexCard: IndexCardUpdated })
+                    res.status(200).json({ ok: true, indexcard: indexcardUpdated, item: itemUpdated })
                 })
             } else {
-                res.status(200).json({ ok: true, indexCard: IndexCardUpdated })
+                res.status(200).json({ ok: true, indexcard: indexcardUpdated })
             }
         })
     })
 })
 
-let checkProfessor = (res, id) => {
+let checkProfessor = (res, name) => {
     return new Promise((resolve, reject) => {
-        if (id) {
-            Professor.findById(id, (err, professorDb) => {
+        if (name) {
+            Professor.find({ name: name }, (err, professorDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
@@ -173,10 +171,10 @@ let checkProfessor = (res, id) => {
     })
 }
 
-let checkAlumni = (res, id) => {
+let checkAlumni = (res, name) => {
     return new Promise((resolve, reject) => {
-        if (id) {
-            Alumni.findById(id, (err, alumniDb) => {
+        if (name) {
+            Alumni.find({ name: name }, (err, alumniDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }

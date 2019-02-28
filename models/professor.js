@@ -6,7 +6,7 @@ const professorSchema = new Schema({
     name: { type: String, unique: true, required: true },
     img: { type: String, required: false },
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
-    indexCard: { type: mongoose.Schema.Types.ObjectId, ref: 'IndexCard' },
+    indexcard: { type: mongoose.Schema.Types.ObjectId, ref: 'IndexCard' },
 }, { collection: 'professors' });
 
 professorSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })

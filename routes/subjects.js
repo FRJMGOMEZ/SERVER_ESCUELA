@@ -14,6 +14,8 @@ app.get('/subject', [verifyToken], (req, res) => {
     Subject.find({})
         .skip(from)
         .limit(limit)
+        .populate('alumnis', 'name _id')
+        .populate('professors', 'name _id')
         .exec((err, subjectsDb) => {
             if (err) {
                 return res.status(500).json({
@@ -27,9 +29,18 @@ app.get('/subject', [verifyToken], (req, res) => {
                     message: 'There are no subject in DB'
                 })
             }
-            res.status(200).json({
-                ok: true,
-                subjects: subjectsDb
+            Subject.count((err, count) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    })
+                }
+                res.status(200).json({
+                    ok: true,
+                    subjects: subjectsDb,
+                    count
+                })
             })
         })
 })
@@ -57,22 +68,25 @@ app.put('/subject/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
     let body = req.body;
 
-    Subject.findByIdAndUpdate(id, { name: body.name }, (err, subjectDb) => {
-        if (err) {
-            return res.status(500).json({ ok: false, err })
-        }
-        if (!subjectDb) {
-            return res.status(404).json({ ok: false, mensaje: 'There are no subjects with the ID provided' })
-        }
-        res.status(200).json({ ok: true, subject: subjectDb })
-    })
+    Subject.findByIdAndUpdate(id, { name: body.name }, { new: true })
+        .populate('alumnis', 'name _id')
+        .populate('professors', 'name _id')
+        .exec((err, subjectDb) => {
+            if (err) {
+                return res.status(500).json({ ok: false, err })
+            }
+            if (!subjectDb) {
+                return res.status(404).json({ ok: false, mensaje: 'There are no subjects with the ID provided' })
+            }
+            res.status(200).json({ ok: true, subject: subjectDb })
+        })
 
 })
 
 app.delete('/subject/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-    subject.findByIdAndDelete(id, (err, subjectDeleted) => {
+    Subject.findByIdAndDelete(id, (err, subjectDeleted) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
@@ -84,7 +98,7 @@ app.delete('/subject/:id', [verifyToken, verifyRole], (req, res) => {
                 if (err) {
                     return res.status(500).json({ ok: false, mensaje: err })
                 }
-                Alumni.update({}, { $pull: { subjects: subjectDeletedId } })
+                Alumni.update({}, { $pull: { subjects: subjectDeleted._id } })
                     .exec((err, alumniUpdated) => {
                         if (err) {
                             return res.status(500).json({ ok: false, mensaje: err })
@@ -98,7 +112,7 @@ app.delete('/subject/:id', [verifyToken, verifyRole], (req, res) => {
 app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-    let alumniId = req.body.alumni;
+    let alumniId = req.body.alumniId;
 
     Subject.findById(id, (err, subjectDb) => {
         if (err) {
@@ -122,9 +136,12 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                updateAlumni(res, subjectUpdated._id, alumniId).then(() => {
-                    res.status(200).json({ ok: true })
-                })
+                subjectDb.populate('alumnis', `name _id`)
+                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                        updateAlumni(res, subjectUpdated._id, alumniId).then((response) => {
+                            res.status(200).json({ ok: true, subject: subjectUpdated, alumni: response.alumni })
+                        })
+                    })
             })
         } else {
             subjectDb.alumnis = subjectDb.alumnis.filter((alumni) => { return alumni != alumniId })
@@ -135,9 +152,13 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                updateAlumni(res, subjectUpdated._id, alumniId).then(() => {
-                    res.status(200).json({ ok: true })
-                })
+                subjectDb.populate('alumnis', `name _id`)
+                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                        updateAlumni(res, subjectUpdated._id, alumniId).then((response) => {
+                            res.status(200).json({ ok: true, subject: subjectUpdated, alumni: response.alumni })
+                        })
+
+                    })
             })
         }
     })
@@ -146,7 +167,7 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
 app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-    let professorId = req.body.professor;
+    let professorId = req.body.professorId;
 
     Subject.findById(id, (err, subjectDb) => {
         if (err) {
@@ -170,9 +191,12 @@ app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                updateProfessor(res, subjectUpdated._id, professorId).then(() => {
-                    res.status(200).json({ ok: true })
-                })
+                subjectDb.populate('alumnis', `name _id`)
+                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                        updateProfessor(res, subjectUpdated._id, professorId).then((response) => {
+                            res.status(200).json({ ok: true, subject: subjectUpdated, professor: response.professor })
+                        })
+                    })
             })
         } else {
             subjectDb.professors = subjectDb.professors.filter((professor) => { return professor._id != professorId })
@@ -183,9 +207,12 @@ app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                updateProfessor(res, subjectUpdated._id, ProfessorId).then(() => {
-                    res.status(200).json({ ok: true })
-                })
+                subjectDb.populate('alumnis', `name _id`)
+                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                        updateProfessor(res, subjectUpdated._id, professorId).then((response) => {
+                            res.status(200).json({ ok: true, subject: subjectUpdated, professor: response.professor })
+                        })
+                    })
             })
         }
     })
@@ -209,7 +236,10 @@ let updateAlumni = (res, subjectId, alumniId) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
-                resolve()
+                alumniDb.populate({ path: 'subjects', select: 'name _id' }, (err, alumni) => {
+
+                    resolve({ alumni })
+                })
             })
         })
     })
@@ -234,7 +264,11 @@ let updateProfessor = (res, subjectId, idProfessor) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
-                resolve()
+
+                professorDb.populate({ path: 'subjects', select: 'name _id' }, (err, professor) => {
+
+                    resolve({ professor })
+                })
             })
         })
     })

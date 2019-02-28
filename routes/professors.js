@@ -2,7 +2,7 @@ const express = require('express');
 
 const Professor = require('../models/professor');
 const Subject = require('../models/subject');
-const IndexCard = require('../models/indexCard');
+const IndexCard = require('../models/indexcard');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -10,8 +10,8 @@ const app = express();
 
 app.get('/professor', verifyToken, (req, res) => {
 
-    let from = Number(req.query.desde) || 0;
-    let limit = Number(req.query.limite) || 5;
+    let from = Number(req.query.from) || 0;
+    let limit = Number(req.query.limit) || 5;
 
     Professor.find({})
         .populate('subjects', 'name _id')
@@ -30,9 +30,18 @@ app.get('/professor', verifyToken, (req, res) => {
                     message: 'There are no professors in the DB'
                 })
             }
-            res.status(200).json({
-                ok: true,
-                professors: professorsDb
+            Professor.count((err, count) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    })
+                }
+                res.status(200).json({
+                    ok: true,
+                    professors: professorsDb,
+                    count
+                })
             })
         })
 })
@@ -41,7 +50,8 @@ app.post('/professor', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let professor = new Professor({
-        name: body.name
+        name: body.name,
+        indexcard: body.indexcard
     })
     professor.save((err, professorSaved) => {
         if (err) {
@@ -131,7 +141,7 @@ app.delete('/professor/:id', [verifyToken, verifyRole], (req, res) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                res.status(200).json({ ok: true })
+                res.status(200).json({ ok: true, professor: professorDeleted })
             })
     })
 })

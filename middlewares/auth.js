@@ -1,76 +1,65 @@
 const jwt = require('jsonwebtoken');
-const Usuario = require('../models/usuario');
+const User = require('../models/user');
 
-/////////////// VERIFICANDO TOKEN ////////////////
+/////////////// VERIFYING TOKEN ////////////////
 
 let verifyToken = (req, res, next) => {
 
         let token = req.get('token');
-
-        jwt.verify(token, process.env.SEED, (error, usuarioDecoded) => {
-
+        jwt.verify(token, process.env.SEED, (error, userDecoded) => {
             if (error) {
                 return res.status(401).json({
                     ok: false,
-                    error: 'Token no válido'
+                    error
                 })
             }
-            req.usuario = usuarioDecoded;
+            req.user = userDecoded;
             next()
         })
 
     }
-    ///////////////// VERIFICANDO ADMIN ROLE ///////////////
+    ///////////////// VERIFYING ADMIN ROLE ///////////////
 
 let verifyRole = (req, res, next) => {
 
-    if (req.usuario.usuarioDb.rol != 'ADMIN_ROLE') {
-
-        if (req.params.id === req.usuario.usuarioDb._id) {
-
+    if (req.user.userDb.role != 'ADMIN_ROLE') {
+        if (req.params.id === req.user.userDb._id) {
             next();
             return
         }
-
         return res.status(401).json({
             ok: false,
-            error: 'Usuario no autorizado. Póngase en contacto con el admnistrador del sistema'
+            error: 'Access forbidden for this user. Talk to the admnistrator of the program to get access'
         })
     }
     next()
 }
 
-/////////////// VERIFICANDO STATUS DEL USUARIO ///////////////
+/////////////// VERIFYING USER STATUS ///////////////
 
 let verifyStatus = (req, res, next) => {
 
     let body = req.body;
-
-    Usuario.findOne({ email: body.email }, (error, usuario) => {
-
+    User.findOne({ email: body.email }, (error, user) => {
         if (error) {
             res.status(400).json({
                 ok: false,
-                mensaje: error
+                error
             })
         }
-        if (!usuario) {
+        if (!user) {
             return res.status(500).json({
                 ok: false,
-                message: 'No existe ningun usuario'
+                message: 'There are no user with the ID provided'
             })
         }
-
-        if (usuario.estado === true) {
-
-            req.usuario = usuario;
-
+        if (user.status === true) {
+            req.user = user;
             next()
-
         } else {
             res.status(401).json({
                 ok: false,
-                mensaje: `El usuario ${usuario.nombre} no esta habilitado. Póngase en contacto con el admnistrador del sistema`
+                message: `User ${user.name} is not enabled. Talk to the admnistrator of the program to get access`
             })
         }
     })

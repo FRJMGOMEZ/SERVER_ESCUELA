@@ -263,9 +263,10 @@ const searchSubjectById = (res, id) => {
 const searchProjectById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-        Project.findById(id)
-            .populate('participants', 'name _id')
-            .populate('administrators', 'name _id')
+        Project.findOne({ _id: id })
+            .populate('participants')
+            .populate('administrators')
+            .populate('messages')
             .exec((err, projectDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))

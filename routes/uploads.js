@@ -62,15 +62,11 @@ app.put('/upload/:type/:id', (req, res) => {
             case 'projects':
                 projectImage(id, res, fileName);
                 break;
-            case 'imagesProject':
-                messageImage(id, res, fileName);
-                break;
-            case 'filesProject':
-                messageFile(id, res, fileName);
-                break;
             case 'files':
                 files(id, res, fileName);
                 break;
+            default:
+                res.status(200).json({ ok: true, file: fileName })
         }
     })
 });
@@ -104,7 +100,7 @@ const userImage = (id, res, fileName) => {
             }
             res.json({
                 ok: true,
-                user
+                file: user.img
             })
         })
     })
@@ -138,7 +134,7 @@ const alumniImage = (id, res, fileName) => {
                 }
                 res.json({
                     ok: true,
-                    alumni
+                    file: alumni.img
                 })
             })
     })
@@ -179,7 +175,6 @@ const professorImage = (id, res, fileName) => {
     })
 }
 
-
 const projectImage = (id, res, fileName) => {
     Project.findById(id, (err, projectDb) => {
         if (err) {
@@ -197,8 +192,8 @@ const projectImage = (id, res, fileName) => {
             })
         }
         deleteFile(projectDb.img, 'projects');
-        Project.findByIdAndUpdate(id, { img: fileName })
-            .exec((error, project) => {
+        Project.findByIdAndUpdate(id, { img: fileName }, { new: true })
+            .exec((error, projectDb) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,
@@ -207,78 +202,12 @@ const projectImage = (id, res, fileName) => {
                 }
                 res.json({
                     ok: true,
-                    project
+                    file: projectDb.img
                 })
             })
     })
 }
 
-const messageImage = (id, res, fileName) => {
-
-    Project.findById(id, (err, projectDb) => {
-        if (err) {
-            deleteFile(fileName, 'imagesProject')
-            return res.status(500).json({
-                ok: false,
-                error
-            })
-        }
-        if (!projectDb) {
-            deleteFile(fileName, 'imagesProject')
-            return res.status(400).json({
-                ok: false,
-                message: 'There are no projects with the ID provided'
-            })
-        }
-        Project.update({ id }, { $push: { images: fileName } })
-            .exec((err) => {
-                if (err, message) {
-                    return res.status(500).json({
-                        ok: false,
-                        err
-                    })
-                }
-                res.json({
-                    ok: true,
-                    project
-                })
-            })
-    })
-}
-
-const messageFile = (id, res, fileName) => {
-
-    Project.findById(id, (err, projectDb) => {
-        if (err) {
-            deleteFile(fileName, 'filesProject')
-            return res.status(500).json({
-                ok: false,
-                error
-            })
-        }
-        if (!projectDb) {
-            deleteFile(fileName, 'filesProject')
-            return res.status(400).json({
-                ok: false,
-                message: 'There are no projects with the ID provided'
-            })
-        }
-        Project.update({ id }, { $push: { files: fileName } })
-            .exec((err) => {
-                if (err, project) {
-                    return res.status(500).json({
-                        ok: false,
-                        err
-                    })
-                }
-                res.json({
-                    ok: true,
-                    project
-
-                })
-            })
-    })
-}
 
 const files = (id, res, fileName) => {
 

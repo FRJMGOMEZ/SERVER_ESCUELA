@@ -17,13 +17,22 @@ app.get('/permanentEvents', verifyToken, (req, res) => {
     })
 })
 
+app.get('/events/projects/:projectId', (req, res) => {
+    let projectId = req.params.projectId;
+    Event.find({ project: projectId }, (err, events) => {
+        if (err) {
+            res.status(500).json({ ok: false, err })
+        }
+        res.status(200).json({ ok: true, events })
+    })
+})
+
 app.post('/event/:dayId/:limitDate', verifyToken, (req, res) => {
 
     let dayId = req.params.dayId;
     let limitDate = Number(req.params.limitDate) || 8640000000000000;
     limitDate = new Date(limitDate)
     limitDate = new Date(limitDate.getFullYear(), limitDate.getMonth(), limitDate.getDate())
-
     let body = req.body;
     let event = new Event({
         name: body.name,
@@ -37,7 +46,8 @@ app.post('/event/:dayId/:limitDate', verifyToken, (req, res) => {
         repetition: body.repetition,
         startDate: body.startDate,
         endDate: body.endDate,
-        permanent: body.permanent
+        permanent: body.permanent,
+        project: body.project
     })
 
     event.save((err, eventSaved) => {
@@ -61,8 +71,7 @@ app.post('/event/:dayId/:limitDate', verifyToken, (req, res) => {
                 }
 
                 let date = new Date(dayDb.date)
-                date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1)
-                console.log(eventDb.hour)
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
                 switch (eventDb.hour) {
                     case 0:
@@ -230,11 +239,9 @@ app.put('/checkPermanentEvents', (req, res) => {
     let body = req.body;
 
     Event.find({ permanent: true, day: body.day, facilitie: body.facilitie }, async(err, eventsDb) => {
-
         if (err) {
             res.status(500).json({ ok: false, err })
         }
-        console.log(body)
         let from = body.position;
         let to = body.hour + body.duration;
         let eventsCollapsed = []
@@ -248,7 +255,6 @@ app.put('/checkPermanentEvents', (req, res) => {
                 eventsCollapsed.push(event)
             }
         })
-        console.log(eventsCollapsed)
         if (eventsCollapsed.length === 0) {
             res.status(200).json({ ok: true, days: [] })
         } else {
@@ -258,7 +264,6 @@ app.put('/checkPermanentEvents', (req, res) => {
                 checkEventsInDays(eventsCollapsed[2]),
                 checkEventsInDays(eventsCollapsed[3]),
             ]).then((responses) => {
-                console.log(responses)
                 responses = responses.filter((response) => { return response != undefined })
                 let days = []
                 responses.forEach((response) => {
@@ -272,8 +277,7 @@ app.put('/checkPermanentEvents', (req, res) => {
                 days = _.sortBy(days, (day) => {
                     return day.date
                 })
-
-                res.status(200).json({ ok: true, day: days[0] })
+                res.status(200).json({ ok: true, day: days[1] })
             })
         }
     })
@@ -294,7 +298,6 @@ const checkEventsInDays = (event) => {
         } else {
             resolve()
         }
-
     })
 }
 

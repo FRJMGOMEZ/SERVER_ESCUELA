@@ -7,23 +7,18 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/project', verifyToken, (req, res) => {
+app.get('/projects', verifyToken, (req, res) => {
 
-    let from = req.query.from;
-    let limit = req.query.limit;
-
-    Project.find({})
-        .skip(from)
-        .limit(limit)
-        .populate('participants', 'name')
+    let userOnline = req.user.userDb;
+    Project.find({ participants: userOnline._id })
         .exec((err, projectsDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
             if (!projectsDb) {
-                return res.status(404).json({ ok: false, message: 'There are no projects in DB' })
+                return res.status(404).json({ ok: false, message: 'There is not part of any project yet' })
             }
-            res.status(200).json({ ok: true, projectsDb })
+            res.status(200).json({ ok: true, projects: projectsDb })
         })
 })
 
@@ -31,7 +26,7 @@ app.get('/project', verifyToken, (req, res) => {
 app.post('/project', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
-    let userOnline = req.usuario.userDb
+    let userOnline = req.user.userDb
 
     let project = new Project({
         name: body.name,
@@ -39,25 +34,23 @@ app.post('/project', [verifyToken, verifyRole], (req, res) => {
     })
     project.participants.push(userOnline._id)
     project.administrators.push(userOnline._id)
-
     project.save((err, projectSaved) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        User.update({ id: userOnline._id }, { $push: { projects: projectSaved._id } })
-            .exec((err, userDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, mensaje: err }))
-                }
-                if (!userDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no users with the ID provided' }))
-                }
-                res.status(200).json({ ok: true })
-            })
+        User.findByIdAndUpdate(userOnline._id, { $push: { projects: projectSaved._id } }, (err, userSaved) => {
+            if (err) {
+                return res.status(500).json({ ok: false, mensaje: err })
+            }
+            if (!userSaved) {
+                return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+            }
+            res.status(200).json({ user: userSaved, project: projectSaved })
+        })
     })
 })
 
-app.put('/addOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) => {
 
     let participantId = req.body.participant;
     let id = req.params.id;
@@ -72,10 +65,10 @@ app.put('/addOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) =>
         let request;
         if (projectDb['participants'].indexOf(participantId) < 0) {
             projectDb.participants.push(participantId)
-            request = User.update({ id: participantId }, { $push: { projects: projectDb._id } })
+            request = User.findByIdAndUpdate(participantId, { $push: { projects: projectDb._id } })
         } else {
             projectDb.participants = projectDb.participants.filter((participant) => { return participant != participantId })
-            request = User.update({ id: participantId }, { $pull: { projects: projectDb._id } })
+            request = User.findByIdAndUpdate(participantId, { $pull: { projects: projectDb._id } })
         }
         request.exec((err, userUpdated) => {
             if (err) {
@@ -84,11 +77,11 @@ app.put('/addOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) =>
             if (!userUpdated) {
                 return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
             }
-            projectDb.save((err, projectSaved) => {
+            projectDb.save((err) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                res.status(200).json({ ok: true })
+                res.status(200).json({ ok: true, user: userUpdated })
             })
         })
     })
@@ -99,25 +92,18 @@ app.put('/project/:id', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let id = req.params.id;
 
-    Project.findById(id, (err, projectDb) => {
+    Project.findByIdAndUpdate(id, { name: body.name, description: body.description }, { new: true }, (err, projectDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
         if (!projectDb) {
             return res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
         }
-        projectDb.name = body.name;
-        projectDb.description = body.description;
-        projectDb.save((err, projectUpdated) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            res.status(200).json({ ok: true, projectUpdated })
-        })
+        res.status(200).json({ ok: true, project: projectDb })
     })
 })
 
-app.put('/addOrDeleteAdmin/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
 
     let participantId = req.body.participant;
     let id = req.params.id;
@@ -131,9 +117,9 @@ app.put('/addOrDeleteAdmin/:id', [verifyToken, verifyRole], (req, res) => {
         }
         let request;
         if (projectDb.administrators.indexOf(participantId) < 0) {
-            request = Project.update({ id: projectDb._id }, { $push: { administrators: participantId } })
+            request = Project.findByIdAndUpdate(projectDb._id, { $push: { administrators: participantId } })
         } else {
-            request = Project.update({ id: projectDb._id }, { $pull: { administrators: participantId } })
+            request = Project.findByIdAndUpdate(projectDb._id, { $pull: { administrators: participantId } })
         }
         request.exec((err) => {
             if (err) {
@@ -143,6 +129,7 @@ app.put('/addOrDeleteAdmin/:id', [verifyToken, verifyRole], (req, res) => {
         })
     })
 })
+
 app.put('/changeStatus/:id', (req, res) => {
 
     let id = req.params.id;

@@ -16,6 +16,7 @@ const eventSchema = new Schema({
     hour: { type: Number, required: true },
     day: { type: Number, required: true },
     permanent: { type: Boolean, default: false },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
     startDate: { type: Date },
     endDate: { type: Date },
 });

@@ -61,10 +61,8 @@ app.put('/pullEvent/:dayId/:eventId', (req, res) => {
 
             if (dayDate.getFullYear() === eventStartDate.getFullYear() && dayDate.getMonth() === eventStartDate.getMonth() && dayDate.getDate() === eventStartDate.getDate() && dayDate.getDay() === eventStartDate.getDay() ||
                 dayDate.getFullYear() === eventEndDate.getFullYear() && dayDate.getMonth() === eventEndDate.getMonth() && dayDate.getDate() === eventEndDate.getDate() && dayDate.getDay() === eventEndDate.getDay()) {
-                console.log('Coño')
                 if (dayDate.getFullYear() === eventStartDate.getFullYear() && dayDate.getMonth() === eventStartDate.getMonth() && dayDate.getDate() === eventStartDate.getDate() && dayDate.getDay() === eventStartDate.getDay()) {
                     eventDb.startDate = new Date(eventStartDate.getTime() + 604800000)
-                    console.log('No')
                 }
                 if (eventEndDate != null && dayDate.getFullYear() === eventEndDate.getFullYear() && dayDate.getMonth() === eventEndDate.getMonth() && dayDate.getDate() === eventEndDate.getDate() && dayDate.getDay() === eventEndDate.getDay()) {
                     eventDb.endDate = new Date(eventEndDate.getTime() - 604800000)

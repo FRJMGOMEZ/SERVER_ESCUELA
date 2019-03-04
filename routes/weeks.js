@@ -10,8 +10,7 @@ const app = express()
 
 app.get('/week/:date', (req, res) => {
 
-    let date = new Date(req.params.date);
-    console.log(date)
+    let date = new Date(req.params.date)
     Week.find({
             "date": {
                 "$eq": date

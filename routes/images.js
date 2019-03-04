@@ -30,11 +30,12 @@ app.get('/images/:type/:fileName', (req, res, next) => {
 })
 
 
-app.get('/files/:fileName', (req, res) => {
+app.get('/files/:type/:fileName', (req, res) => {
 
     let fileName = req.params.fileName;
+    let type = req.params.type;
 
-    let pathImage = path.resolve(__dirname, `../uploads/files/${fileName}`);
+    let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
 
     if (fs.existsSync(pathImage)) {
         res.sendFile(pathImage)

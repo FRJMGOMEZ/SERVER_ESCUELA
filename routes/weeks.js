@@ -1,17 +1,14 @@
 const express = require('express');
-
 const Week = require('../models/week');
-const Event = require('../models/event');
+const EventModel = require('../models/event');
 const Day = require('../models/day');
-
 const { verifyToken } = require('../middlewares/auth');
-
 const app = express()
 
 app.get('/week/:date', (req, res) => {
-
-    let date = new Date(req.params.date)
-    Week.find({
+    let date = new Date(Number(req.params.date));
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0)
+    Week.findOne({
             "date": {
                 "$eq": date
             }
@@ -23,21 +20,19 @@ app.get('/week/:date', (req, res) => {
         .populate('friday', 'date _id')
         .populate('saturday', 'date _id')
         .populate('sunday', 'date _id')
-        .exec((err, weeksDb) => {
+        .exec((err, weekDb) => {
             if (err) {
                 res.status(500).json({ ok: false, err })
             }
-            if (!weeksDb) {
-                res.status(200).json({ ok: true, weeks: [] })
-            }
-            res.status(200).json({ ok: true, weeks: weeksDb })
+            res.status(200).json({ ok: true, week: weekDb })
         })
 })
 
-app.post('/week', async(req, res) => {
+app.post('/week', (req, res) => {
 
     let body = req.body;
     let date = new Date(body.date);
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
 
     let monday = new Day({
         date: new Date(date),
@@ -70,7 +65,7 @@ app.post('/week', async(req, res) => {
 
     days = [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
 
-    await Promise.all([
+    Promise.all([
         checkPermanentEvents(res, monday, date),
         checkPermanentEvents(res, tuesday, date),
         checkPermanentEvents(res, wednesday, date),
@@ -95,6 +90,7 @@ app.post('/week', async(req, res) => {
             let daysIds = daysSaved.map(day => {
                 return day._id;
             });
+
             let week = new Week({
                 monday: daysIds[0],
                 tuesday: daysIds[1],
@@ -133,15 +129,19 @@ app.post('/week', async(req, res) => {
 let checkPermanentEvents = (res, day, date) => {
 
     return new Promise((resolve, reject) => {
-
         let dateOfDay = new Date(day.date).getDay();
-
-        console.log(date)
-
-        if (date.getTime() + 1 > new Date()) {
-            Event.find({ day: dateOfDay, permanent: true }, (err, eventsDb) => {
+        EventModel.find({
+                day: dateOfDay,
+                permanent: true,
+                $or: [{ endDate: { $gte: day.date } }, { endDate: null }],
+                startDate: { $lte: day.date }
+            },
+            (err, eventsDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, message: err }))
+                }
+                if (!eventsDb) {
+                    resolve()
                 }
                 let hour0 = eventsDb.filter((event) => { return event.hour === 0 }) || null;
                 day.hour0 = hour0.map((event) => { return event._id })
@@ -167,12 +167,8 @@ let checkPermanentEvents = (res, day, date) => {
                 day.hour10 = hour10.map((event) => { return event._id })
                 let hour11 = eventsDb.filter((event) => { return event.hour === 11 }) || null;
                 day.hour11 = hour11.map((event) => { return event._id })
-
                 resolve(day)
             })
-        } else {
-            resolve()
-        }
     })
 }
 
@@ -184,25 +180,25 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
     let request;
     switch (dayOfTheWeek) {
         case 1:
-            request = Week.find({ monday: dayId })
+            request = Week.findOne({ monday: dayId })
             break;
         case 2:
-            request = Week.find({ tuesday: dayId })
+            request = Week.findOne({ tuesday: dayId })
             break;
         case 3:
-            request = Week.find({ wednesday: dayId })
+            request = Week.findOne({ wednesday: dayId })
             break;
         case 4:
-            request = Week.find({ thursday: dayId })
+            request = Week.findOne({ thursday: dayId })
             break;
         case 5:
-            request = Week.find({ friday: dayId })
+            request = Week.findOne({ friday: dayId })
             break;
         case 6:
-            request = Week.find({ saturday: dayId })
+            request = Week.findOne({ saturday: dayId })
             break;
         case 0:
-            request = Week.find({ sunday: dayId })
+            request = Week.findOne({ sunday: dayId })
             break;
     }
     request.exec((err, weekDb) => {
@@ -221,4 +217,4 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
 
 
 
-module.exports = app;
+module.exports = app

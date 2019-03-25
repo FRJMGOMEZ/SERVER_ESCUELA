@@ -8,29 +8,24 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/indexcards', [verifyToken, verifyRole], (req, res) => {
 
-    let from = req.query.from;
-    let limit = req.query.limit;
-
-    Indexcard.find({})
-        .skip(from)
-        .limit(limit)
-        .exec((err, indexcardsDb) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            if (!indexcardsDb) {
-                return res.status(404).json({ ok: false, mensaje: 'There are no indexcards with the ID provided' })
-            }
-            res.status(200).json({ ok: true, indexcardsDb })
-        })
+app.get('/searchIndexcardById/:id', [verifyToken, verifyRole], (req, res) => {
+    let id = req.params.id;
+    Indexcard.findById(id, (err, indexcardDb) => {
+        if (err) {
+            return res.status(500).json({ ok: false, err })
+        }
+        if (!indexcardDb) {
+            return res.status(404).json({ ok: false, message: 'There are no indexcards with the ID provided' })
+        }
+        res.status(200).json({ ok: true, indexcard: indexcardDb })
+    })
 })
+
 
 app.post('/indexcard', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
-
     Indexcard.findOne({ name: body.name }, (err, indexcardDb) => {
         if (err) {
             return res.status(500).json({ ok: false, mensaje: err })
@@ -135,6 +130,7 @@ app.put('/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
             }
             if (previousName != indexcardUpdated.name) {
                 let request;
+                let role = indexcardUpdated.role;
                 switch (indexcardUpdated.role) {
                     case 'ALUMNI':
                         request = Alumni.findOneAndUpdate({ name: previousName }, { name: indexcardUpdated.name }, { upsert: true, new: true })
@@ -147,10 +143,10 @@ app.put('/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
                     if (err) {
                         return res.status(500).json({ ok: false, err })
                     }
-                    res.status(200).json({ ok: true, indexcard: indexcardUpdated, item: itemUpdated })
+                    res.status(200).json({ ok: true, [role]: itemUpdated })
                 })
             } else {
-                res.status(200).json({ ok: true, indexcard: indexcardUpdated })
+                res.status(200).json({ ok: true })
             }
         })
     })

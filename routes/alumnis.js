@@ -4,11 +4,11 @@ const Alumni = require('../models/alumni');
 const Subject = require('../models/subject');
 const IndexCard = require('../models/indexcard');
 
-const { verifyToken } = require('../middlewares/auth');
+const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express()
 
-app.get('/alumni', verifyToken, (req, res) => {
+app.get('/alumni', [verifyToken, verifyRole], (req, res) => {
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
 
@@ -18,7 +18,7 @@ app.get('/alumni', verifyToken, (req, res) => {
         .populate('subjects', 'name _id')
         .exec((err, alumnisDb) => {
             if (err) { return res.status(500).json({ ok: false, message: err }) }
-            Alumni.count((err, count) => {
+            Alumni.countDocuments((err, count) => {
                 if (err) { return res.status(500).json({ ok: false, message: err }) }
                 res.json({
                     ok: true,
@@ -29,7 +29,7 @@ app.get('/alumni', verifyToken, (req, res) => {
         })
 })
 
-app.post('/alumni', verifyToken, (req, res) => {
+app.post('/alumni', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let alumni = new Alumni({
         name: body.name,
@@ -44,7 +44,7 @@ app.post('/alumni', verifyToken, (req, res) => {
 })
 
 
-app.put('alumni/addSubject/:id', verifyToken, (req, res) => {
+app.put('alumni/addSubject/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let subjectId = req.body.materia;
@@ -78,10 +78,9 @@ app.put('alumni/addSubject/:id', verifyToken, (req, res) => {
 
 
 
-app.delete('/alumni/:id', (req, res) => {
+app.delete('/alumni/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-
     Alumni.findByIdAndDelete(id, (err, alumniDeleted) => {
         if (err) {
             return res.status(500).json({

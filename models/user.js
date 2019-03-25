@@ -12,7 +12,7 @@ const userSchema = new Schema({
     name: { type: String, unique: true, required: [true, "Name is required"] },
     email: { type: String, unique: true, required: [true, "Email is required"] },
     password: { type: String, required: [true, "Password is required"] },
-    img: { type: String, required: false, default: undefined },
+    img: { type: mongoose.Schema.Types.ObjectId, ref: 'FileModel' },
     role: {
         type: String,
         required: false,
@@ -20,8 +20,7 @@ const userSchema = new Schema({
         enum: validRoles
     },
     status: { type: Boolean, default: false },
-    google: { type: Boolean, default: false },
-    projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+    projects: [{ _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, lastConnection: { type: Date } }]
 });
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })

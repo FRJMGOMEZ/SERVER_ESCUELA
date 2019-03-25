@@ -15,7 +15,6 @@ const indexcardSchema = new Schema({
     home: { type: String, required: false },
     address: { type: String, required: false },
     status: { type: Boolean, default: true },
-    img: { type: String, required: false, default: undefined },
     role: { type: String, required: true, enum: validRoles }
 });
 

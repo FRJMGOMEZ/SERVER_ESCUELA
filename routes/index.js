@@ -9,12 +9,12 @@ app.use(require('./facilities'))
 app.use(require('./alumnis'));
 app.use(require('./indexCards'));
 app.use(require('./projects'));
-app.use(require('./uploads'));
-app.use(require('./images'));
+app.use(require('./files'));
 app.use(require('./search'));
 app.use(require('./message'));
 app.use(require('./events'));
 app.use(require('./weeks'));
 app.use(require('./days'));
+app.use(require('./tasks'));
 
 module.exports = app;

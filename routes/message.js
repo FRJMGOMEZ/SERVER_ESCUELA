@@ -1,71 +1,103 @@
 const express = require('express');
 
-const { verifyToken, verifyRole } = require('../middlewares/auth');
+const { verifyToken } = require('../middlewares/auth');
 
 const Project = require('../models/project');
 const Message = require('../models/message');
+const User = require('../models/user');
 
 const app = express()
 
+
 app.get('/messages/:id', verifyToken, (req, res) => {
-
     let projectId = req.params.id;
-    let from = Number(req.query.from)
-
+    let from = Number(req.query.from);
+    let limit = Number(req.query.limit)
     Message.find({ project: projectId })
         .skip(from)
+        .limit(limit)
         .populate('user', 'name _id')
+        .populate('file')
         .exec((err, messagesDb) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             if (!messagesDb) {
-                res.status(404).json({ ok: false, message: 'There are no messages in the project' })
+                return res.status(404).json({ ok: false, message: 'There are no messages in the project' })
             }
             res.status(200).json({ ok: true, messages: messagesDb })
         })
 })
+
+
+app.get('/lastMessages', verifyToken, (req, res) => {
+    let userOnline = req.user.userDb;
+    let requests = [];
+    User.findById(userOnline, (err, user) => {
+        if (err) {
+            return res.status(500).json({ ok: false, err })
+        }
+        user.projects.forEach((project) => {
+            requests.push(findMessages(project._id, project.lastConnection, res))
+        })
+        if (requests.length === 0) {
+            return res.status(200).json({ ok: true, messages: [] })
+        } else {
+            Promise.all(requests).then((responses) => {
+                let messages = []
+                responses.forEach((response) => {
+                    response.forEach((message) => {
+                        messages.push(message)
+                    })
+                })
+                res.status(200).json({ ok: true, messages })
+            })
+        }
+    })
+})
+const findMessages = (projectId, userLastConnection, res) => {
+    return new Promise((resolve, reject) => {
+        if (userLastConnection === null) { resolve() } else {
+            userLastConnection = new Date(userLastConnection);
+            Message.find({ project: projectId, date: { $gte: userLastConnection } })
+                .populate('project', 'name _id')
+                .exec((err, messages) => {
+                    if (err) {
+                        reject(res.status(500).json({ ok: false, err }))
+                    }
+                    resolve(messages)
+                })
+        }
+    })
+}
+
 
 app.post('/message', verifyToken, (req, res) => {
     let message = new Message({
         user: req.body.user,
         project: req.body.project,
         message: req.body.message,
-        img: req.body.img,
         file: req.body.file,
-        title: req.body.title
+        date: new Date()
     })
-    message.save((err, messageSaved) => {
+    message.save((err) => {
         if (err) {
             res.status(500).json({ ok: false, err })
         }
-        let toPush = messageSaved.img || messageSaved.file;
-        let path;
-        if (messageSaved.img) {
-            path = 'images';
-            toPush = { title: messageSaved.title, image: [toPush] }
-        }
-        if (messageSaved.file) {
-            path = 'files';
-            toPush = { title: messageSaved.title, file: [toPush] }
-        }
-
-        Project.findByIdAndUpdate(message.project, {
-                $push: { messages: messageSaved._id },
-                $push: {
-                    [path]: [toPush]
-                }
-            })
-            .exec((err, projectDb) => {
+        message.populate('user').populate({ path: 'file' }, (err, messageDb) => {
+            if (err) {
+                return res.status(500).json({ ok: false, err })
+            }
+            Project.findByIdAndUpdate(message.project, { $push: { messages: messageDb._id } }, (err, projectDb) => {
                 if (err) {
                     res.status(500).json({ ok: false, err })
                 }
                 if (!projectDb) {
                     res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
                 }
-
-                res.status(200).json({ ok: true, message: messageSaved })
+                res.status(200).json({ ok: true, message: messageDb })
             })
+        })
     })
 })
 

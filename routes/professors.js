@@ -2,13 +2,12 @@ const express = require('express');
 
 const Professor = require('../models/professor');
 const Subject = require('../models/subject');
-const IndexCard = require('../models/indexcard');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/professor', verifyToken, (req, res) => {
+app.get('/professor', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from) || 0;
     let limit = Number(req.query.limit) || 5;
@@ -30,7 +29,7 @@ app.get('/professor', verifyToken, (req, res) => {
                     message: 'There are no professors in the DB'
                 })
             }
-            Professor.count((err, count) => {
+            Professor.countDocuments((err, count) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,

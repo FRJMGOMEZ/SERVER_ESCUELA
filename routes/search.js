@@ -6,13 +6,16 @@ const Subject = require('../models/subject');
 const Indexcard = require('../models/indexcard');
 const Project = require('../models/project');
 const Week = require('../models/week');
-const Event = require('../models/event');
+const EventModel = require('../models/event');
 const Day = require('../models/day');
 const Facilitie = require('../models/facilitie');
+const Message = require('../models/message');
+const FileModel = require('../models/file');
+const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express()
 
-app.get('/search/:collection/:search', (req, res) => {
+app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit) || 5;
@@ -39,7 +42,7 @@ app.get('/search/:collection/:search', (req, res) => {
     }
 
     promise.then((response) => {
-        countItems(collection).then((count) => {
+        countItems(collection, regExp).then((count) => {
             res.status(200).json({
                 ok: true,
                 [collection]: response,
@@ -47,11 +50,9 @@ app.get('/search/:collection/:search', (req, res) => {
             })
         })
     })
-
-
 })
 
-const countItems = (collection) => {
+const countItems = (collection, regExp) => {
 
     return new Promise((resolve, reject) => {
         let request;
@@ -66,7 +67,7 @@ const countItems = (collection) => {
                 request = User;
                 break;
         }
-        request.count((err, count) => {
+        request.find({ name: regExp }).count((err, count) => {
             if (err) {
                 reject(res.status(500).json({ ok: false, err }))
             }
@@ -132,30 +133,15 @@ const searchUsers = (res, regExp, from, limit) => {
 }
 
 
-app.get('/searchById/:collection/:id', (req, res) => {
+app.get('/searchById/:collection/:id', verifyToken, (req, res) => {
 
     let collection = req.params.collection;
     let id = req.params.id;
 
     let promise;
     switch (collection) {
-        case 'alumni':
-            promise = searchAlumniById(res, id);
-            break;
-        case 'professor':
-            promise = searchProfessorById(res, id);
-            break;
-        case 'user':
-            promise = searchUserById(res, id);
-            break;
-        case 'indexcard':
-            promise = searchIndexcardById(res, id);
-            break;
         case 'project':
             promise = searchProjectById(res, id);
-            break;
-        case 'subject':
-            promise = searchSubjectById(res, id);
             break;
         case 'week':
             promise = searchWeekById(res, id);
@@ -166,8 +152,8 @@ app.get('/searchById/:collection/:id', (req, res) => {
         case 'event':
             promise = searchEventById(res, id);
             break;
-        case 'facilitie':
-            promise = searchFacilitieById(res, id);
+        case 'file':
+            promise = searchFileById(res, id);
             break;
         default:
             res.status(404).json({ ok: false, mensaje: 'The collection searched does not exist' });
@@ -180,93 +166,46 @@ app.get('/searchById/:collection/:id', (req, res) => {
     })
 })
 
-const searchAlumniById = (res, id) => {
-    return new Promise((resolve, reject) => {
-        Alumni.findById(id)
-            .populate('subjects', 'name')
-            .exec((err, alumniDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                if (!alumniDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
-                }
-                resolve(alumniDb)
-            })
-    })
-}
-
-const searchProfessorById = (res, id) => {
+const searchFileById = (res, id) => {
 
     return new Promise((resolve, reject) => {
-        Professor.findById(id, (err, professorDb) => {
+
+        FileModel.findById(id, (err, file) => {
             if (err) {
                 reject(res.status(500).json({ ok: false, err }))
             }
-            if (!professorDb) {
-                reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
+            if (!file) {
+                reject(res.status(404).json({ ok: false, message: 'There are no files with the ID provided' }))
             }
-            resolve(professorDb)
+            resolve(file)
         })
-    })
-}
-const searchUserById = (res, id) => {
-
-    return new Promise((resolve, reject) => {
-        User.findById(id)
-            .populate('projects', 'name _id description img active')
-            .exec((err, userDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                if (!userDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no users with the ID provided' }))
-                }
-                resolve(userDb)
-            })
-    })
-}
-
-const searchIndexcardById = (res, id) => {
-
-    return new Promise((resolve, reject) => {
-        Indexcard.findById(id, (err, indexcardDb) => {
-            if (err) {
-                reject(res.status(500).json({ ok: false, err }))
-            }
-            if (!indexcardDb) {
-                reject(res.status(404).json({ ok: false, message: 'There are no indexcards with the ID provided' }))
-            }
-            resolve(indexcardDb)
-        })
-    })
-}
-
-
-const searchSubjectById = (res, id) => {
-
-    return new Promise((resolve, reject) => {
-        Subject.findById(id)
-            .exec((err, subjectDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                if (!subjectDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no subjects with the ID provided' }))
-                }
-                resolve(subjectDb)
-            })
     })
 }
 
 
 const searchProjectById = (res, id) => {
-
     return new Promise((resolve, reject) => {
         Project.findOne({ _id: id })
             .populate('participants')
             .populate('administrators')
             .populate('messages')
+            .populate({
+                model: 'Task',
+                path: 'tasks',
+                populate: {
+                    path: 'user assignedBy',
+                    model: 'User'
+                },
+            })
+            .populate({
+                model: 'Message',
+                path: 'messages',
+                select: 'file -_id',
+                populate: {
+                    path: 'file',
+                    model: 'FileModel'
+                }
+            })
             .exec((err, projectDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
@@ -279,8 +218,8 @@ const searchProjectById = (res, id) => {
     })
 }
 
-const searchWeekById = (res, id) => {
 
+const searchWeekById = (res, id) => {
     return new Promise((resolve, reject) => {
         Week.findById(id)
             .populate('monday', 'date _id')
@@ -334,7 +273,7 @@ const searchEventById = (res, id) => {
 
     return new Promise((resolve, reject) => {
 
-        Event.findById(id)
+        EventModel.findById(id)
             .populate('facilitie', 'name _id')
             .exec((err, eventDb) => {
                 if (err) {
@@ -347,23 +286,6 @@ const searchEventById = (res, id) => {
             })
     })
 }
-
-
-const searchFacilitieById = (res, id) => {
-
-    return new Promise((resolve, reject) => {
-        Facilitie.findById(id, (err, facilitieDb) => {
-            if (err) {
-                reject(res.status(500).json({ ok: false, err }))
-            }
-            if (!facilitieDb) {
-                reject(res.status(404).json({ ok: false, message: 'There are no facilities with the ID provided' }))
-            }
-            resolve(facilitieDb)
-        })
-    })
-}
-
 
 
 module.exports = app;

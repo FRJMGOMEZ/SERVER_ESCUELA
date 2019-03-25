@@ -1,19 +1,31 @@
 const express = require('express');
 const Day = require('../models/day');
-const Event = require('../models/event');
 const app = express();
 
-const { verifyToken } = require('../middlewares/auth');
+const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 
 app.get('/dayByDate/:date', verifyToken, (req, res) => {
 
-    let date = new Date(req.params.date);
+    let date = new Date(Number(req.params.date));
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
 
     Day.findOne({
             date: { $eq: date }
-        },
-        (err, dayDb) => {
+        })
+        .populate('hour0')
+        .populate('hour1')
+        .populate('hour2')
+        .populate('hour3')
+        .populate('hour4')
+        .populate('hour5')
+        .populate('hour6')
+        .populate('hour7')
+        .populate('hour8')
+        .populate('hour9')
+        .populate('hour10')
+        .populate('hour11')
+        .exec((err, dayDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, message: err })
             }
@@ -23,68 +35,6 @@ app.get('/dayByDate/:date', verifyToken, (req, res) => {
             res.status(200).json({ ok: true, day: dayDb })
         })
 })
-
-app.put('/pullEvent/:dayId/:eventId', (req, res) => {
-
-    let dayId = req.params.dayId;
-    let eventId = req.params.eventId;
-
-    Event.findById(eventId, (err, eventDb) => {
-        if (err) {
-            return res.status(500).json({ ok: false, message: err })
-        }
-
-        if (!eventDb) {
-            return res.status(404).json({ ok: false, message: 'There are no events with the ID provided' })
-        }
-        let hour = `hour${eventDb.hour}`
-        Day.findByIdAndUpdate(dayId, {
-            $pull: {
-                [hour]: eventDb._id
-            }
-        }, async(err, dayDb) => {
-
-            if (err) {
-                return res.status(500).json({ ok: false, message: err })
-            }
-
-            if (!dayDb) {
-                return res.status(404).json({ ok: false, message: 'There are no days with the ID provided' })
-            }
-            let dayDate = new Date(dayDb.date);
-
-            let eventStartDate = new Date(eventDb.startDate);
-
-            let eventEndDate = new Date(eventDb.endDate) || null;
-
-            //Revisar//
-
-            if (dayDate.getFullYear() === eventStartDate.getFullYear() && dayDate.getMonth() === eventStartDate.getMonth() && dayDate.getDate() === eventStartDate.getDate() && dayDate.getDay() === eventStartDate.getDay() ||
-                dayDate.getFullYear() === eventEndDate.getFullYear() && dayDate.getMonth() === eventEndDate.getMonth() && dayDate.getDate() === eventEndDate.getDate() && dayDate.getDay() === eventEndDate.getDay()) {
-                if (dayDate.getFullYear() === eventStartDate.getFullYear() && dayDate.getMonth() === eventStartDate.getMonth() && dayDate.getDate() === eventStartDate.getDate() && dayDate.getDay() === eventStartDate.getDay()) {
-                    eventDb.startDate = new Date(eventStartDate.getTime() + 604800000)
-                }
-                if (eventEndDate != null && dayDate.getFullYear() === eventEndDate.getFullYear() && dayDate.getMonth() === eventEndDate.getMonth() && dayDate.getDate() === eventEndDate.getDate() && dayDate.getDay() === eventEndDate.getDay()) {
-                    eventDb.endDate = new Date(eventEndDate.getTime() - 604800000)
-                }
-
-                eventDb.save((err, eventSaved) => {
-                    if (err) {
-                        return res.status(500).json({ ok: false, message: err })
-                    }
-                    res.status(200).json({ ok: true, event: eventSaved })
-                })
-
-            } else {
-                res.status(200).json({ ok: true, event: eventDb })
-            }
-        })
-    })
-})
-
-
-
-
 
 
 module.exports = app;

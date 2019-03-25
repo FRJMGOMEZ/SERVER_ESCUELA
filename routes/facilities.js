@@ -10,7 +10,7 @@ app.get('/facilities', verifyToken, (req, res) => {
     let from = Number(req.query.from);
     let limit = Number(req.query.limit)
 
-    Facilitie.find({})
+    Facilitie.find()
         .skip(from)
         .limit(limit)
         .exec((err, facilitiesDb) => {
@@ -18,9 +18,9 @@ app.get('/facilities', verifyToken, (req, res) => {
                 return res.status(500).json({ ok: false, err })
             }
             if (!facilitiesDb) {
-                return res.status(404).json({ ok: false, mensaje: 'There are no facilities in the DB' })
+                return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
             }
-            Facilitie.count((err, count) => {
+            Facilitie.countDocuments((err, count) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
@@ -49,10 +49,9 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
             return res.status(500).json({ ok: false, err })
         }
         if (!facilitieUpdated) {
-            return res.status(404).json({ ok: false, mensaje: 'There are no facilities in the DB' })
+            return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
         facilitieUpdated.name = body.name
-        facilitieUpdated.status = body.status
 
         facilitieUpdated.save((err, facilitieSaved) => {
             if (err) {
@@ -63,7 +62,7 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.delete('/facilitie/:id', (req, res) => {
+app.delete('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
 
@@ -72,7 +71,7 @@ app.delete('/facilitie/:id', (req, res) => {
             return res.status(500).json({ ok: false, err })
         }
         if (!facilitieDeleted) {
-            return res.status(404).json({ ok: false, mensaje: 'There are no facilities in the DB' })
+            return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
         res.status(200).json({ ok: true, facilitie: facilitieDeleted })
     })

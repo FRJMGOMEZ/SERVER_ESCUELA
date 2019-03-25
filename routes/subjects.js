@@ -6,7 +6,7 @@ const Alumni = require('../models/alumni')
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const app = express();
 
-app.get('/subject', [verifyToken], (req, res) => {
+app.get('/subject', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -29,7 +29,7 @@ app.get('/subject', [verifyToken], (req, res) => {
                     message: 'There are no subject in DB'
                 })
             }
-            Subject.count((err, count) => {
+            Subject.countDocuments((err, count) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,

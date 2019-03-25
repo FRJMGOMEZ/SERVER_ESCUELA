@@ -4,24 +4,21 @@ const User = require('../models/user');
 /////////////// VERIFYING TOKEN ////////////////
 
 let verifyToken = (req, res, next) => {
-
         let token = req.get('token');
-        jwt.verify(token, process.env.SEED, (error, userDecoded) => {
-            if (error) {
+        jwt.verify(token, process.env.SEED, (err, userDecoded) => {
+            if (err) {
                 return res.status(401).json({
                     ok: false,
-                    error
+                    err
                 })
             }
             req.user = userDecoded;
             next()
         })
-
     }
     ///////////////// VERIFYING ADMIN ROLE ///////////////
 
 let verifyRole = (req, res, next) => {
-
     if (req.user.userDb.role != 'ADMIN_ROLE') {
         if (req.params.id === req.user.userDb._id) {
             next();
@@ -59,7 +56,7 @@ let verifyStatus = (req, res, next) => {
         } else {
             res.status(401).json({
                 ok: false,
-                message: `User ${user.name} is not enabled. Talk to the admnistrator of the program to get access`
+                message: `User ${user.name} is not granted. Talk to the admnistrator of the program to get access`
             })
         }
     })

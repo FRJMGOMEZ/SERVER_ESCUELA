@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 
 const professorSchema = new Schema({
     name: { type: String, unique: true, required: true },
-    img: { type: String, required: false },
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
     indexcard: { type: mongoose.Schema.Types.ObjectId, ref: 'IndexCard' },
 }, { collection: 'professors' });

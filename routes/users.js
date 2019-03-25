@@ -8,7 +8,8 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/users', [verifyToken, verifyRole], (req, res) => {
+app.get('/users', verifyToken, (req, res) => {
+
     let from = Number(req.query.from) || 0;
     let limit = Number(req.query.limit) || 5;
 
@@ -16,6 +17,7 @@ app.get('/users', [verifyToken, verifyRole], (req, res) => {
         .skip(from)
         .limit(limit)
         .populate('projects', 'name _id description img')
+        .populate('img')
         .exec((err, usersDb) => {
             if (err) {
                 return res.status(500).json({
@@ -29,7 +31,7 @@ app.get('/users', [verifyToken, verifyRole], (req, res) => {
                     message: 'There are no user in DB'
                 })
             }
-            User.count((err, count) => {
+            User.countDocuments({ $nor: [{ _id: req.user.userDb._id }] }, (err, count) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,
@@ -45,7 +47,28 @@ app.get('/users', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
+app.put('/changePassword/:password1/:password1', verifyToken, (req, res) => {
+    ///////Encriptar password///
+    let id = req.params.id;
+    let password1 = req.params.password1;
+    let password2 = req.params.password2
 
+    let userOnline = req.user.userDb;
+    if (!bcrypt.compareSync(password1, userOnline.password)) {
+        res.json({ message: 'The passwords do not match' })
+    } else {
+        userOnline.password = bcrypt.hashSync(password2, 10);
+        userOnline.save(() => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                })
+            }
+            res.status(200).json({ ok: true })
+        })
+    }
+})
 
 app.post('/user', (req, res) => {
 
@@ -54,7 +77,7 @@ app.post('/user', (req, res) => {
         name: body.name,
         email: body.email,
         password: bcrypt.hashSync(body.password, 10),
-        status: false
+        status: false,
     })
     user.save((err, userSaved) => {
         if (err) {
@@ -71,12 +94,12 @@ app.post('/user', (req, res) => {
     })
 })
 
-app.put('/user/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/changeRole/:id/:role', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-    let body = req.body;
+    let newRole = req.params.role;
 
-    User.findById(id, (err, userDb) => {
+    User.findByIdAndUpdate(id, { role: newRole }, (err, userDb) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
@@ -89,34 +112,60 @@ app.put('/user/:id', [verifyToken, verifyRole], (req, res) => {
                 message: 'There are no users with the ID provided'
             })
         }
-        if (body.name) {
-            userDb.name = body.name;
+        res.status(200).json({ ok: true })
+    })
+})
+
+app.put('/user/:id', verifyToken, (req, res) => {
+    let id = req.params.id;
+    let body = req.body;
+    User.findById(id, (err, user) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
         }
-        if (body.email) {
-            userDb.email = body.email
+        if (!user) {
+            return res.status(404).json({
+                ok: false,
+                message: 'There are no users with the ID provided'
+            })
         }
-        if (body.role) {
-            userDb.role = body.role;
-        }
-        userDb.save((err, userSaved) => {
+        if (body.img) { user.img = body.img }
+        if (body.name) { user.name = body.name }
+        if (body.email) { user.email = body.email }
+
+        user.save((err, userDb) => {
             if (err) {
                 return res.status(500).json({
                     ok: false,
                     err
                 })
             }
-            userDb.populate({ path: 'projects', select: 'name _id description img' }, (err, userSaved) => {
-                res.status(200).json({ ok: true, user: userSaved })
-            })
+            user.populate('img')
+                .populate({ path: 'projects', select: 'name _id description img' }, (err, userSaved) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            err
+                        })
+                    }
+                    if (!userSaved) {
+                        return res.status(404).json({
+                            ok: false,
+                            message: 'There are no users with the ID provided'
+                        })
+                    }
+                    res.status(200).json({ ok: true, user: userSaved })
+                })
         })
     })
 })
 
-
 app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
-
     if (String(req.user.userDb.role) === 'ADMIN_ROLE') {
         User.findById(id, (err, userDb) => {
             if (err) {
@@ -131,10 +180,10 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
             let request;
             switch (userDb.status) {
                 case true:
-                    request = User.findByIdAndUpdate(id, { status: false });
+                    request = User.findByIdAndUpdate(id, { status: false }, { new: true });
                     break;
                 case false:
-                    request = User.findByIdAndUpdate(id, { status: true });
+                    request = User.findByIdAndUpdate(id, { status: true }, { new: true });
             }
             request.exec((err, userDb) => {
                 if (err) {
@@ -179,28 +228,6 @@ app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.get('/user/:id/:password', [verifyToken, verifyRole], (req, res) => {
-
-
-    ///////Encriptar password///
-
-    let id = req.params.id;
-    let password = req.params.password;
-
-    User.findById(id, (err, userDb) => {
-        if (err) {
-            return res.status(500).json({ ok: false, err })
-        }
-        if (!userDb) {
-            return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
-        }
-        if (!bcrypt.compareSync(password, userDb.password)) {
-            res.json({ message: 'The passwords do not match' })
-        } else {
-            res.json({ ok: true, user: userDb })
-        }
-    })
-})
 
 
 module.exports = app

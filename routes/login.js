@@ -2,7 +2,6 @@ const express = require('express');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require("google-auth-library");
 
 const User = require('../models/user');
 
@@ -12,11 +11,10 @@ const app = express();
 
 
 app.post('/login', verifyStatus, (req, res) => {
-
     let body = req.body;
-
     User.findOne({ email: body.email })
-        .populate(`projects`, 'name _id description img')
+        .populate('img')
+        .lean()
         .exec((err, userDb) => {
             if (err) {
                 return res.status(500).json({

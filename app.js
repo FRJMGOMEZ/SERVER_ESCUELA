@@ -21,11 +21,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 
 
-//Rutas
+//Routes
 app.use(require('./routes/index.js'))
 
 
-//Server para utilizar socket.io
+//Socket.io
 let server = http.createServer(app);
 module.exports.io = socketIO(server);
 require('./sockets/sockets')

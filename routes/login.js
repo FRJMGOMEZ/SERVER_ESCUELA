@@ -5,10 +5,9 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
-const { verifyStatus } = require('../middlewares/auth');
+const { verifyStatus, verifyToken } = require('../middlewares/auth');
 
 const app = express();
-
 
 app.post('/login', verifyStatus, (req, res) => {
     let body = req.body;
@@ -45,6 +44,12 @@ app.post('/login', verifyStatus, (req, res) => {
                 token
             })
         })
+})
+
+app.get('updateToken', verifyToken, async(req, res) => {
+    let userDb = req.user.userDb;
+    let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
+    res.status(200).json({ ok: true, token })
 })
 
 module.exports = app;

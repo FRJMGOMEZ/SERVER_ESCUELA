@@ -274,7 +274,6 @@ const searchEventById = (res, id) => {
     return new Promise((resolve, reject) => {
 
         EventModel.findById(id)
-            .populate('facilitie', 'name _id')
             .exec((err, eventDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))

@@ -1,27 +1,33 @@
 const express = require('express');
 const app = express();
-
 const Task = require('../models/task');
 const Project = require('../models/project');
+const User = require('../models/user');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 app.get('/tasks', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
-    Task.find({ user: userOnline._id }, { ok: false })
-        .populate('project', 'name _id')
-        .exec((err, tasks) => {
-            if (err) {
-                return res.status(500).json({ ok: false, mensaje: err })
-            }
-            if (!tasks) {
-                return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
-            }
-            res.status(200).json({ ok: true, tasks })
-        })
+    User.findById(req.user.userDb._id, (err, user) => {
+        if (err) {
+            return res.status(500).json({ ok: false, mensaje: err })
+        }
+        let projects = user.projects.map((project) => { return project._id })
+        Task.find({ user: userOnline._id, project: projects }, { ok: false })
+            .populate('project', 'name _id')
+            .exec((err, tasks) => {
+                if (err) {
+                    return res.status(500).json({ ok: false, mensaje: err })
+                }
+                if (!tasks) {
+                    return res.status(404).json({ ok: false, message: 'No users have been found' })
+                }
+                res.status(200).json({ ok: true, tasks })
+            })
+    })
 })
 
-app.post('/task', [verifyToken, verifyRole], (req, res) => {
+app.post('/task', verifyToken, (req, res) => {
     let body = req.body;
     body.dateLimit = new Date(body.dateLimit)
     body.date = new Date(body.date)
@@ -83,11 +89,10 @@ app.put('/checkTask/:taskId', verifyToken, (req, res) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
-
             if (!task) {
                 return res.status(404).json({ ok: false, message: 'There are no tasks with the ID provided' })
             }
-            res.status({ ok: true, task })
+            res.status(200).json({ ok: true, task })
         })
 })
 
@@ -104,6 +109,7 @@ app.put('/taskDone/:taskId', verifyToken, (req, res) => {
                 return res.status(404).json({ ok: false, message: 'There are no tasks with the ID provided' })
             }
             res.status(200).json({ ok: true, task })
+
         })
 })
 
@@ -117,7 +123,7 @@ app.delete('/task/:id', (req, res) => {
         if (!task) {
             return res.status(404).json({ ok: false, message: 'There are no tasks with the ID provided' })
         }
-        res.status(200).json({ ok: true })
+        res.status(200).json({ ok: true, task })
     })
 })
 

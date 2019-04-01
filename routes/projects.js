@@ -15,13 +15,12 @@ app.get('/projects', verifyToken, (req, res) => {
                 return res.status(500).json({ ok: false, err })
             }
             if (!projectsDb) {
-                return res.status(404).json({ ok: false, message: 'You are not part of any project yet' })
+                return res.status(200).json({ ok: true, projects: [] })
             }
             projectsDb.forEach((eachProject) => {
-                if (eachProject.administrators.map((user) => { return user._id }).indexOf(userOnline._id) < 0 &&
-                    userOnline.role === 'USER_ROLE' &&
+                if (eachProject.administrators.indexOf(userOnline._id) < 0 &&
                     eachProject.status === false) {
-                    projectsDb = projects.filter((project) => { return project._id != eachProject._id })
+                    projectsDb = projectsDb.filter((project) => { return project._id != eachProject._id })
                 }
             })
             res.status(200).json({ ok: true, projects: projectsDb })
@@ -46,7 +45,7 @@ app.post('/project', [verifyToken, verifyRole], (req, res) => {
                 return res.status(500).json({ ok: false, mensaje: err })
             }
             if (!userUpdated) {
-                return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+                return res.status(404).json({ ok: false, message: 'No users have been found' })
             }
             res.status(200).json({ user: userUpdated, project: projectSaved })
         })
@@ -62,7 +61,7 @@ app.put('/lastConnection/:projectId', verifyToken, (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
         if (!userUpdated) {
-            return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+            return res.status(404).json({ ok: false, message: 'No users have been found' })
         }
         res.status(200).json({ ok: true, user: userUpdated })
     })
@@ -133,7 +132,7 @@ app.put('/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) =
                 return res.status(500).json({ ok: false, err })
             }
             if (!userUpdated) {
-                return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+                return res.status(404).json({ ok: false, message: 'No users have been found' })
             }
             projectDb.save((err) => {
                 if (err) {
@@ -171,7 +170,7 @@ app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
                     return res.status(500).json({ ok: false, err })
                 }
                 if (!userDb) {
-                    return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+                    return res.status(404).json({ ok: false, message: 'No users have been found' })
                 }
                 res.status(200).json({ ok: true, administrator: userDb })
             })
@@ -206,7 +205,7 @@ app.delete('/project/:id', [verifyToken, verifyRole], (req, res) => {
                             res.status(500).json({ ok: false, err })
                         }
                         let files = messages.map((message) => { return message.file })
-                        res.status(200).json({ ok: true, files })
+                        res.status(200).json({ ok: true, files, project: projectDeleted })
                     })
                 })
             })

@@ -2,7 +2,7 @@ const express = require('express');
 const Day = require('../models/day');
 const app = express();
 
-const { verifyToken, verifyRole } = require('../middlewares/auth');
+const { verifyToken } = require('../middlewares/auth');
 
 
 app.get('/dayByDate/:date', verifyToken, (req, res) => {

@@ -2,8 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
-const Project = require('../models/project');
-const Message = require('../models/message');
 const FileModel = require('../models/file');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
@@ -143,27 +141,7 @@ app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, re
             return res.status(404).json({ ok: false, message: 'There are no files with the ID provided' })
         }
         deleteFile(fileDeleted.name, type)
-        Message.findOneAndDelete({ file: fileDeleted._id }, (err, messageDeleted) => {
-            if (err)
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
-            if (!messageDeleted) {
-                return res.status(200).json({ ok: true, file: fileDeleted })
-            }
-            Project.updateOne({ messages: messageDeleted._id }, { $pull: { messages: messageDeleted._id } }, { new: true }, (err, projectUpdated) => {
-                if (err)
-                    return res.status(500).json({
-                        ok: false,
-                        err
-                    });
-                if (!projectUpdated) {
-                    return res.status(404).json({ ok: false, message: 'There are no projects with the message provided' })
-                }
-                res.status(200).json({ ok: true, file: fileDeleted })
-            })
-        })
+        res.status(200).json({ ok: true, file: fileDeleted })
     })
 })
 

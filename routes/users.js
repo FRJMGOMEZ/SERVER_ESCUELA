@@ -109,7 +109,7 @@ app.put('/changeRole/:id/:role', [verifyToken, verifyRole], (req, res) => {
         if (!userDb) {
             return res.status(404).json({
                 ok: false,
-                message: 'There are no users with the ID provided'
+                message: 'No users have been found'
             })
         }
         res.status(200).json({ ok: true })
@@ -129,7 +129,7 @@ app.put('/user/:id', verifyToken, (req, res) => {
         if (!user) {
             return res.status(404).json({
                 ok: false,
-                message: 'There are no users with the ID provided'
+                message: 'No users have been found'
             })
         }
         if (body.img) { user.img = body.img }
@@ -154,7 +154,7 @@ app.put('/user/:id', verifyToken, (req, res) => {
                     if (!userSaved) {
                         return res.status(404).json({
                             ok: false,
-                            message: 'There are no users with the ID provided'
+                            message: 'TNo users have been found'
                         })
                     }
                     res.status(200).json({ ok: true, user: userSaved })
@@ -175,7 +175,7 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
                 })
             }
             if (!userDb) {
-                return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+                return res.status(404).json({ ok: false, message: 'No users have been found' })
             }
             let request;
             switch (userDb.status) {
@@ -190,7 +190,7 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
                     return res.status(500).json({ ok: false, err })
                 }
                 if (!userDb) {
-                    return res.status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+                    return res.status(404).json({ ok: false, message: 'No users have been found' })
                 }
                 if (userDb.status === false) {
                     Project.update({}, { $pull: { participants: userDb._id, admnistrators: userDb._id } })
@@ -216,7 +216,7 @@ app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
             return res.status(500).json({ ok: false, err })
         }
         if (!userDeleted) {
-            return res - status(404).json({ ok: false, message: 'There are no users with the ID provided' })
+            return res - status(404).json({ ok: false, message: 'No users have been found' })
         }
         Project.update({}, { $pull: { participants: userDeleted._id, administrators: userDeleted._id } })
             .exec((err) => {

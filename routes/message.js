@@ -25,7 +25,12 @@ app.get('/messages/:id', verifyToken, (req, res) => {
             if (!messagesDb) {
                 return res.status(404).json({ ok: false, message: 'There are no messages in the project' })
             }
-            res.status(200).json({ ok: true, messages: messagesDb })
+            Message.count({ project: projectId }, (err, count) => {
+                if (err) {
+                    return res.status(500).json({ ok: false, err })
+                }
+                res.status(200).json({ ok: true, messages: messagesDb, count })
+            })
         })
 })
 
@@ -55,6 +60,7 @@ app.get('/lastMessages', verifyToken, (req, res) => {
         }
     })
 })
+
 const findMessages = (projectId, userLastConnection, res) => {
     return new Promise((resolve, reject) => {
         if (userLastConnection === null) { resolve() } else {
@@ -84,7 +90,7 @@ app.post('/message', verifyToken, (req, res) => {
         if (err) {
             res.status(500).json({ ok: false, err })
         }
-        message.populate('user').populate({ path: 'file' }, (err, messageDb) => {
+        message.populate('user', `name`).populate({ path: 'file' }, (err, messageDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
@@ -97,6 +103,31 @@ app.post('/message', verifyToken, (req, res) => {
                 }
                 res.status(200).json({ ok: true, message: messageDb })
             })
+        })
+    })
+})
+
+app.delete('/message/:id', verifyToken, (req, res) => {
+
+    let id = req.params.id;
+
+    Message.findByIdAndDelete(id, (err, message) => {
+        if (err) {
+            return res.status(500).json({ ok: false, err })
+        }
+        if (!message) {
+            return res.status(404).json({ ok: false, message: 'There are no messages with the ID provided' })
+        }
+        Project.updateOne({ messages: messageDeleted._id }, { $pull: { messages: messageDeleted._id } }, { new: true }, (err, projectUpdated) => {
+            if (err)
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            if (!projectUpdated) {
+                return res.status(404).json({ ok: false, message: 'There are no projects with the message provided' })
+            }
+            res.status(200).json({ ok: true, message: messageDeleted })
         })
     })
 })

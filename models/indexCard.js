@@ -8,9 +8,9 @@ const validRoles = {
 };
 
 const indexcardSchema = new Schema({
-    name: { type: String, required: [true, 'name is required'] },
+    name: { type: String, required: [true, 'name is required'], unique: true },
     surname: { type: String, required: false },
-    email: { type: String, required: false },
+    email: { type: String, required: false, unique: true },
     mobile: { type: String, required: false },
     home: { type: String, required: false },
     address: { type: String, required: false },

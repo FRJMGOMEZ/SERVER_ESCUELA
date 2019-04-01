@@ -35,7 +35,6 @@ let verifyRole = (req, res, next) => {
 /////////////// VERIFYING USER STATUS ///////////////
 
 let verifyStatus = (req, res, next) => {
-
     let body = req.body;
     User.findOne({ email: body.email }, (error, user) => {
         if (error) {
@@ -47,7 +46,7 @@ let verifyStatus = (req, res, next) => {
         if (!user) {
             return res.status(500).json({
                 ok: false,
-                message: 'There are no user with the ID provided'
+                message: 'No users have been found'
             })
         }
         if (user.status === true) {

@@ -383,10 +383,8 @@ const checkEventsInDays = (event) => {
     })
 }
 
-app.delete('/event/:id/:dayId', [verifyToken, verifyRole], (req, res) => {
+app.delete('/event/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
-    let dayId = req.params.dayId;
-
     EventModel.findByIdAndDelete(id, (err, eventDb) => {
         if (err) {
             res.status(500).json({ ok: false, err })

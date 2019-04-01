@@ -3,6 +3,8 @@ const app = express();
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const Facilitie = require('../models/facilitie');
+const EventModel = require('../models/event');
+const Day = require('../models/day');
 
 
 app.get('/facilities', verifyToken, (req, res) => {
@@ -51,8 +53,12 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
         if (!facilitieUpdated) {
             return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
-        facilitieUpdated.name = body.name
-
+        facilitieUpdated.name = body.name;
+        if (facilitieUpdated.status) {
+            facilitieUpdated.status = false;
+        } else {
+            facilitieUpdated.status = true;
+        }
         facilitieUpdated.save((err, facilitieSaved) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -73,9 +79,49 @@ app.delete('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
         if (!facilitieDeleted) {
             return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
-        res.status(200).json({ ok: true, facilitie: facilitieDeleted })
-    })
+        EventModel.find({ faciltie: facilitieDeleted._id }, (err, events) => {
+            if (err) {
+                return res.status(500).json({ ok: false, err })
+            }
+            EventModel.deleteMany({ facilitie: facilitieDeleted._id }, { new: true }, async(err, eventsDeleted) => {
+                if (err) {
+                    return res.status(500).json({ ok: false, err })
+                }
+                let requests = [];
+                if (events.length === 0) {
+                    return res.status(200).json({ ok: true, facilitie: facilitieDeleted })
+                } else {
+                    await events.forEach((event) => {
+                        let request = pullEventsInDays(res, event);
+                        request.push(request)
+                    })
+                    Promise.all(requests).then(() => {
+                        res.status(200).json({ ok: true, facilitie: facilitieDeleted })
+                    })
+                }
+            })
 
+        })
+    })
 })
+
+const pullEventsInDays = (res, event) => {
+    return new Promise((resolve, reject) => {
+        let hour = `hour${event.hour}`;
+        Day.updateMany({
+            [hour]: eventDb._id
+        }, {
+            $pull: {
+                [hour]: eventDb._id
+            }
+        }, (err, updated) => {
+            if (err) {
+                res.status(500).json({ ok: false, err })
+            }
+            resolve()
+        })
+
+    })
+}
 
 module.exports = app;

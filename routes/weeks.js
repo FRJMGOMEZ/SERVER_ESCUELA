@@ -201,17 +201,24 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
             request = Week.findOne({ sunday: dayId })
             break;
     }
-    request.exec((err, weekDb) => {
-        if (err) {
+    request.populate('monday', 'date _id')
+        .populate('tuesday', 'date _id')
+        .populate('wednesday', 'date _id')
+        .populate('thursday', 'date _id')
+        .populate('friday', 'date _id')
+        .populate('saturday', 'date _id')
+        .populate('sunday', 'date _id')
+        .exec((err, weekDb) => {
+            if (err) {
 
-            res.status(500).json({ ok: false, err })
-        }
-        if (!weekDb) {
+                res.status(500).json({ ok: false, err })
+            }
+            if (!weekDb) {
 
-            res.status(404).json({ ok: false, message: 'No weeks have been founded' })
-        }
-        res.status(200).json({ ok: true, week: weekDb })
-    })
+                res.status(404).json({ ok: false, message: 'No weeks have been founded' })
+            }
+            res.status(200).json({ ok: true, week: weekDb })
+        })
 })
 
 

@@ -1,5 +1,5 @@
 const express = require('express');
-const Indexcard = require('../models/indexcard');
+const Indexcard = require('../models/indexCard');
 const Alumni = require('../models/alumni');
 const Professor = require('../models/professor');
 

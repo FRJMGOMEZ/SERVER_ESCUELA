@@ -2,14 +2,10 @@ const express = require('express');
 const Alumni = require('../models/alumni');
 const User = require('../models/user');
 const Professor = require('../models/professor');
-const Subject = require('../models/subject');
-const Indexcard = require('../models/indexcard');
 const Project = require('../models/project');
 const Week = require('../models/week');
 const EventModel = require('../models/event');
 const Day = require('../models/day');
-const Facilitie = require('../models/facilitie');
-const Message = require('../models/message');
 const FileModel = require('../models/file');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 

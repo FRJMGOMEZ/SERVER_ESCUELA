@@ -2,7 +2,7 @@ const express = require('express');
 
 const Alumni = require('../models/alumni');
 const Subject = require('../models/subject');
-const IndexCard = require('../models/indexcard');
+const Indexcard = require('../models/indexcard');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -100,7 +100,7 @@ app.delete('/alumni/:id', [verifyToken, verifyRole], (req, res) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                IndexCard.findByIdAndUpdate({ _id: alumniDeleted._id }, { status: false }, (err, indexCardUpdated) => {
+                Indexcard.findByIdAndUpdate({ _id: alumniDeleted._id }, { status: false }, (err, indexCardUpdated) => {
                     if (err) {
                         return res.status(500).json({ ok: false, err })
                     }

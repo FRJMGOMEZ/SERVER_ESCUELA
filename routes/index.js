@@ -7,7 +7,7 @@ app.use(require('./professors'))
 app.use(require('./subjects'))
 app.use(require('./facilities'))
 app.use(require('./alumnis'));
-app.use(require('./indexcards'));
+app.use(require('./indexCards'));
 app.use(require('./projects'));
 app.use(require('./files'));
 app.use(require('./search'));

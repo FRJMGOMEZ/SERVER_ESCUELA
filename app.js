@@ -42,7 +42,7 @@ db.once('open', () => {
     console.log("DB PORT: 27017 \x1b[32m%s\x1b[0m", 'RUNNING')
 })
 
-const frontEndPath = path.resolve(__dirname, './dist/index.html');
+const frontEndPath = path.resolve(__dirname, './dist/ADMINESCUELA');
 console.log(frontEndPath)
 app.use(express.static(frontEndPath));
 

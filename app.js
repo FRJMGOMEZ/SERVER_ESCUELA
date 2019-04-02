@@ -17,6 +17,8 @@ app.use(function(req, res, next) {
 });
 
 
+app.use(express.static('./dist'));
+
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
@@ -41,8 +43,6 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
     console.log("DB PORT: 27017 \x1b[32m%s\x1b[0m", 'RUNNING')
 })
-
-app.use(express.static('dist'));
 
 //Listening request
 server.listen(process.env.PORT, () => {

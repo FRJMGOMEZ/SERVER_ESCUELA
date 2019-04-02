@@ -12,8 +12,7 @@ class Room {
 
         })
     }
-
-    deleteUser(id) {
+    removeUser(id) {
         return new Promise((resolve, reject) => {
             this.users = this.users.filter(user => user != id);
             resolve(this.users)
@@ -26,7 +25,6 @@ let rooms = []
 io.on('connection', (client) => {
 
     //////////////// DASHBOARD //////////////
-
     client.on('dashboardIn', async(payload) => {
         let dashboardRoom = await rooms.map((room) => { return room.id === 'dashboard' })[0];
         if (dashboardRoom) {
@@ -43,7 +41,7 @@ io.on('connection', (client) => {
     })
 
     client.on('/dashboardOut', async(payload) => {
-        await room[rooms.map((room) => { return room.id }).indexOf('dashboard')].deleteUser(payload.user)
+        await room[rooms.map((room) => { return room.id }).indexOf('dashboard')].removeUser(payload.user)
         if (room[rooms.map((room) => { return room.id }).indexOf('dashboard')].users.length === 0) {
             rooms = rooms.filter((room) => { return room.id != 'dashboard' })
         }
@@ -91,7 +89,7 @@ io.on('connection', (client) => {
     client.on('userOut', async(payload) => {
         if (payload.room) {
             if (rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)]) {
-                await rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].deleteUser(payload.user)
+                await rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].removeUser(payload.user)
                 user = undefined;
                 await client.leave(payload.room)
                 let usersOnline = await rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].users;
@@ -105,10 +103,6 @@ io.on('connection', (client) => {
             }
         }
     })
-
-    //client.on('dashboard', async(payload) => {
-    //  client.to('dashboard').emit('dashboard', payload)
-    // })
 
     client.on('message', async(payload) => {
         client.broadcast.to(payload.room).emit('message', payload.messageOrder)
@@ -131,7 +125,7 @@ io.on('connection', (client) => {
     client.on('disconnect', async() => {
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
-                room.deleteUser(user).then((users) => {
+                room.removeUser(user).then((users) => {
                     if (users.length === 0) {
                         rooms = rooms.filter((myRoom) => { return myRoom.id != room.id });
                     }

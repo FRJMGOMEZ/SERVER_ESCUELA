@@ -5,7 +5,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
-
+const path = require('path');
 
 const app = express()
 
@@ -40,6 +40,9 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
     console.log("DB PORT: 27017 \x1b[32m%s\x1b[0m", 'RUNNING')
 })
+
+//const frontEndPath = path.resolve(__dirname, './dist');
+//app.use(express.static(frontEndPath));
 
 
 //Listening request

@@ -8,7 +8,6 @@ const User = require('../models/user');
 
 const app = express()
 
-
 app.get('/messages/:id', verifyToken, (req, res) => {
     let projectId = req.params.id;
     let from = Number(req.query.from);
@@ -33,7 +32,6 @@ app.get('/messages/:id', verifyToken, (req, res) => {
             })
         })
 })
-
 
 app.get('/lastMessages', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
@@ -76,7 +74,6 @@ const findMessages = (projectId, userLastConnection, res) => {
         }
     })
 }
-
 
 app.post('/message', verifyToken, (req, res) => {
     let message = new Message({

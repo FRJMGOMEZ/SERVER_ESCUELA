@@ -43,7 +43,6 @@ db.once('open', () => {
 })
 
 const frontEndPath = path.resolve(__dirname, './dist/ADMINESCUELA');
-console.log(frontEndPath)
 app.use(express.static(frontEndPath));
 
 

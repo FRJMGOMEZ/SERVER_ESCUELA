@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const alumniSchema = new Schema({
     name: { type: String, unique: true, required: true },
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
-    indexcard: { type: mongoose.Schema.Types.ObjectId, ref: 'IndexCard' },
+    indexcard: { type: mongoose.Schema.Types.ObjectId, ref: 'Indexcard' },
     users: [{ id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, date: String }]
 });
 

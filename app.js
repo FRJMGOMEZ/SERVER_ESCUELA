@@ -42,8 +42,8 @@ db.once('open', () => {
     console.log("DB PORT: 27017 \x1b[32m%s\x1b[0m", 'RUNNING')
 })
 
-//const frontEndPath = path.resolve(__dirname, './dist');
-//app.use(express.static(frontEndPath));
+const frontEndPath = path.resolve(__dirname, './dist');
+app.use(express.static(frontEndPath));
 
 
 //Listening request

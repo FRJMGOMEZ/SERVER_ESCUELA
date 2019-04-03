@@ -120,7 +120,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/event/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
 
     let id = req.params.id;
     let body = req.body;
@@ -131,93 +131,85 @@ app.put('/event/:id', [verifyToken, verifyRole], (req, res) => {
         if (!eventDb) {
             res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
         }
-        checkPermanecy(res, body, eventDb).then(() => {
-            eventDb.name = body.name
-            eventDb.description = body.description
-            eventDb.professors = body.professors
-            eventDb.subjects = body.subjects
-            eventDb.duration = Number(body.duration);
-            eventDb.position = Number(body.position)
-            eventDb.repetition = body.repetition;
-            eventDb.endDate = body.endDate;
-            eventDb.startDate = body.startDate;
-            eventDb.permanent = body.permanent;
-            eventDb.save((err, eventDb) => {
-                if (err) {
-                    res.status(500).json({ ok: false, err })
-                }
-                res.status(200).json({ ok: true, event: eventDb })
-            })
+        await checkPermanecy(res, body, eventDb)
+        eventDb.name = body.name
+        eventDb.description = body.description
+        eventDb.professors = body.professors
+        eventDb.subjects = body.subjects
+        eventDb.duration = Number(body.duration);
+        eventDb.position = Number(body.position)
+        eventDb.repetition = body.repetition;
+        eventDb.endDate = body.endDate;
+        eventDb.startDate = body.startDate;
+        eventDb.permanent = body.permanent;
+        eventDb.save((err, eventDb) => {
+            if (err) {
+                res.status(500).json({ ok: false, err })
+            }
+            res.status(200).json({ ok: true, event: eventDb })
         })
+
     })
 })
 
-const checkPermanecy = (res, body, eventDb) => {
-    return new Promise((resolve) => {
-        let updatedEventEndDate;
-        let eventDbEndDate;
-        let from;
-        let to;
-        let request;
-        let hour = `hour${parseInt(eventDb.hour)}`;
-        if (body.permanent) {
-            if (eventDb.endDate) {
-                eventDbEndDate = new Date(eventDb.endDate);
-                updatedEventEndDate = new Date(body.endDate)
-                if (updatedEventEndDate.getTime() > eventDbEndDate.getTime()) {
-                    from = new Date(eventDbEndDate);
-                    to = new Date(updatedEventEndDate);
-                    request = '+';
-                } else if (updatedEventEndDate.getTime() < eventDbEndDate.getTime()) {
-                    from = new Date(updatedEventEndDate);
-                    to = new Date(eventDbEndDate);
-                    request = '-'
-                }
-            } else {
-                if (eventDb.permanent) {
-                    from = new Date(body.endDate);
-                    from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0)
-                    to = new Date(8630000000000000);
-                    request = '-'
-                } else {
-                    if (body.endDate) {
-                        from = new Date(body.startDate);
-                        to = new Date(body.endDate);
-                        request = '+'
-                    } else {
-                        from = new Date(body.startDate);
-                        to = new Date(8630000000000000)
-                        request = '+'
-                    }
-                }
+const checkPermanecy = async(res, body, eventDb) => {
+    let updatedEventEndDate;
+    let eventDbEndDate;
+    let from;
+    let to;
+    let request;
+    let hour = `hour${parseInt(eventDb.hour)}`;
+    if (body.permanent) {
+        if (eventDb.endDate) {
+            eventDbEndDate = new Date(eventDb.endDate);
+            updatedEventEndDate = new Date(body.endDate)
+            if (updatedEventEndDate.getTime() > eventDbEndDate.getTime()) {
+                from = new Date(eventDbEndDate);
+                to = new Date(updatedEventEndDate);
+                request = '+';
+            } else if (updatedEventEndDate.getTime() < eventDbEndDate.getTime()) {
+                from = new Date(updatedEventEndDate);
+                to = new Date(eventDbEndDate);
+                request = '-'
             }
         } else {
             if (eventDb.permanent) {
-                if (eventDb.endDate) {
-                    from = new Date(eventDb.startDate)
-                    from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
-                    to = new Date(eventDb.endDate)
-                    request = '-'
+                from = new Date(body.endDate);
+                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0)
+                to = new Date(8630000000000000);
+                request = '-'
+            } else {
+                if (body.endDate) {
+                    from = new Date(body.startDate);
+                    to = new Date(body.endDate);
+                    request = '+'
                 } else {
-                    from = new Date(body.startDate)
-                    from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
-                    to = new Date(8630000000000000);
-                    request = '-'
+                    from = new Date(body.startDate);
+                    to = new Date(8630000000000000)
+                    request = '+'
                 }
             }
         }
-        if (request === '+') {
-            addEventToDays(res, hour, eventDb, from, to).then(() => {
-                resolve()
-            })
-        } else if (request === '-') {
-            removeEventFromDays(res, hour, eventDb, from, to).then(() => {
-                resolve()
-            })
-        } else {
-            resolve()
+    } else {
+        if (eventDb.permanent) {
+            if (eventDb.endDate) {
+                from = new Date(eventDb.startDate)
+                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
+                to = new Date(eventDb.endDate)
+                request = '-'
+            } else {
+                from = new Date(body.startDate)
+                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
+                to = new Date(8630000000000000);
+                request = '-'
+            }
         }
-    })
+    }
+    if (request === '+') {
+        await addEventToDays(res, hour, eventDb, from, to)
+    } else if (request === '-') {
+        await removeEventFromDays(res, hour, eventDb, from, to)
+    }
 }
 
 

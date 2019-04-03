@@ -15,7 +15,6 @@ app.use(function(req, res, next) {
     next();
 });
 
-
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
@@ -24,12 +23,10 @@ app.use(bodyParser.json())
 //Routes
 app.use(require('./routes/index.js'))
 
-
 //Socket.io
 let server = http.createServer(app);
 module.exports.io = socketIO(server);
 require('./sockets/sockets')
-
 
 mongoose.connection.openUri(process.env.URLDB, {
     useNewUrlParser: true

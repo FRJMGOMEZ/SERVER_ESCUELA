@@ -175,8 +175,7 @@ let checkPermanentEvents = (res, day, date) => {
 app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
-    let dayOfTheWeek = Number(req.params.dayOfTheWeek)
-    console.log(dayId)
+    let dayOfTheWeek = Number(req.params.dayOfTheWeek) - 1
     let request = await getDay(dayOfTheWeek);
     Week.findOne({
             [request]: dayId

@@ -172,7 +172,7 @@ let checkPermanentEvents = (res, day, date) => {
     })
 }
 
-app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
+app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek);
@@ -180,28 +180,30 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
     let request;
     switch (dayOfTheWeek) {
         case 1:
-            request = Week.findOne({ monday: dayId })
+            request = 'monday'
             break;
         case 2:
-            request = Week.findOne({ tuesday: dayId })
+            request = 'tuesday'
             break;
         case 3:
-            request = Week.findOne({ wednesday: dayId })
+            request = 'wednesday'
             break;
         case 4:
-            request = Week.findOne({ thursday: dayId })
+            request = 'thursday'
             break;
         case 5:
-            request = Week.findOne({ friday: dayId })
+            request = 'friday'
             break;
         case 6:
-            request = Week.findOne({ saturday: dayId })
+            request = 'saturday'
             break;
         case 0:
-            request = Week.findOne({ sunday: dayId })
+            request = 'sunday'
             break;
     }
-    request.populate('monday', 'date _id')
+    Week.findOne({
+            [request]: dayId
+        }).populate('monday', 'date _id')
         .populate('tuesday', 'date _id')
         .populate('wednesday', 'date _id')
         .populate('thursday', 'date _id')
@@ -210,18 +212,14 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', (req, res) => {
         .populate('sunday', 'date _id')
         .exec((err, weekDb) => {
             if (err) {
-
                 res.status(500).json({ ok: false, err })
             }
             if (!weekDb) {
-
                 res.status(404).json({ ok: false, message: 'No weeks have been founded' })
             }
+            console.log(weekDb)
             res.status(200).json({ ok: true, week: weekDb })
         })
 })
-
-
-
 
 module.exports = app

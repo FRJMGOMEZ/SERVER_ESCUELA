@@ -23,5 +23,8 @@
         "underscore": "^1.9.1"
     },
     "devDependencies": {},
-    "description": ""
+    "description": "",
+    "engines": {
+        "node": "10.5.0"
+    }
 }

@@ -177,49 +177,57 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek);
 
-    let request;
-    switch (dayOfTheWeek) {
-        case 1:
-            request = 'monday'
-            break;
-        case 2:
-            request = 'tuesday'
-            break;
-        case 3:
-            request = 'wednesday'
-            break;
-        case 4:
-            request = 'thursday'
-            break;
-        case 5:
-            request = 'friday'
-            break;
-        case 6:
-            request = 'saturday'
-            break;
-        case 0:
-            request = 'sunday'
-            break;
-    }
-    Week.findOne({
-            [request]: dayId
-        }).populate('monday', 'date _id')
-        .populate('tuesday', 'date _id')
-        .populate('wednesday', 'date _id')
-        .populate('thursday', 'date _id')
-        .populate('friday', 'date _id')
-        .populate('saturday', 'date _id')
-        .populate('sunday', 'date _id')
-        .exec((err, weekDb) => {
-            if (err) {
-                res.status(500).json({ ok: false, err })
-            }
-            if (!weekDb) {
-                res.status(404).json({ ok: false, message: 'No weeks have been founded' })
-            }
-            console.log(weekDb)
-            res.status(200).json({ ok: true, week: weekDb })
-        })
+    getDay(dayOfTheWeek).then((request) => {
+        Week.findOne({
+                [request]: dayId
+            }).populate('monday', 'date _id')
+            .populate('tuesday', 'date _id')
+            .populate('wednesday', 'date _id')
+            .populate('thursday', 'date _id')
+            .populate('friday', 'date _id')
+            .populate('saturday', 'date _id')
+            .populate('sunday', 'date _id')
+            .exec((err, weekDb) => {
+                if (err) {
+                    res.status(500).json({ ok: false, err })
+                }
+                if (!weekDb) {
+                    res.status(404).json({ ok: false, message: 'No weeks have been founded' })
+                }
+                console.log(weekDb)
+                res.status(200).json({ ok: true, week: weekDb })
+            })
+
+    })
+
 })
+
+const getDay = (dayOfTheWeek) => {
+    return new Promise((resolve, reject) => {
+        switch (dayOfTheWeek) {
+            case 1:
+                resolve('monday')
+                break;
+            case 2:
+                resolve('tuesday')
+                break;
+            case 3:
+                resolve('wednesday')
+                break;
+            case 4:
+                resolve('thursday')
+                break;
+            case 5:
+                resolve('friday')
+                break;
+            case 6:
+                resolve('saturday')
+                break;
+            case 0:
+                resolve('sunday')
+                break;
+        }
+    })
+}
 
 module.exports = app

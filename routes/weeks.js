@@ -188,7 +188,6 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
         .populate('saturday', 'date _id')
         .populate('sunday', 'date _id')
         .exec((err, weekDb) => {
-            console.log(weekDb)
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
@@ -204,25 +203,25 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         switch (dayOfTheWeek) {
-            case 1:
+            case 0:
                 resolve('monday')
                 break;
-            case 2:
+            case 1:
                 resolve('tuesday')
                 break;
-            case 3:
+            case 2:
                 resolve('wednesday')
                 break;
-            case 4:
+            case 3:
                 resolve('thursday')
                 break;
-            case 5:
+            case 4:
                 resolve('friday')
                 break;
-            case 6:
+            case 5:
                 resolve('saturday')
                 break;
-            case 0:
+            case 6:
                 resolve('sunday')
                 break;
         }

@@ -195,9 +195,6 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
             }
             res.status(200).json({ ok: true, week: weekDb })
         })
-
-
-
 })
 
 const getDay = (dayOfTheWeek) => {

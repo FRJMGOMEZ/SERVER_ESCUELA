@@ -151,16 +151,6 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
 
     })
 })
-
-
-
-
-
-
-
-
-
-
 const checkPermanecy = async(res, body, eventDb) => {
     let updatedEventEndDate;
     let eventDbEndDate;
@@ -249,7 +239,6 @@ const removeEventFromDays = (res, hour, eventDb, from, to) => {
 
 const addEventToDays = (res, hour, eventDb, from, to) => {
     return new Promise((resolve, reject) => {
-
         Day.updateMany({
             day: Number(eventDb.day),
             date: { $gte: from, $lte: to },

@@ -201,25 +201,25 @@ const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         switch (dayOfTheWeek) {
             case 1:
-                resolve('monday')
+                resolve(monday)
                 break;
             case 2:
-                resolve('tuesday')
+                resolve(tuesday)
                 break;
             case 3:
-                resolve('wednesday')
+                resolve(wednesday)
                 break;
             case 4:
-                resolve('thursday')
+                resolve(thursday)
                 break;
             case 5:
-                resolve('friday')
+                resolve(friday)
                 break;
             case 6:
-                resolve('saturday')
+                resolve(saturday)
                 break;
             case 0:
-                resolve('sunday')
+                resolve(sunday)
                 break;
         }
     })

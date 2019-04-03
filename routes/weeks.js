@@ -180,7 +180,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
     getDay(dayOfTheWeek).then((request) => {
         console.log(request)
         Week.findOne({
-                [request]: dayId
+                request: dayId
             }).populate('monday', 'date _id')
             .populate('tuesday', 'date _id')
             .populate('wednesday', 'date _id')

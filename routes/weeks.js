@@ -176,9 +176,10 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
+    console.log(dayId)
     let request = await getDay(dayOfTheWeek);
-    Week.find({
-            tuesday: dayId
+    Week.findOne({
+            [request]: dayId
         }).populate('monday', 'date _id')
         .populate('tuesday', 'date _id')
         .populate('wednesday', 'date _id')
@@ -187,17 +188,18 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
         .populate('saturday', 'date _id')
         .populate('sunday', 'date _id')
         .exec((err, weekDb) => {
+            console.log(weekDb)
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
             if (!weekDb) {
                 return res.status(404).json({ ok: false, message: 'No weeks have been founded' })
             }
-            console.log(weekDb)
 
-            res.status(200).json({ ok: true, week: weekDb[0] })
+            res.status(200).json({ ok: true, week: weekDb })
         })
 })
+
 
 const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {

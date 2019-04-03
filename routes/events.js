@@ -152,6 +152,15 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
     })
 })
 
+
+
+
+
+
+
+
+
+
 const checkPermanecy = async(res, body, eventDb) => {
     let updatedEventEndDate;
     let eventDbEndDate;
@@ -206,9 +215,15 @@ const checkPermanecy = async(res, body, eventDb) => {
         }
     }
     if (request === '+') {
-        await addEventToDays(res, hour, eventDb, from, to)
+        await addEventToDays(res, hour, eventDb, from, to).then(() => {
+            return
+        })
     } else if (request === '-') {
-        await removeEventFromDays(res, hour, eventDb, from, to)
+        await removeEventFromDays(res, hour, eventDb, from, to).then(() => {
+            return
+        })
+    } else {
+        return
     }
 }
 

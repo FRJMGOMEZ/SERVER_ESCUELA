@@ -103,7 +103,7 @@ app.post('/week', (req, res) => {
 
             week.date = new Date(daysSaved[0].date);
 
-            week.save((err, weekSaved) => {
+            week.save((err) => {
                 if (err) {
                     res.status(500).json({ ok: false, err })
                 }
@@ -176,7 +176,6 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
-    console.log(dayOfTheWeek)
     let request = await getDay(dayOfTheWeek);
     Week.findOne({
             [request]: dayId

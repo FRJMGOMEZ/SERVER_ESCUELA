@@ -46,7 +46,7 @@ app.post('/login', verifyStatus, (req, res) => {
         })
 })
 
-app.get('updateToken', verifyToken, async(req, res) => {
+app.get('/updateToken', verifyToken, async(req, res) => {
     let userDb = req.user.userDb;
     let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
     res.status(200).json({ ok: true, token })

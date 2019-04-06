@@ -25,6 +25,10 @@ let rooms = []
 io.on('connection', (client) => {
 
     //////////////// DASHBOARD //////////////
+    client.on('userSocket', async(payload) => {
+        client.broadcast.emit('userSocket', payload)
+    })
+
     client.on('dashboardIn', async(payload) => {
         let dashboardRoom = await rooms.map((room) => { return room.id === 'dashboard' })[0];
         if (dashboardRoom) {

@@ -9,7 +9,6 @@ app.get('/dayByDate/:date', verifyToken, (req, res) => {
 
     let date = new Date(Number(req.params.date));
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
-
     Day.findOne({
             date: { $eq: date }
         })

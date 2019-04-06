@@ -47,6 +47,24 @@ app.get('/users', verifyToken, (req, res) => {
         })
 })
 
+app.get('/users/admins', (req, res) => {
+    User.find({ role: 'ADMIN_ROLE' }, (err, users) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+        if (!users) {
+            return res.status(404).json({
+                ok: false,
+                message: 'There are no user in DB'
+            })
+        }
+        res.status(200).json({ ok: true, users })
+    })
+})
+
 app.put('/changePassword/:password1/:password1', verifyToken, (req, res) => {
     ///////Encriptar password///
     let id = req.params.id;
@@ -185,23 +203,25 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
                 case false:
                     request = User.findByIdAndUpdate(id, { status: true }, { new: true });
             }
-            request.exec((err, userDb) => {
-                if (err) {
-                    return res.status(500).json({ ok: false, err })
-                }
-                if (!userDb) {
-                    return res.status(404).json({ ok: false, message: 'No users have been found' })
-                }
-                if (userDb.status === false) {
-                    Project.update({}, { $pull: { participants: userDb._id, admnistrators: userDb._id } })
-                        .exec((err) => {
-                            if (err) {
-                                return res.status(500).json({ ok: false, err })
-                            }
-                            res.status(200).json({ ok: true, user: userDb })
-                        })
-                } else { res.status(200).json({ ok: true, user: userDb }) }
-            })
+            request
+                .populate('img')
+                .exec((err, userDb) => {
+                    if (err) {
+                        return res.status(500).json({ ok: false, err })
+                    }
+                    if (!userDb) {
+                        return res.status(404).json({ ok: false, message: 'No users have been found' })
+                    }
+                    if (userDb.status === false) {
+                        Project.update({}, { $pull: { participants: userDb._id, admnistrators: userDb._id } })
+                            .exec((err) => {
+                                if (err) {
+                                    return res.status(500).json({ ok: false, err })
+                                }
+                                res.status(200).json({ ok: true, user: userDb })
+                            })
+                    } else { res.status(200).json({ ok: true, user: userDb }) }
+                })
         })
     } else {
         res.status(403).json({ ok: false, message: 'This action is forbiddden' })

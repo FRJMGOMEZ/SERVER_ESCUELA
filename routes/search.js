@@ -184,6 +184,14 @@ const searchProjectById = (res, id) => {
         Project.findOne({ _id: id })
             .populate('participants')
             .populate('administrators')
+            .populate({
+                model: 'User',
+                path: 'participants',
+                populate: {
+                    path: 'img',
+                    model: 'FileModel'
+                },
+            })
             .populate('messages')
             .populate({
                 model: 'Task',

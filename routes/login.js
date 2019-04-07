@@ -12,7 +12,7 @@ const app = express();
 app.post('/login', verifyStatus, (req, res) => {
     let body = req.body;
     User.findOne({ email: body.email })
-        .populate({ path: 'img', model: 'File' })
+        .populate('img')
         .lean()
         .exec((err, userDb) => {
             if (err) {

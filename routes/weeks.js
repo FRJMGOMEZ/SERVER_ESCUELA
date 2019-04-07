@@ -7,7 +7,6 @@ const app = express()
 app.get('/week/:date', (req, res) => {
     let date = new Date(Number(req.params.date));
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0)
-    console.log(date)
     Week.findOne({
             "date": {
                 "$eq": date
@@ -33,7 +32,6 @@ app.post('/week', (req, res) => {
     let body = req.body;
     let date = new Date(body.date);
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0);
-    console.log(date)
 
     let monday = new Day({
         date: new Date(date),

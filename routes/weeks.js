@@ -5,7 +5,7 @@ const Day = require('../models/day');
 const app = express()
 
 app.get('/week/:date', (req, res) => {
-    let date = new Date(req.params.date);
+    let date = new Date(Number(req.params.date));
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0)
     Week.findOne({
             "date": {

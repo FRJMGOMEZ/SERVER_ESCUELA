@@ -6,7 +6,7 @@ const app = express()
 
 app.get('/week/:date', (req, res) => {
     let date = new Date(Number(req.params.date));
-    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0)
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
     Week.findOne({
             "date": {
                 "$eq": date
@@ -31,9 +31,9 @@ app.post('/week', (req, res) => {
 
     let body = req.body;
     let date = new Date(body.date);
-    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
     let monday = new Day({
-        date: date.setDate(date.getDate() + 1),
+        date: new Date(date),
         day: date.getDay()
     })
     let tuesday = new Day({
@@ -200,25 +200,25 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         switch (dayOfTheWeek) {
-            case 1:
+            case 0:
                 resolve('monday')
                 break;
-            case 2:
+            case 1:
                 resolve('tuesday')
                 break;
-            case 3:
+            case 2:
                 resolve('wednesday')
                 break;
-            case 4:
+            case 3:
                 resolve('thursday')
                 break;
-            case 5:
+            case 4:
                 resolve('friday')
                 break;
-            case 6:
+            case 5:
                 resolve('saturday')
                 break;
-            case 0:
+            case 6:
                 resolve('sunday')
                 break;
         }

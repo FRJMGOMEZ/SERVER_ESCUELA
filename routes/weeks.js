@@ -31,9 +31,8 @@ app.post('/week', (req, res) => {
 
     let body = req.body;
     let date = new Date(body.date);
-    console.log(date)
-    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset() + 1, 0, 0);
-    console.log(date)
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
+    console.log(date.getHours())
     let monday = new Day({
         date: new Date(date),
         day: date.getDay()

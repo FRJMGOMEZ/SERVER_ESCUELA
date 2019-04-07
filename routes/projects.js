@@ -127,20 +127,22 @@ app.put('/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) =
             projectDb.participants = projectDb.participants.filter((participant) => { return participant != participantId })
             request = User.findByIdAndUpdate(participantId, { $pull: { 'projects': { '_id': projectDb._id } } })
         }
-        request.exec((err, userUpdated) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            if (!userUpdated) {
-                return res.status(404).json({ ok: false, message: 'No users have been found' })
-            }
-            projectDb.save((err) => {
+        request
+            .populate('img')
+            .exec((err, userUpdated) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                res.status(200).json({ ok: true, participant: userUpdated })
+                if (!userUpdated) {
+                    return res.status(404).json({ ok: false, message: 'No users have been found' })
+                }
+                projectDb.save((err) => {
+                    if (err) {
+                        return res.status(500).json({ ok: false, err })
+                    }
+                    res.status(200).json({ ok: true, participant: userUpdated })
+                })
             })
-        })
     })
 })
 

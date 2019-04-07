@@ -36,6 +36,7 @@ app.post('/week', (req, res) => {
     let date = new Date(body.date);
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
 
+
     let monday = new Day({
         date: new Date(date),
         day: date.getDay()
@@ -228,4 +229,4 @@ const getDay = (dayOfTheWeek) => {
     })
 }
 
-module.exports = a
+module.exports = app

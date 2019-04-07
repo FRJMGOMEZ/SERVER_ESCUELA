@@ -8,7 +8,8 @@ const { verifyToken } = require('../middlewares/auth');
 app.get('/dayByDate/:date', verifyToken, (req, res) => {
 
     let date = new Date(Number(req.params.date));
-    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, -date.getTimezoneOffset(), 0, 0);
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0);
+    console.log(date)
     Day.findOne({
             date: { $eq: date }
         })

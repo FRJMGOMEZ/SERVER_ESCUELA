@@ -16,8 +16,15 @@ app.get('/files/:type/:fileName', (req, res, next) => {
     let fileName = req.params.fileName;
 
     if (type === 'icons') {
-
         let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
+        if (fs.existsSync(pathImage)) {
+            res.sendFile(pathImage)
+        } else {
+            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            res.sendFile(pathNoImage)
+        }
+    } else if (type === 'front') {
+        let pathImage = path.resolve(__dirname, `../assets/cargoImages/${fileName}`);
         if (fs.existsSync(pathImage)) {
             res.sendFile(pathImage)
         } else {

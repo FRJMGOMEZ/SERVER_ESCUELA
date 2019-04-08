@@ -1,6 +1,6 @@
 require('./config/config')
 const express = require('express');
-const multer = require('http');
+const http = require('http');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
@@ -20,12 +20,12 @@ app.use(function(req, res, next) {
     next();
 });
 
-//app.use(multer({
-//  dest: `./uploads/`,
-//rename: function(fieldname, filename) {
-//  return filename;
-//},
-//}));
+app.use(multer({
+    dest: `./uploads/`,
+    rename: function(fieldname, filename) {
+        return filename;
+    },
+}));
 
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));

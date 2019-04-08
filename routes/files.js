@@ -117,7 +117,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
     } else {
         checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-            newFile.file.data = fs.readFileSync(file)
+            newFile.file.data = await fs.readFileSync(file)
             newItem.file.contentType = `${response.extension}`;
             newFile.save((err, file) => {
                 if (err) {

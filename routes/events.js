@@ -82,7 +82,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
                 res.status(404).json({ ok: false, message: 'Event not found' })
             }
 
-            let to = new Date(Number(req.params.limitDate) || 8630000000000000);
+            let to = new Date(Number(req.params.limitDate));
             to = new Date(to.getFullYear(), to.getMonth(), to.getDate(), 0, -to.getTimezoneOffset(), 0, 0);
 
             let from = new Date(dayDb.date)

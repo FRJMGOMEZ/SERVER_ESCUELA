@@ -67,20 +67,16 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
         permanent: body.permanent,
         project: body.project
     })
-    console.log(event)
     event.save((err, eventDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
-        }
-        if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         Day.findById(dayId, (err, dayDb) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             if (!eventDb) {
-                res.status(404).json({ ok: false, message: 'Event not found' })
+                return res.status(404).json({ ok: false, message: 'Event not found' })
             }
 
             let to = new Date(Number(req.params.limitDate));
@@ -104,7 +100,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
             if (eventDb.permanent) {
                 request2.exec((err, updated) => {
                     if (err) {
-                        res.status(500).json({ ok: false, err })
+                        return res.status(500).json({ ok: false, err })
                     }
                     res.status(200).json({ ok: true, event: eventDb })
                 })
@@ -112,7 +108,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
 
                 request.exec((err, updated) => {
                     if (err) {
-                        res.status(500).json({ ok: false, err })
+                        return res.status(500).json({ ok: false, err })
                     }
                     res.status(200).json({ ok: true, event: eventDb })
                 })

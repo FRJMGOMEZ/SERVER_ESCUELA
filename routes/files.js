@@ -33,13 +33,22 @@ app.get('/files/:type/:fileName', (req, res) => {
             res.sendFile(pathNoImage)
         }
     } else {
-        let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
-        if (fs.existsSync(pathImage)) {
-            res.sendFile(pathImage)
-        } else {
-            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-            console.log(pathNoImage)
-            res.sendFile(pathNoImage)
+        if (fileName.indexOf('pdf') >= 0) {
+            let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
+            if (fs.existsSync(pathImage)) {
+                if (fileName.indexOf('pdf') >= 0) {
+                    request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
+                        if (error) {
+                            res.status(500).json({ ok: false, error })
+                        }
+                    });
+                } else {
+                    res.sendFile(pathImage)
+                }
+            } else {
+                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+                res.sendFile(pathNoImage)
+            }
         }
     }
 })

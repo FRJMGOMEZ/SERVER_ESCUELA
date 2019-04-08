@@ -4,7 +4,7 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
 var request = require('request')
-var multer = require('multer');
+
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -66,59 +66,80 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             message: 'No images have been selected'
         });
     }
-    recordFile(res, type, file, id).then((response) => {
-        let newFile = new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-        newFile.save((err, file) => {
-            if (err) {
-                deleteFile(fileName, type)
-                return res.status(500).json({
-                    ok: false,
-                    error
-                })
-            }
-            if (type === '!projectFiles') {
-                request.exec((error, itemUpdated) => {
-                    if (err) {
-                        deleteFile(fileName, type)
-                        File.findByIdAndDelete(file._id, (err, file) => {
-                            if (err) {
+
+    let newFile;
+    if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
+        recordFileDev(res, type, file, id).then(async(response) => {
+            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+            newFile.save((err, file) => {
+                if (err) {
+                    deleteFile(fileName, type)
+                    return res.status(500).json({
+                        ok: false,
+                        error
+                    })
+                }
+                if (type === '!projectFiles') {
+                    request.exec((error, itemUpdated) => {
+                        if (err) {
+                            deleteFile(fileName, type)
+                            FileModel.findByIdAndDelete(file._id, (err, file) => {
+                                if (err) {
+                                    return res.status(500).json({
+                                        ok: false,
+                                        error
+                                    })
+                                }
                                 return res.status(500).json({
                                     ok: false,
                                     error
                                 })
-                            }
-                            return res.status(500).json({
-                                ok: false,
-                                error
                             })
-                        })
-                    }
-                    if (!itemUpdated) {
-                        deleteFile(fileName, type)
-                        File.findByIdAndDelete(file._id, (err, file) => {
-                            if (err) {
-                                return res.status(500).json({
+                        }
+                        if (!itemUpdated) {
+                            deleteFile(fileName, type)
+                            FileModel.findByIdAndDelete(file._id, (err, file) => {
+                                if (err) {
+                                    return res.status(500).json({
+                                        ok: false,
+                                        error
+                                    })
+                                }
+                                return res.status(400).json({
                                     ok: false,
-                                    error
+                                    message: `There are no ${type} with the ID provided`
                                 })
-                            }
-                            return res.status(400).json({
-                                ok: false,
-                                message: `There are no ${type} with the ID provided`
                             })
-                        })
-                    }
+                        }
+                        res.status(200).json({ file })
+                    })
+                } else {
                     res.status(200).json({ file })
-                })
-            } else {
-                res.status(200).json({ file })
-            }
+                }
+            })
         })
-    })
+    } else {
+        checkFileProd(res, type, file, id).then(async(response) => {
+            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+            newFile.file.data = fs.readFileSync(file)
+            newItem.file.contentType = `${response.extension}`;
+            newFile.save((err, file) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        error
+                    })
+                }
+                res.status(200).json({ file })
+            })
+        })
+    }
+
+
 });
 
 
-const recordFile = (res, type, file, id) => {
+const recordFileDev = (res, type, file, id) => {
     return new Promise((resolve, reject) => {
         let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
         if (validTypes.indexOf(type) < 0) {
@@ -147,6 +168,29 @@ const recordFile = (res, type, file, id) => {
         })
     })
 }
+
+const checkFileProd = (res, type, file, id) => {
+    let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
+    if (validTypes.indexOf(type) < 0) {
+        return res.status(403).json({
+            ok: false,
+            message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
+        })
+    }
+    let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
+    let cuttedFile = file.name.split('.');
+    let extension = cuttedFile[cuttedFile.length - 1];
+    if (validExtensions.indexOf(extension) < 0) {
+        return res.status(403).json({
+            ok: false,
+            message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
+        })
+    }
+    let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
+    resolve({ fileName, extension })
+}
+
+
 
 app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, res) => {
     let type = req.params.type;

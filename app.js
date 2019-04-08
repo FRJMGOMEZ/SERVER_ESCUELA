@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
 const path = require('path');
 const compression = require('compression');
-const request = require('request');
 
 const app = express()
 

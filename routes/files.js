@@ -43,6 +43,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                         if (error) {
                             res.status(500).json({ ok: false, error })
                         }
+                        console.log(response)
                     });
                 } else {
                     res.sendFile(pathImage)

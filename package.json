@@ -10,6 +10,7 @@
     "author": "FRJMA",
     "license": "GPL V.3",
     "dependencies": {
+        "@types/request": "^2.48.1",
         "bcrypt": "^3.0.2",
         "body-parser": "^1.18.3",
         "compression": "^1.7.4",

@@ -14,7 +14,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'desarollo';
 let urlDataBase;
 
 if (process.env.NODE_ENV === 'desarollo') { urlDataBase = 'mongodb://localhost:27017/escuelaAdminDb' } else {
-    urlDataBase = 'mongodb://Pancho:Gondorgenwein123@ds141358.mlab.com:41358/cargodbtest'
+    urlDataBase = `mongodb://${process.env.MONGO_URI}/cargodbtest`
 };
 
 process.env.URLDB = urlDataBase;

@@ -45,7 +45,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                 let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
                 return res.sendFile(pathNoImage)
             }
-            if (!file.file.data) {
+            if (!file.file) {
                 let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
                 return res.sendFile(pathNoImage)
 

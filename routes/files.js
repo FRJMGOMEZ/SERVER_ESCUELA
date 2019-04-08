@@ -10,10 +10,11 @@ const app = express();
 
 app.use(fileUpload());
 
-app.get('/files/:type/:fileName', (req, res, next) => {
+app.get('/files/:type/:fileName', (req, res) => {
 
     let type = req.params.type;
     let fileName = req.params.fileName;
+
 
     if (type === 'icons') {
         let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
@@ -37,6 +38,7 @@ app.get('/files/:type/:fileName', (req, res, next) => {
             res.sendFile(pathImage)
         } else {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            console.log(pathNoImage)
             res.sendFile(pathNoImage)
         }
     }

@@ -20,12 +20,12 @@ app.use(function(req, res, next) {
     next();
 });
 
-/*app.use(multer({
+app.use(multer({
     dest: `./uploads/`,
     rename: function(fieldname, filename) {
         return filename;
     },
-}));*/
+}));
 
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));

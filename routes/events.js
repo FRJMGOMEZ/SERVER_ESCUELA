@@ -65,7 +65,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
         startDate: body.startDate,
         endDate: body.endDate,
         permanent: body.permanent,
-        project: body.project
+        project: body.project || null
     })
     console.log(event)
     event.save((err, eventDb) => {

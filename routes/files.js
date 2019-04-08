@@ -3,8 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
-var request = require('request')
-
+var request = require('../node_modules/request/index')
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 

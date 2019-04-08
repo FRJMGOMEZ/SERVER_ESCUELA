@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
 const path = require('path');
 const compression = require('compression');
-var multer = require('multer');
+const multer = require('./node_modules/multer/index');
 
 const app = express()
 

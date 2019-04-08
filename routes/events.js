@@ -67,6 +67,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
         permanent: body.permanent,
         project: body.project
     })
+    console.log(event)
     event.save((err, eventDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })

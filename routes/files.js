@@ -18,15 +18,7 @@ app.get('/files/:type/:fileName', (req, res) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
 
-    if (type === 'icons') {
-        let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
-        if (fs.existsSync(pathImage)) {
-            res.sendFile(pathImage)
-        } else {
-            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-            res.sendFile(pathNoImage)
-        }
-    } else if (type === 'front') {
+    if (type === 'front') {
         let pathImage = path.resolve(__dirname, `../assets/cargoImages/${fileName}`);
         if (fs.existsSync(pathImage)) {
             res.sendFile(pathImage)
@@ -34,23 +26,41 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             res.sendFile(pathNoImage)
         }
-    } else {
-        let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
+    } else if (type === 'icons') {
+        let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
         if (fs.existsSync(pathImage)) {
-            if (fileName.indexOf('pdf') >= 0) {
-                request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
-                    if (error) {
-                        res.status(500).json({ ok: false, error })
-                    }
-                });
-            } else {
-                res.sendFile(pathImage)
-            }
+            res.sendFile(pathImage)
         } else {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             res.sendFile(pathNoImage)
         }
     }
+
+    FileModel.find({ name: fileName }, (err, file) => {
+            if (err) {
+                return res.status(500).json({ ok: false, err })
+            }
+
+            if (!file) {
+                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+                return res.sendFile(pathNoImage)
+            }
+            let url = fs.readFileSync(file.file.data)
+            console.log(url)
+            res.sendFile(url)
+        })
+        /* if (fs.existsSync(pathImage)) {
+             if (fileName.indexOf('pdf') >= 0) {
+                 request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
+                     if (error) {
+                         res.status(500).json({ ok: false, error })
+                     }
+                 });
+             } else {
+                 res.sendFile(pathImage)
+             }
+         } */
+
 })
 
 app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
@@ -119,7 +129,6 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
         checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             newFile.file.data = file.data;
-            console.log(newFile.file.data)
             newFile.file.contentType = `${response.extension}`;
             newFile.save((err, file) => {
                 if (err) {
@@ -128,7 +137,6 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
                         error
                     })
                 }
-                console.log(file)
                 res.status(200).json({ file })
             })
         })

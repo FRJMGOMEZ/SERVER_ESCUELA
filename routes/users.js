@@ -91,25 +91,40 @@ app.put('/changePassword/:password1/:password1', verifyToken, (req, res) => {
 app.post('/user', (req, res) => {
 
     let body = req.body;
-    let user = new User({
-        name: body.name,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        status: false,
-    })
-    user.save((err, userSaved) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                err
-            })
-        }
-        res.status(200).json({
-            ok: true,
-            message: 'User succesfully saved, wait for the qualification from the admnistrator of the program',
-            userSaved
+
+    user.find({})
+        .count()
+        .exec((err, users) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                })
+            }
+            if (users.length <= 2) {
+                let user = new User({
+                    name: body.name,
+                    email: body.email,
+                    password: bcrypt.hashSync(body.password, 10),
+                    status: false,
+                })
+                user.save((err, userSaved) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            err
+                        })
+                    }
+                    res.status(200).json({
+                        ok: true,
+                        message: 'User succesfully saved, wait for the qualification from the admnistrator of the program',
+                        userSaved
+                    })
+                })
+            } else {
+                res.status(403).json({ ok: false, message: 'No se pueden crear más usuarios, app en modo demo' })
+            }
         })
-    })
 })
 
 app.put('/changeRole/:id/:role', [verifyToken, verifyRole], (req, res) => {

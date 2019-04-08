@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
-const request = require('request');
+var request = require('request')
 var multer = require('multer');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');

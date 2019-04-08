@@ -21,6 +21,7 @@
         "mongoose": "^5.3.4",
         "mongoose-unique-validator": "^2.0.2",
         "multer": "^1.4.1",
+        "request": "^2.88.0",
         "serve-index": "^1.9.1",
         "socket.io": "^2.0.4",
         "underscore": "^1.9.1"

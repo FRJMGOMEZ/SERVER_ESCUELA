@@ -20,7 +20,7 @@ app.use(function(req, res, next) {
     next();
 });
 
-app.use(multer({ dest: './uploads/' }).single(fieldName));
+//app.use(multer({ dest: './uploads/' }).single(fieldName));
 
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));

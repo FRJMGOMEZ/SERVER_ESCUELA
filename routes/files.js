@@ -16,7 +16,6 @@ app.get('/files/:type/:fileName', (req, res) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
 
-
     if (type === 'icons') {
         let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
         if (fs.existsSync(pathImage)) {
@@ -34,23 +33,21 @@ app.get('/files/:type/:fileName', (req, res) => {
             res.sendFile(pathNoImage)
         }
     } else {
-        if (fileName.indexOf('pdf') >= 0) {
-            let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
-            if (fs.existsSync(pathImage)) {
-                if (fileName.indexOf('pdf') >= 0) {
-                    request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
-                        if (error) {
-                            res.status(500).json({ ok: false, error })
-                        }
-                        console.log(response)
-                    });
-                } else {
-                    res.sendFile(pathImage)
-                }
+        let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
+        if (fs.existsSync(pathImage)) {
+            if (fileName.indexOf('pdf') >= 0) {
+                request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
+                    if (error) {
+                        res.status(500).json({ ok: false, error })
+                    }
+                    console.log(response)
+                });
             } else {
-                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-                res.sendFile(pathNoImage)
+                res.sendFile(pathImage)
             }
+        } else {
+            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            res.sendFile(pathNoImage)
         }
     }
 })
@@ -129,6 +126,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                         error
                     })
                 }
+                console.log(file)
                 res.status(200).json({ file })
             })
         })

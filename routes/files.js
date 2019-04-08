@@ -56,7 +56,7 @@ app.get('/files/:type/:fileName', (req, res) => {
 app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
     let type = req.params.type;
     let id = req.params.id;
-    console.log(req.file)
+    console.log(req)
     let file = req.file.file;
     if (!file) {
         return res.status(400).json({

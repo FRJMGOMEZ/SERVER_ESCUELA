@@ -36,7 +36,7 @@ app.get('/files/:type/:fileName', (req, res) => {
         }
     }
 
-    FileModel.find({ name: fileName }, (err, file) => {
+    FileModel.findOne({ name: fileName }, (err, file) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
@@ -51,7 +51,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                 return res.sendFile(pathNoImage)
 
             }
-            let url = fs.readFileSync(file.file)
+            let url = fs.readFileSync(file.file.data)
             console.log(url)
             res.sendFile(url)
         })

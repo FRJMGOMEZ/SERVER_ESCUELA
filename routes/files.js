@@ -45,8 +45,13 @@ app.get('/files/:type/:fileName', (req, res) => {
                 let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
                 return res.sendFile(pathNoImage)
             }
-            console.lof(file)
-            let url = fs.readFileSync(file.file.data)
+            if (!file.file.data) {
+                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+                return res.sendFile(pathNoImage)
+
+            }
+            console.log(file)
+            let url = fs.readFileSync(file.file)
             console.log(url)
             res.sendFile(url)
         })

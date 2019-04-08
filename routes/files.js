@@ -52,7 +52,6 @@ app.get('/files/:type/:fileName', (req, res) => {
 
             }
             let url = fs.readFileSync(JSON.stringify(file.file.data))
-            console.log(url)
             res.sendFile(url)
         })
         /* if (fs.existsSync(pathImage)) {

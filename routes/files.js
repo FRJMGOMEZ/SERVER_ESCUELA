@@ -167,24 +167,26 @@ const recordFileDev = (res, type, file, id) => {
 }
 
 const checkFileProd = (res, type, file, id) => {
-    let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
-    if (validTypes.indexOf(type) < 0) {
-        return res.status(403).json({
-            ok: false,
-            message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
-        })
-    }
-    let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
-    let cuttedFile = file.name.split('.');
-    let extension = cuttedFile[cuttedFile.length - 1];
-    if (validExtensions.indexOf(extension) < 0) {
-        return res.status(403).json({
-            ok: false,
-            message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
-        })
-    }
-    let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
-    resolve({ fileName, extension })
+    return new Promise((resolve, reject) => {
+        let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
+        if (validTypes.indexOf(type) < 0) {
+            return res.status(403).json({
+                ok: false,
+                message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
+            })
+        }
+        let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
+        let cuttedFile = file.name.split('.');
+        let extension = cuttedFile[cuttedFile.length - 1];
+        if (validExtensions.indexOf(extension) < 0) {
+            return res.status(403).json({
+                ok: false,
+                message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
+            })
+        }
+        let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
+        resolve({ fileName, extension })
+    })
 }
 
 

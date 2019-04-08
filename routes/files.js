@@ -56,8 +56,7 @@ app.get('/files/:type/:fileName', (req, res) => {
 app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
     let type = req.params.type;
     let id = req.params.id;
-    console.log(req.files['file'])
-    let file = req.file.file;
+    let file = req.files['file']
     if (!file) {
         return res.status(400).json({
             ok: false,
@@ -66,8 +65,8 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
     }
 
     let newFile;
-    //if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
-    recordFileDev(res, type, file, id).then(async(response) => {
+    if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
+        recordFileDev(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             newFile.save((err, file) => {
                 if (err) {
@@ -116,8 +115,8 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
                 }
             })
         })
-        // } else {
-        /* checkFileProd(res, type, file, id).then(async(response) => {
+    } else {
+        checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             newFile.file.data = await fs.readFileSync(file)
             newItem.file.contentType = `${response.extension}`;
@@ -132,7 +131,7 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
                 res.status(200).json({ file })
             })
         })
-    } */
+    }
 
 
 });

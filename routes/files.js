@@ -50,8 +50,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                 return res.sendFile(pathNoImage)
 
             }
-            let url = fs.readFileSync(JSON.stringify(file.file.data))
-            res.sendFile(url)
+            res.sendFile(file.file.data)
         })
         /* if (fs.existsSync(pathImage)) {
              if (fileName.indexOf('pdf') >= 0) {

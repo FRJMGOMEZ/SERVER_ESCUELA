@@ -50,7 +50,8 @@ app.get('/files/:type/:fileName', (req, res) => {
                 return res.sendFile(pathNoImage)
 
             }
-            res.sendFile(file.file.data)
+            res.write(file.file.data, 'binary');
+            res.end(null, 'binary');
         })
         /* if (fs.existsSync(pathImage)) {
              if (fileName.indexOf('pdf') >= 0) {

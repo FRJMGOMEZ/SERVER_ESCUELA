@@ -21,7 +21,7 @@ app.get('/week/:date', (req, res) => {
         .populate('sunday', 'date _id')
         .exec((err, weekDb) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             res.status(200).json({ ok: true, week: weekDb })
         })
@@ -104,7 +104,7 @@ app.post('/week', (req, res) => {
 
             week.save((err) => {
                 if (err) {
-                    res.status(500).json({ ok: false, err })
+                    return res.status(500).json({ ok: false, err })
                 }
                 week.populate()
                     .populate('monday', 'date _id')
@@ -115,7 +115,7 @@ app.post('/week', (req, res) => {
                     .populate('saturday', 'date _id')
                     .populate({ path: 'sunday', select: 'date _id' }, (err, weekDb) => {
                         if (err) {
-                            res.status(500).json({ ok: false, err })
+                            return res.status(500).json({ ok: false, err })
                         }
                         res.status(200).json({ ok: true, week: weekDb })
                     })

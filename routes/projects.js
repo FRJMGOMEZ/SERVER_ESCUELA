@@ -87,10 +87,10 @@ app.put('/project/changeStatus/:id', (req, res) => {
     let id = req.params.id;
     Project.findById(id, (err, projectDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         if (!projectDb) {
-            res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
+            return res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
         }
         let request;
         if (projectDb.status === true) {
@@ -100,7 +100,7 @@ app.put('/project/changeStatus/:id', (req, res) => {
         }
         request.exec((err, projectDb) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             res.status(200).json({ ok: true, project: projectDb })
         })
@@ -185,26 +185,26 @@ app.delete('/project/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
     Project.findByIdAndDelete(id, (err, projectDeleted) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         if (!projectDeleted) {
-            res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
+            return res.status(404).json({ ok: false, message: 'There are no projects with the ID provided' })
         }
         User.updateMany({ projects: projectDeleted._id }, { $pull: { projects: projectDeleted._id } }, (err) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             Task.deleteMany({ project: projectDeleted._id }, (err) => {
                 if (err) {
-                    res.status(500).json({ ok: false, err })
+                    return res.status(500).json({ ok: false, err })
                 }
                 Message.find({ project: projectDeleted._id }, (err, messages) => {
                     if (err) {
-                        res.status(500).json({ ok: false, err })
+                        return res.status(500).json({ ok: false, err })
                     }
                     Message.deleteMany({ project: projectDeleted._id }, (err) => {
                         if (err) {
-                            res.status(500).json({ ok: false, err })
+                            return res.status(500).json({ ok: false, err })
                         }
                         let files = messages.map((message) => { return message.file })
                         res.status(200).json({ ok: true, files, project: projectDeleted })

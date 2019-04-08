@@ -116,7 +116,7 @@ const pullEventsInDays = (res, event) => {
             }
         }, (err, updated) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             resolve()
         })

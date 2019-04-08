@@ -10,7 +10,7 @@ const app = express()
 app.get('/permanentEvents', verifyToken, (req, res) => {
     EventModel.find({ permanent: true }, (err, eventsDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         res.status(200).json({ ok: true, events: eventsDb })
     })
@@ -22,7 +22,7 @@ app.get('/events/projects/:projectId', verifyToken, (req, res) => {
         .populate('user')
         .exec((err, events) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             res.status(200).json({ ok: true, events })
         })
@@ -36,7 +36,7 @@ app.get('/events', verifyToken, (req, res) => {
         .populate('facilitie', 'name')
         .exec((err, events) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             events.forEach((eachEvent) => {
                 if (eachEvent.permanent && eachEvent.endDate === null) {
@@ -123,10 +123,10 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
     let body = req.body;
     EventModel.findById(id, async(err, eventDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         if (!eventDb) {
-            res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
+            return res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
         }
         await checkPermanecy(res, body, eventDb)
         eventDb.name = body.name
@@ -141,7 +141,7 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
         eventDb.permanent = body.permanent;
         eventDb.save((err, eventDb) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             res.status(200).json({ ok: true, event: eventDb })
         })
@@ -303,7 +303,7 @@ app.put('/checkPermanentEvents', verifyToken, (req, res) => {
 
     EventModel.find({ permanent: true, day: myEvent.day, facilitie: myEvent.facilitie }, async(err, eventsDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         let from = myEvent.position;
         let to = myEvent.hour + myEvent.duration;
@@ -366,7 +366,7 @@ const checkEventsInDays = (event) => {
                 [hour]: event._id
             }).exec((err, days) => {
                 if (err) {
-                    res.status(500).json({ ok: false, err })
+                    return res.status(500).json({ ok: false, err })
                 }
                 resolve(days)
             })
@@ -380,10 +380,10 @@ app.delete('/event/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
     EventModel.findByIdAndDelete(id, (err, eventDb) => {
         if (err) {
-            res.status(500).json({ ok: false, err })
+            return res.status(500).json({ ok: false, err })
         }
         if (!eventDb) {
-            res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
+            return res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
         }
         let hour = `hour${eventDb.hour}`;
         Day.updateMany({
@@ -394,7 +394,7 @@ app.delete('/event/:id', [verifyToken, verifyRole], (req, res) => {
             }
         }, (err, updated) => {
             if (err) {
-                res.status(500).json({ ok: false, err })
+                return res.status(500).json({ ok: false, err })
             }
             return res.status(200).json({ ok: true, event: eventDb })
         })

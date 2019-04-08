@@ -38,7 +38,7 @@ let verifyStatus = (req, res, next) => {
     let body = req.body;
     User.findOne({ email: body.email }, (error, user) => {
         if (error) {
-            res.status(400).json({
+            return res.status(400).json({
                 ok: false,
                 error
             })

@@ -48,7 +48,6 @@ app.get('/files/:type/:fileName', (req, res) => {
         if (!file.file) {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
-
         }
 
         if (fileName.indexOf('pdf') >= 0) {
@@ -56,6 +55,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                 if (error) {
                     res.status(500).json({ ok: false, error })
                 }
+                console.log(response)
             });
         } else {
             res.write(file.file.data, 'binary');

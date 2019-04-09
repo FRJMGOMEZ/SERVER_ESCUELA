@@ -112,7 +112,7 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
         var buf = Buffer.from(file.data)
         const stream = new Readable();
         stream.push(buf);
-        stream.push(null)
+        console.log.log(stream)
         var params = {
             Bucket: 'cargomusicfilesstorage',
             Body: fs.createReadStream(stream),

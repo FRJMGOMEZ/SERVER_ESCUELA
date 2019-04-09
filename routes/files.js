@@ -130,7 +130,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                         if (err) {
                             return res.status(500).json({
                                 ok: false,
-                                error
+                                err
                             })
                         }
                         res.status(200).json({ file })

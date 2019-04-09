@@ -114,7 +114,7 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
         console.log(stream)
         var params = {
             Bucket: 'cargomusicfilesstorage',
-            Body: fs.createReadStream(stream),
+            Body: fs.createReadStream(stream._object),
             Key: "folder/" + Date.now() + "_" + path.basename(buf)
         }
         s3.upload(params, function(err, data) {

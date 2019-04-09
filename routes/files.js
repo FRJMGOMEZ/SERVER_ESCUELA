@@ -6,12 +6,22 @@ const FileModel = require('../models/file');
 const request = require('request');
 var multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
+const AWS = require('aws-sdk');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
 app.use(fileUpload());
+
+AWS.config.update({
+    accessKeyId: PROCESS.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: PROCESS.env.AWS_SECRET_ACCESS_KEY
+});
+
+var s3 = new AWS.S3();
+
+
 
 app.get('/files/:type/:fileName', (req, res) => {
 
@@ -35,28 +45,6 @@ app.get('/files/:type/:fileName', (req, res) => {
             res.sendFile(pathNoImage)
         }
     }
-    FileModel.findOne({ name: fileName }, async(err, file) => {
-        if (err) {
-            return res.status(500).json({ ok: false, err })
-        }
-        if (!file) {
-            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-            return res.sendFile(pathNoImage)
-        }
-        if (!file.file) {
-            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-            return res.sendFile(pathNoImage)
-        }
-        console.log(file.file.data)
-
-        fs.writeFile('file_name', file.file.data, function(err, file) {
-            if (err) { return err }
-            console.log(file)
-        });
-        //res.write(file.file.data, 'binary');
-        //res.end(null, 'binary');
-
-    })
 })
 
 app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
@@ -122,23 +110,36 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
             })
         })
     } else {
-        checkFileProd(res, type, file, id).then(async(response) => {
-            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-            newFile.file.data = file.data;
-            newFile.file.contentType = `${response.extension}`;
-            newFile.save((err, file) => {
-                if (err) {
-                    return res.status(500).json({
-                        ok: false,
-                        error
+        var params = {
+            Bucket: 'cargomusicfilesstorage',
+            Body: fs.createReadStream(file),
+            Key: "folder/" + Date.now() + "_" + path.basename(file)
+        }
+
+        s3.upload(params, function(err, data) {
+            if (err) {
+                console.log("Error", err);
+            }
+            if (data) {
+                console.log("Uploaded in:", data.Location);
+                checkFileProd(res, type, file, id).then(async(response) => {
+                    newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+                    newFile.file.url = data.Location;
+                    console.log(data.Location)
+                    newFile.save((err, file) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                error
+                            })
+                        }
+                        res.status(200).json({ file })
                     })
-                }
-                res.status(200).json({ file })
-            })
-        })
+                })
+
+            }
+        });
     }
-
-
 });
 
 

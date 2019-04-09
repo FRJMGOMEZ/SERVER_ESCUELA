@@ -23,7 +23,9 @@
         "request": "^2.88.0",
         "serve-index": "^1.9.1",
         "socket.io": "^2.0.4",
-        "underscore": "^1.9.1"
+        "underscore": "^1.9.1",
+        "aws-sdk": "2.x",
+        "ejs": "2.x"
     },
     "devDependencies": {},
     "description": "",

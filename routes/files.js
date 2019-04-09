@@ -111,8 +111,7 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
         checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             var s3 = new AWS.S3();
-            var buf = await Buffer.from(file.data)
-            let base64data = await buf.toString('base64');
+            let base64data = await Buffer.from(file.data, 'binary')
             var params = {
                 Bucket: 'cargomusicfilesstorage',
                 Body: fs.createReadStream(base64data),

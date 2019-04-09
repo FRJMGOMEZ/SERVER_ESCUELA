@@ -48,6 +48,8 @@ app.get('/files/:type/:fileName', (req, res) => {
             return res.sendFile(pathNoImage)
         }
         if (fileName.indexOf('pdf') >= 0) {
+            console.log('here')
+            console.log(file.file.data)
             let newFile = await fs.writeFile('file_name', file.file.data, function(err) {
                 if (err) { return err }
                 console.log('Sucessfully saved!');

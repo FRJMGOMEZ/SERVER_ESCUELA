@@ -58,7 +58,7 @@ app.get('/files/:type/:fileName', (req, res) => {
                  console.log(response)
              });
          } */
-        let buff = await new Buffer(file, file.data)
+        let buff = await new Buffer(file.file.data)
         let base64data = await buff.toString('base64');
         res.write(base64data, 'binary');
         res.end(null, 'binary');

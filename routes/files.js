@@ -37,34 +37,31 @@ app.get('/files/:type/:fileName', (req, res) => {
     }
 
     FileModel.findOne({ name: fileName }, (err, file) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
+        if (err) {
+            return res.status(500).json({ ok: false, err })
+        }
 
-            if (!file) {
-                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-                return res.sendFile(pathNoImage)
-            }
-            if (!file.file) {
-                let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-                return res.sendFile(pathNoImage)
+        if (!file) {
+            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            return res.sendFile(pathNoImage)
+        }
+        if (!file.file) {
+            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            return res.sendFile(pathNoImage)
 
-            }
+        }
+
+        if (fileName.indexOf('pdf') >= 0) {
+            request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${file.file.data}&title=${fileName}`, function(error, response, body) {
+                if (error) {
+                    res.status(500).json({ ok: false, error })
+                }
+            });
+        } else {
             res.write(file.file.data, 'binary');
             res.end(null, 'binary');
-        })
-        /* if (fs.existsSync(pathImage)) {
-             if (fileName.indexOf('pdf') >= 0) {
-                 request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${pathImage}&title=${fileName}`, function(error, response, body) {
-                     if (error) {
-                         res.status(500).json({ ok: false, error })
-                     }
-                 });
-             } else {
-                 res.sendFile(pathImage)
-             }
-         } */
-
+        }
+    })
 })
 
 app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {

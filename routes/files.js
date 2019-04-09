@@ -107,24 +107,23 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
             })
         })
     } else {
-        console.log(file)
-        var s3 = new AWS.S3();
-        var buf = Buffer.from(file.data)
-        const stream = toStream.createReadStream(buf)
-        console.log(stream)
-        var params = {
-            Bucket: 'cargomusicfilesstorage',
-            Body: fs.createReadStream(stream._object),
-            Key: "folder/" + Date.now() + "_" + path.basename(buf)
-        }
-        s3.upload(params, function(err, data) {
-            if (err) {
-                console.log("Error", err);
+
+        checkFileProd(res, type, file, id).then(async(response) => {
+            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+            var s3 = new AWS.S3();
+            var buf = await Buffer.from(file.data)
+            let base64data = await buf.toString('base64');
+            var params = {
+                Bucket: 'cargomusicfilesstorage',
+                Body: fs.createReadStream(base64data),
+                Key: "folder/" + Date.now() + "_" + path.basename(newFile.name)
             }
-            if (data) {
-                console.log("Uploaded in:", data.Location);
-                checkFileProd(res, type, file, id).then(async(response) => {
-                    newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+            s3.upload(params, function(err, data) {
+                if (err) {
+                    console.log("Error", err);
+                }
+                if (data) {
+                    console.log("Uploaded in:", data.Location);
                     newFile.file.url = data.Location;
                     console.log(data.Location)
                     newFile.save((err, file) => {
@@ -136,10 +135,9 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
                         }
                         res.status(200).json({ file })
                     })
-                })
-
-            }
-        });
+                }
+            });
+        })
     }
 });
 

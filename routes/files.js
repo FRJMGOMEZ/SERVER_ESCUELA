@@ -35,12 +35,10 @@ app.get('/files/:type/:fileName', (req, res) => {
             res.sendFile(pathNoImage)
         }
     }
-
-    FileModel.findOne({ name: fileName }, async(err, file) => {
+    FileModel.findOne({ name: fileName }, (err, file) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-
         if (!file) {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
@@ -49,18 +47,17 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
         }
-        let buff = await new Buffer(file.file.data)
-        let base64data = await buff.toString('base64');
         if (fileName.indexOf('pdf') >= 0) {
-            request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${base64data}&title=${fileName}`, function(error, response, body) {
-                if (error) {
-                    res.sendFile(body)
-                }
-                console.log(response, body)
-            });
+            var fileStream = fs.createReadStream(file.file.data, 'binary');
+            var stat = fs.statSync(file.file.data);
+            res.setHeader('Content-Length', stat.size);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+            res.pipe(fileStream, 'binary');
+            res.end();
         } else {
-            res.write(base64data, 'base64');
-            res.end(null, 'base64');
+            res.write(file.file.data, 'binary');
+            res.end(null, 'binary');
         }
     })
 })

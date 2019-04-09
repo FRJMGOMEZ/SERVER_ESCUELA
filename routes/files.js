@@ -50,17 +50,17 @@ app.get('/files/:type/:fileName', (req, res) => {
             return res.sendFile(pathNoImage)
         }
 
-        if (fileName.indexOf('pdf') >= 0) {
-            request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${file.file.data}&title=${fileName}`, function(error, response, body) {
-                if (error) {
-                    res.status(500).json({ ok: false, error })
-                }
-                console.log(response)
-            });
-        } else {
-            res.write(file.file.data, 'binary');
-            res.end(null, 'binary');
-        }
+        /* if (fileName.indexOf('pdf') >= 0) {
+             request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${file.file.data}&title=${fileName}`, function(error, response, body) {
+                 if (error) {
+                     res.status(500).json({ ok: false, error })
+                 }
+                 console.log(response)
+             });
+         } */
+        res.write(file.file.data, 'binary');
+        res.end(null, 'binary');
+
     })
 })
 

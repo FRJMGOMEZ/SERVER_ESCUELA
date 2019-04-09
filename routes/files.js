@@ -58,7 +58,8 @@ app.get('/files/:type/:fileName', (req, res) => {
                  console.log(response)
              });
          } */
-        res.write(file.file.data, 'binary');
+        let base64data = file.file.data.toString('base64');
+        res.write(base64data, 'binary');
         res.end(null, 'binary');
 
     })

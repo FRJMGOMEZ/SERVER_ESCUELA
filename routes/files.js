@@ -4,11 +4,8 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
 const request = require('request');
-var multer = require('multer')
-var upload = multer({ dest: 'uploads/' })
 const AWS = require('aws-sdk');
-const toStream = require('streamifier');
-const stream = require('stream')
+
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -21,12 +18,19 @@ AWS.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
-app.get('/files/:type/:fileName', (req, res) => {
-
+app.get('/files/:type/:fileName', (req, res, next) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
 
-    if (type === 'front') {
+    if (type === 'icons') {
+        let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
+        if (fs.existsSync(pathImage)) {
+            res.sendFile(pathImage)
+        } else {
+            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
+            res.sendFile(pathNoImage)
+        }
+    } else if (type === 'front') {
         let pathImage = path.resolve(__dirname, `../assets/cargoImages/${fileName}`);
         if (fs.existsSync(pathImage)) {
             res.sendFile(pathImage)
@@ -34,8 +38,8 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             res.sendFile(pathNoImage)
         }
-    } else if (type === 'icons') {
-        let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
+    } else {
+        let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
         if (fs.existsSync(pathImage)) {
             res.sendFile(pathImage)
         } else {
@@ -49,14 +53,13 @@ app.put('/upload/:type/:id/:download', (req, res) => {
     let type = req.params.type;
     let id = req.params.id;
     let file = req.files.file;
-    console.log(file)
+
     if (!file) {
         return res.status(400).json({
             ok: false,
             message: 'No images have been selected'
         });
     }
-
     let newFile;
     if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
         recordFileDev(res, type, file, id).then(async(response) => {
@@ -109,7 +112,6 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             })
         })
     } else {
-
         checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             var s3 = new AWS.S3();
@@ -120,11 +122,10 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             }
             s3.upload(params, function(err, data) {
                 if (err) {
-                    console.log("Error", err);
+                    return res.status(500).json({ ok: false, err })
                 }
                 if (data) {
                     newFile.location = data.Location;
-                    console.log(newFile.location)
                     newFile.save((err, file) => {
                         if (err) {
                             return res.status(500).json({
@@ -139,7 +140,6 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         })
     }
 });
-
 
 const recordFileDev = (res, type, file, id) => {
     return new Promise((resolve, reject) => {

@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
 const path = require('path');
 const compression = require('compression');
-//const multer = require('multer')
 
 const app = express()
 
@@ -19,8 +18,6 @@ app.use(function(req, res, next) {
     res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
     next();
 });
-
-//app.use(multer({ dest: './uploads/' }).single(fieldName));
 
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));

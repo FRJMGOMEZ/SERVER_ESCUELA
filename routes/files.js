@@ -35,7 +35,7 @@ app.get('/files/:type/:fileName', (req, res) => {
             res.sendFile(pathNoImage)
         }
     }
-    FileModel.findOne({ name: fileName }, (err, file) => {
+    FileModel.findOne({ name: fileName }, async(err, file) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
@@ -48,13 +48,12 @@ app.get('/files/:type/:fileName', (req, res) => {
             return res.sendFile(pathNoImage)
         }
         if (fileName.indexOf('pdf') >= 0) {
-            var fileStream = fs.createReadStream(file.file.data, 'binary');
-            var stat = fs.statSync(file.file.data);
-            res.setHeader('Content-Length', stat.size);
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-            res.pipe(fileStream, 'binary');
-            res.end();
+            let newFile = await fs.writeFile('file_name', file.file.data, function(err) {
+                if (err) { return err }
+                console.log('Sucessfully saved!');
+            });
+
+            console.log(newFile)
         } else {
             res.write(file.file.data, 'binary');
             res.end(null, 'binary');

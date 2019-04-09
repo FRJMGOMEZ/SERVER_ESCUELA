@@ -36,7 +36,7 @@ app.get('/files/:type/:fileName', (req, res) => {
         }
     }
 
-    FileModel.findOne({ name: fileName }, (err, file) => {
+    FileModel.findOne({ name: fileName }, async(err, file) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
@@ -58,7 +58,8 @@ app.get('/files/:type/:fileName', (req, res) => {
                  console.log(response)
              });
          } */
-        let base64data = file.file.data.toString('base64');
+        let buff = await new Buffer(file, file.data)
+        let base64data = await buff.toString('base64');
         res.write(base64data, 'binary');
         res.end(null, 'binary');
 

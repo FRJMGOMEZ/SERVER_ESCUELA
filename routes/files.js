@@ -47,19 +47,14 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
         }
-        if (fileName.indexOf('pdf') >= 0) {
-            console.log('here')
-            console.log(file.file.data)
-            let newFile = await fs.writeFile('file_name', file.file.data, function(err) {
-                if (err) { return err }
-                console.log('Sucessfully saved!');
-            });
 
-            console.log(newFile)
-        } else {
-            res.write(file.file.data, 'binary');
-            res.end(null, 'binary');
-        }
+        let newFile = await fs.writeFile('file_name', file.file.data, function(err) {
+            if (err) { return err }
+        });
+        console.log(newFile)
+            //res.write(file.file.data, 'binary');
+            //res.end(null, 'binary');
+
     })
 })
 

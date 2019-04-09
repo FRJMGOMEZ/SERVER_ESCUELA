@@ -123,9 +123,8 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                     console.log("Error", err);
                 }
                 if (data) {
-                    console.log("Uploaded in:", data.Location);
-                    newFile.file.url = data.Location;
-                    //console.log(data.Location)
+                    newFile.location = data.Location;
+                    console.log(newFile.location)
                     newFile.save((err, file) => {
                         if (err) {
                             return res.status(500).json({

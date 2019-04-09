@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const fileSchema = new Schema({
-    file: { data: Buffer, contentType: String },
+    location: { type: String },
     name: { type: String, unique: true, required: [true, "Name is required"] },
     title: { type: String },
     download: { type: Boolean },

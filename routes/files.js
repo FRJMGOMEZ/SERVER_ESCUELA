@@ -49,20 +49,19 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
         }
-
-        /* if (fileName.indexOf('pdf') >= 0) {
-             request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${file.file.data}&title=${fileName}`, function(error, response, body) {
-                 if (error) {
-                     res.status(500).json({ ok: false, error })
-                 }
-                 console.log(response)
-             });
-         } */
         let buff = await new Buffer(file.file.data)
         let base64data = await buff.toString('base64');
-        res.write(base64data, 'base64');
-        res.end(null, 'base64');
-
+        if (fileName.indexOf('pdf') >= 0) {
+            request(`https://webtopdf.expeditedaddons.com/?api_key=${PROCESS.env.apiPdfViewer}&content=${base64data}&title=${fileName}`, function(error, response, body) {
+                if (error) {
+                    res.sendFile(body)
+                }
+                console.log(response, body)
+            });
+        } else {
+            res.write(base64data, 'base64');
+            res.end(null, 'base64');
+        }
     })
 })
 

@@ -47,6 +47,7 @@ app.get('/files/:type/:fileName', (req, res) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             return res.sendFile(pathNoImage)
         }
+        console.log(file.file.data)
 
         fs.writeFile('file_name', file.file.data, function(err, file) {
             if (err) { return err }

@@ -8,6 +8,7 @@ var multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
 const AWS = require('aws-sdk');
 const toStream = require('streamifier');
+const stream = require('stream')
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -112,10 +113,9 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         checkFileProd(res, type, file, id).then(async(response) => {
             newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
             var s3 = new AWS.S3();
-            let base64data = await Buffer.from(file.data, 'binary')
             var params = {
                 Bucket: 'cargomusicfilesstorage',
-                Body: fs.createReadStream(base64data),
+                Body: file.data,
                 Key: newFile.name
             }
             s3.upload(params, function(err, data) {

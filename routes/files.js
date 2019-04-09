@@ -19,8 +19,6 @@ AWS.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
-var s3 = new AWS.S3();
-
 app.get('/files/:type/:fileName', (req, res) => {
 
     let type = req.params.type;
@@ -108,12 +106,14 @@ app.put('/upload/:type/:id/:download', upload.single('file'), (req, res) => {
             })
         })
     } else {
+        console.log(file)
+        var s3 = new AWS.S3();
         var params = {
             Bucket: 'cargomusicfilesstorage',
             Body: fs.createReadStream(file),
             Key: "folder/" + Date.now() + "_" + path.basename(file)
         }
-
+        console.log(params)
         s3.upload(params, function(err, data) {
             if (err) {
                 console.log("Error", err);

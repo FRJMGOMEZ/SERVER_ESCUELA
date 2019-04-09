@@ -48,12 +48,12 @@ app.get('/files/:type/:fileName', (req, res) => {
             return res.sendFile(pathNoImage)
         }
 
-        let newFile = await fs.writeFile('file_name', file.file.data, function(err) {
+        fs.writeFile('file_name', file.file.data, function(err, file) {
             if (err) { return err }
+            console.log(file)
         });
-        console.log(newFile)
-            //res.write(file.file.data, 'binary');
-            //res.end(null, 'binary');
+        //res.write(file.file.data, 'binary');
+        //res.end(null, 'binary');
 
     })
 })

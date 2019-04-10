@@ -56,15 +56,17 @@ app.put('/lastConnection/:projectId', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let projectId = req.params.projectId;
     let newProject = { _id: projectId, lastConnection: new Date() }
-    User.findOneAndUpdate({ _id: userOnline._id, 'projects._id': projectId }, { $set: { 'projects': newProject } }, { new: true }, (err, userUpdated) => {
-        if (err) {
-            return res.status(500).json({ ok: false, mensaje: err })
-        }
-        if (!userUpdated) {
-            return res.status(404).json({ ok: false, message: 'No users have been found' })
-        }
-        res.status(200).json({ ok: true, user: userUpdated })
-    })
+    User.findOneAndUpdate({ _id: userOnline._id, 'projects._id': projectId }, { $set: { 'projects': newProject } }, { new: true })
+        .populate('img')
+        .exec((err, userUpdated) => {
+            if (err) {
+                return res.status(500).json({ ok: false, mensaje: err })
+            }
+            if (!userUpdated) {
+                return res.status(404).json({ ok: false, message: 'No users have been found' })
+            }
+            res.status(200).json({ ok: true, user: userUpdated })
+        })
 })
 
 app.put('/project/:id', [verifyToken, verifyRole], (req, res) => {

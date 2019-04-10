@@ -176,7 +176,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
 
     let request;
-    if (process.env.URLDB === `mongodb://${process.env.MONGO_URI}/cargodbtest`) {
+    if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
         request = await getDayUSA(dayOfTheWeek);
     } else {
         request = await getDayEU(dayOfTheWeek);

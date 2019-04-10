@@ -280,11 +280,12 @@ app.put('/pullEvent/:dayId/:eventId', [verifyToken, verifyRole], (req, res) => {
             let eventEndDate;
             if (eventDb.endDate != null) {
                 eventEndDate = new Date(eventDb.endDate)
+                if (eventEndDate.getTime() === dayDate.getTime()) {
+                    eventDb.endDate = new Date(eventEndDate.getTime() - 604800000)
+                }
             }
             if (dayDate.getTime() === eventStartDate.getTime()) {
                 eventDb.startDate = new Date(eventStartDate.getTime() + 604800000)
-            } else if (eventDbEndDate != null && eventEndDate.getTime() === dayDate.getTime()) {
-                eventDb.endDate = new Date(eventEndDate.getTime() - 604800000)
             } else {
                 return res.status(200).json({ ok: true, event: eventDb })
             }
@@ -301,7 +302,6 @@ app.put('/pullEvent/:dayId/:eventId', [verifyToken, verifyRole], (req, res) => {
 app.put('/checkPermanentEvents', verifyToken, (req, res) => {
 
     let myEvent = req.body;
-
     EventModel.find({ permanent: true, day: myEvent.day, facilitie: myEvent.facilitie }, async(err, eventsDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })

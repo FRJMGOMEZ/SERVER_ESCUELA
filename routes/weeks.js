@@ -174,7 +174,13 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
-    let request = await getDay(dayOfTheWeek);
+
+    let request;
+    if (process.env.URLDB === `mongodb://${process.env.MONGO_URI}/cargodbtest`) {
+        request = await getDayUSA(dayOfTheWeek);
+    } else {
+        request = await getDayEU(dayOfTheWeek);
+    }
     Week.findOne({
             [request]: dayId
         }).populate('monday', 'date _id')
@@ -197,7 +203,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 })
 
 
-const getDay = (dayOfTheWeek) => {
+const getDayEU = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         switch (dayOfTheWeek) {
             case 1:
@@ -219,6 +225,34 @@ const getDay = (dayOfTheWeek) => {
                 resolve('saturday')
                 break;
             case 0:
+                resolve('sunday')
+                break;
+        }
+    })
+}
+
+const getDayUSA = (dayOfTheWeek) => {
+    return new Promise((resolve, reject) => {
+        switch (dayOfTheWeek) {
+            case 0:
+                resolve('monday')
+                break;
+            case 1:
+                resolve('tuesday')
+                break;
+            case 2:
+                resolve('wednesday')
+                break;
+            case 3:
+                resolve('thursday')
+                break;
+            case 4:
+                resolve('friday')
+                break;
+            case 5:
+                resolve('saturday')
+                break;
+            case 6:
                 resolve('sunday')
                 break;
         }

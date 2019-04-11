@@ -43,8 +43,9 @@ app.post('/facilitie', [verifyToken, verifyRole], (req, res) => {
 })
 
 app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
-    let body = req.body;
+
     let id = req.params.id;
+    let facilitie = req.body;
 
     Facilitie.findById(id, (err, facilitieUpdated) => {
         if (err) {
@@ -53,12 +54,8 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
         if (!facilitieUpdated) {
             return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
-        facilitieUpdated.name = body.name;
-        if (facilitieUpdated.status) {
-            facilitieUpdated.status = false;
-        } else {
-            facilitieUpdated.status = true;
-        }
+        facilitieUpdated.name = facilitie.name;
+        facilitieUpdated.status = facilitie.status;
         facilitieUpdated.save((err, facilitieSaved) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })

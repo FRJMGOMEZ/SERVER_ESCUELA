@@ -107,7 +107,6 @@ app.post('/message', verifyToken, (req, res) => {
 app.delete('/message/:id', verifyToken, (req, res) => {
 
     let id = req.params.id;
-
     Message.findByIdAndDelete(id, (err, message) => {
         if (err) {
             return res.status(500).json({ ok: false, err })

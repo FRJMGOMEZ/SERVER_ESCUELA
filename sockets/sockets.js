@@ -70,8 +70,7 @@ io.on('connection', (client) => {
 
     client.on('userIn', async(payload, callback) => {
         if (rooms.map((room) => { return room.id }).indexOf(payload.room) < 0) {
-            newR
-            oom = new Room(payload.room)
+            newRoom = new Room(payload.room)
             rooms.push(newRoom)
             user = payload.user
             newRoom.addUser(payload.user)

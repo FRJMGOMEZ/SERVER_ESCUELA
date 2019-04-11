@@ -174,13 +174,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
-
-    let request;
-    if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
-        request = await getDayUSA(dayOfTheWeek);
-    } else {
-        request = await getDayEU(dayOfTheWeek);
-    }
+    let request = await getDay(dayOfTheWeek)
     Week.findOne({
             [request]: dayId
         }).populate('monday', 'date _id')
@@ -203,60 +197,59 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 })
 
 
-const getDayEU = (dayOfTheWeek) => {
+const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
-        switch (dayOfTheWeek) {
-            case 1:
-                resolve('monday')
-                break;
-            case 2:
-                resolve('tuesday')
-                break;
-            case 3:
-                resolve('wednesday')
-                break;
-            case 4:
-                resolve('thursday')
-                break;
-            case 5:
-                resolve('friday')
-                break;
-            case 6:
-                resolve('saturday')
-                break;
-            case 0:
-                resolve('sunday')
-                break;
+        if (process.env.NODE_ENV === 'desarrollo') {
+            switch (dayOfTheWeek) {
+                case 0:
+                    resolve('monday')
+                    break;
+                case 1:
+                    resolve('tuesday')
+                    break;
+                case 2:
+                    resolve('wednesday')
+                    break;
+                case 3:
+                    resolve('thursday')
+                    break;
+                case 4:
+                    resolve('friday')
+                    break;
+                case 5:
+                    resolve('saturday')
+                    break;
+                case 6:
+                    resolve('sunday')
+                    break;
+            }
+        } else {
+            switch (dayOfTheWeek) {
+                case 1:
+                    resolve('monday')
+                    break;
+                case 2:
+                    resolve('tuesday')
+                    break;
+                case 3:
+                    resolve('wednesday')
+                    break;
+                case 4:
+                    resolve('thursday')
+                    break;
+                case 5:
+                    resolve('friday')
+                    break;
+                case 6:
+                    resolve('saturday')
+                    break;
+                case 0:
+                    resolve('sunday')
+                    break;
+            }
         }
     })
 }
 
-const getDayUSA = (dayOfTheWeek) => {
-    return new Promise((resolve, reject) => {
-        switch (dayOfTheWeek) {
-            case 0:
-                resolve('monday')
-                break;
-            case 1:
-                resolve('tuesday')
-                break;
-            case 2:
-                resolve('wednesday')
-                break;
-            case 3:
-                resolve('thursday')
-                break;
-            case 4:
-                resolve('friday')
-                break;
-            case 5:
-                resolve('saturday')
-                break;
-            case 6:
-                resolve('sunday')
-                break;
-        }
-    })
-}
 
 module.exports = app

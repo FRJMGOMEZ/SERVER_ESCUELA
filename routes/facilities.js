@@ -54,8 +54,12 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
         if (!facilitieUpdated) {
             return res.status(404).json({ ok: false, message: 'There are no facilities in the DB' })
         }
-        facilitieUpdated.name = facilitie.name;
-        facilitieUpdated.status = facilitie.status;
+        if (facilitieUpdated.name) {
+            facilitieUpdated.name = facilitie.name;
+        }
+        if (facilitieUpdated.status) {
+            facilitieUpdated.status = facilitie.status;
+        }
         facilitieUpdated.save((err, facilitieSaved) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })

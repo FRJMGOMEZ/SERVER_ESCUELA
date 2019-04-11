@@ -61,8 +61,8 @@ io.on('connection', (client) => {
             client.broadcast.emit('projectUser', payload)
         })
         /////////TO DO////////////
-    client.on('facilitie', async(payload) => {
-        client.broadcast.emit('facilitie', payload)
+    client.on('facilitie', async(faciliteOrder) => {
+        client.broadcast.emit('facilitie', faciliteOrder)
     })
 
     //////// INSIDE ROOM//////////
@@ -70,7 +70,8 @@ io.on('connection', (client) => {
 
     client.on('userIn', async(payload, callback) => {
         if (rooms.map((room) => { return room.id }).indexOf(payload.room) < 0) {
-            newRoom = new Room(payload.room)
+            newR
+            oom = new Room(payload.room)
             rooms.push(newRoom)
             user = payload.user
             newRoom.addUser(payload.user)

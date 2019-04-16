@@ -11,7 +11,6 @@ app.get('/facilities', verifyToken, (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit)
-
     Facilitie.find()
         .skip(from)
         .limit(limit)
@@ -57,8 +56,9 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
         if (facilitieUpdated.name) {
             facilitieUpdated.name = facilitie.name;
         }
-        if (facilitieUpdated.status) {
-            facilitieUpdated.status = facilitie.status;
+
+        if (facilitie.status != facilitieUpdated.status) {
+            facilitieUpdated.status = facilitie.status
         }
         facilitieUpdated.save((err, facilitieSaved) => {
             if (err) {

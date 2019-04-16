@@ -67,7 +67,6 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
         permanent: body.permanent,
         project: body.project || null
     })
-    console.log(event)
     event.save((err, eventDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
@@ -81,10 +80,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
             }
 
             let to = new Date(Number(req.params.limitDate));
-            to = new Date(to.getFullYear(), to.getMonth(), to.getDate(), 0, -to.getTimezoneOffset(), 0, 0);
-
             let from = new Date(dayDb.date)
-            from = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, -from.getTimezoneOffset(), 0, 0);
 
             let hour = `hour${eventDb.hour}`;
 
@@ -93,6 +89,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
                     [hour]: eventDb._id
                 }
             });
+
             let request2 = Day.updateMany({ day: dayDb.day, date: { $gte: from, $lte: to } }, {
                 $push: {
                     [hour]: eventDb._id
@@ -159,7 +156,11 @@ const checkPermanecy = async(res, body, eventDb) => {
     if (body.permanent) {
         if (eventDb.endDate) {
             eventDbEndDate = new Date(eventDb.endDate);
-            updatedEventEndDate = new Date(body.endDate)
+            if (body.endDate) {
+                updatedEventEndDate = body.endDate
+            } else {
+                updatedEventEndDate = new Date(8630000000000000)
+            }
             if (updatedEventEndDate.getTime() > eventDbEndDate.getTime()) {
                 from = new Date(eventDbEndDate);
                 to = new Date(updatedEventEndDate);

@@ -62,10 +62,9 @@ io.on('connection', (client) => {
         })
         /////////TO DO////////////
     client.on('facilitie', async(faciliteOrder) => {
-        client.broadcast.emit('facilitie', faciliteOrder)
-    })
-
-    //////// INSIDE ROOM//////////
+            client.broadcast.emit('facilitie', faciliteOrder)
+        })
+        //////// INSIDE ROOM//////////
     let user;
 
     client.on('userIn', async(payload, callback) => {

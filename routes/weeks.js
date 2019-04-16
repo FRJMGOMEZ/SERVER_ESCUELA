@@ -32,7 +32,6 @@ app.post('/week', (req, res) => {
     let body = req.body;
     let date = new Date(body.date);
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0);
-
     let monday = new Day({
         date: new Date(date),
         day: date.getDay()
@@ -175,6 +174,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)
     let request = await getDay(dayOfTheWeek)
+    console.log(request)
     Week.findOne({
             [request]: dayId
         }).populate('monday', 'date _id')
@@ -201,49 +201,49 @@ const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         if (process.env.NODE_ENV === 'desarrollo') {
             switch (dayOfTheWeek) {
-                case 0:
+                case 1:
                     resolve('monday')
                     break;
-                case 1:
+                case 2:
                     resolve('tuesday')
                     break;
-                case 2:
+                case 3:
                     resolve('wednesday')
                     break;
-                case 3:
+                case 4:
                     resolve('thursday')
                     break;
-                case 4:
+                case 5:
                     resolve('friday')
                     break;
-                case 5:
+                case 6:
                     resolve('saturday')
                     break;
-                case 6:
+                case 0:
                     resolve('sunday')
                     break;
             }
         } else {
             switch (dayOfTheWeek) {
-                case 1:
+                case 0:
                     resolve('monday')
                     break;
-                case 2:
+                case 1:
                     resolve('tuesday')
                     break;
-                case 3:
+                case 2:
                     resolve('wednesday')
                     break;
-                case 4:
+                case 3:
                     resolve('thursday')
                     break;
-                case 5:
+                case 4:
                     resolve('friday')
                     break;
-                case 6:
+                case 5:
                     resolve('saturday')
                     break;
-                case 0:
+                case 6:
                     resolve('sunday')
                     break;
             }

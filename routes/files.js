@@ -3,13 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
-const request = require('request');
 const AWS = require('aws-sdk');
-
+const User = require('../models/user');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
+
+let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
 
 app.use(fileUpload());
 
@@ -17,6 +18,7 @@ AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
+const s3 = new AWS.S3();
 
 app.get('/files/:type/:fileName', (req, res, next) => {
     let type = req.params.type;
@@ -61,21 +63,34 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         });
     }
     let newFile;
-    if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
-        recordFileDev(res, type, file, id).then(async(response) => {
-            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-            newFile.save((err, file) => {
-                if (err) {
-                    deleteFile(fileName, type)
+    recordFile(res, type, file, id).then(async(response) => {
+        newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
+        let location;
+        if (response.data) {
+            location = data.Location;
+        } else {
+            location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
+        }
+        newFile.location = location;
+        newFile.save((err, file) => {
+            if (err) {
+                deleteFile(file.location, file.name, res).then(() => {
                     return res.status(500).json({
                         ok: false,
                         error
                     })
+                })
+            }
+            if (type != 'Project') {
+                let request;
+                switch (type) {
+                    case 'User':
+                        request = User.findByIdAndUpdate(id, { img: file._id });
+                        break;
                 }
-                if (type === '!projectFiles') {
-                    request.exec((error, itemUpdated) => {
-                        if (err) {
-                            deleteFile(fileName, type)
+                request.exec((error, itemUpdated) => {
+                    if (err) {
+                        deleteFile(file.location, file.name, res).then(() => {
                             FileModel.findByIdAndDelete(file._id, (err, file) => {
                                 if (err) {
                                     return res.status(500).json({
@@ -88,9 +103,10 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                                     error
                                 })
                             })
-                        }
-                        if (!itemUpdated) {
-                            deleteFile(fileName, type)
+                        })
+                    }
+                    if (!itemUpdated) {
+                        deleteFile(file.location, file.name, res).then(() => {
                             FileModel.findByIdAndDelete(file._id, (err, file) => {
                                 if (err) {
                                     return res.status(500).json({
@@ -103,98 +119,76 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                                     message: `There are no ${type} with the ID provided`
                                 })
                             })
-                        }
-                        res.status(200).json({ file })
-                    })
-                } else {
+                        })
+                    }
                     res.status(200).json({ file })
-                }
-            })
+                })
+            } else {
+                res.status(200).json({ file })
+            }
         })
-    } else {
-        checkFileProd(res, type, file, id).then(async(response) => {
-            newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-            var s3 = new AWS.S3();
+    })
+});
+
+const recordFile = (res, type, file, id) => {
+    return new Promise((resolve, reject) => {
+        let validTypes = ['User', 'Project'];
+        if (validTypes.indexOf(type) < 0) {
+            return res.status(403).json({
+                ok: false,
+                message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
+            })
+        }
+        let cuttedFile = file.name.split('.');
+        let extension = cuttedFile[cuttedFile.length - 1];
+        if (validExtensions.indexOf(extension) < 0) {
+            return res.status(403).json({
+                ok: false,
+                message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
+            })
+        }
+        let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
+        if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
+            file.mv(`uploads/${type}/${fileName}`, (err) => {
+                if (err)
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    });
+                resolve({ fileName, extension })
+            })
+        } else {
             var params = {
                 Bucket: 'cargomusicfilesstorage',
                 Body: file.data,
-                Key: newFile.name
+                Key: fileName
             }
             s3.upload(params, function(err, data) {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                if (data) {
-                    newFile.location = data.Location;
-                    newFile.save((err, file) => {
-                        if (err) {
-                            return res.status(500).json({
-                                ok: false,
-                                err
-                            })
-                        }
-                        res.status(200).json({ file })
-                    })
-                }
+                resolve({ data })
             });
-        })
-    }
-});
-
-const recordFileDev = (res, type, file, id) => {
-    return new Promise((resolve, reject) => {
-        let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
-        if (validTypes.indexOf(type) < 0) {
-            return res.status(403).json({
-                ok: false,
-                message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
-            })
         }
-        let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
-        let cuttedFile = file.name.split('.');
-        let extension = cuttedFile[cuttedFile.length - 1];
-        if (validExtensions.indexOf(extension) < 0) {
-            return res.status(403).json({
-                ok: false,
-                message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
-            })
-        }
-        let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
-        file.mv(`uploads/${type}/${fileName}`, (err) => {
-            if (err)
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
-            resolve({ fileName, extension })
-        })
     })
 }
 
-const checkFileProd = (res, type, file, id) => {
+const deleteFile = (location, fileName, res) => {
     return new Promise((resolve, reject) => {
-        let validTypes = ['users', 'alumnis', 'professors', 'projects', 'projectFiles'];
-        if (validTypes.indexOf(type) < 0) {
-            return res.status(403).json({
-                ok: false,
-                message: `Invalid type, the valids ones are: ${validTypes.join(', ')}`
-            })
+        if (fs.existsSync(location)) {
+            fs.unlinkSync(location);
+            if (!fs.existsSync(location)) {
+                resolve()
+            }
+        } else {
+            var params = { Bucket: 'cargomusicfilesstore', Key: fileName };
+            s3.deleteObject(params, function(err, data) {
+                if (err) reject(res.status(500).json({ ok: false, err }))
+                else resolve()
+            });
         }
-        let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
-        let cuttedFile = file.name.split('.');
-        let extension = cuttedFile[cuttedFile.length - 1];
-        if (validExtensions.indexOf(extension) < 0) {
-            return res.status(403).json({
-                ok: false,
-                message: `The extension of the file is not allowed, the allowed ones are:${validExtensions.join(', ')}`
-            })
-        }
-        let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
-        resolve({ fileName, extension })
     })
-}
-
-
+};
 
 app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, res) => {
     let type = req.params.type;
@@ -209,17 +203,11 @@ app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, re
         if (!fileDeleted) {
             return res.status(404).json({ ok: false, message: 'There are no files with the ID provided' })
         }
-        deleteFile(fileDeleted.name, type)
-        res.status(200).json({ ok: true, file: fileDeleted })
+        deleteFile(fileDeleted.location, file.name).then(() => {
+            res.status(200).json({ ok: true, file: fileDeleted })
+        })
     })
 })
-
-const deleteFile = (fileName, type) => {
-    let pathImage = path.resolve(__dirname, `../../SERVER/uploads/${type}/${fileName}`);
-    if (fs.existsSync(pathImage)) {
-        fs.unlinkSync(pathImage);
-    }
-};
 
 
 module.exports = app;

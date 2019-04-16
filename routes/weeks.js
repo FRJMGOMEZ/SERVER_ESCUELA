@@ -200,6 +200,7 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
         if (process.env.NODE_ENV === 'desarrollo') {
+            console.log('here')
             switch (dayOfTheWeek) {
                 case 1:
                     resolve('monday')

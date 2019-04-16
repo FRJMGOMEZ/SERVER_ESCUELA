@@ -199,55 +199,29 @@ app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
 const getDay = (dayOfTheWeek) => {
     return new Promise((resolve, reject) => {
-        if (process.env.NODE_ENV === 'desarrollo') {
-            console.log('here')
-            switch (dayOfTheWeek) {
-                case 1:
-                    resolve('monday')
-                    break;
-                case 2:
-                    resolve('tuesday')
-                    break;
-                case 3:
-                    resolve('wednesday')
-                    break;
-                case 4:
-                    resolve('thursday')
-                    break;
-                case 5:
-                    resolve('friday')
-                    break;
-                case 6:
-                    resolve('saturday')
-                    break;
-                case 0:
-                    resolve('sunday')
-                    break;
-            }
-        } else {
-            switch (dayOfTheWeek) {
-                case 0:
-                    resolve('monday')
-                    break;
-                case 1:
-                    resolve('tuesday')
-                    break;
-                case 2:
-                    resolve('wednesday')
-                    break;
-                case 3:
-                    resolve('thursday')
-                    break;
-                case 4:
-                    resolve('friday')
-                    break;
-                case 5:
-                    resolve('saturday')
-                    break;
-                case 6:
-                    resolve('sunday')
-                    break;
-            }
+        console.log('here')
+        switch (dayOfTheWeek) {
+            case 1:
+                resolve('monday')
+                break;
+            case 2:
+                resolve('tuesday')
+                break;
+            case 3:
+                resolve('wednesday')
+                break;
+            case 4:
+                resolve('thursday')
+                break;
+            case 5:
+                resolve('friday')
+                break;
+            case 6:
+                resolve('saturday')
+                break;
+            case 0:
+                resolve('sunday')
+                break;
         }
     })
 }

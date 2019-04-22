@@ -67,18 +67,18 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
         let location;
         if (response.data) {
-            console.log(response.data.Location)
             location = response.data.Location;
         } else {
             location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
         }
         newFile.location = location;
+        console.log(location)
         newFile.save((err, file) => {
             if (err) {
-                deleteFile(file.location, file.name, res).then(() => {
+                deleteFile(newFile.location, newFile, res).then(() => {
                     return res.status(500).json({
                         ok: false,
-                        error
+                        err
                     })
                 })
             }
@@ -89,26 +89,23 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                         request = User.findByIdAndUpdate(id, { img: file._id });
                         break;
                 }
-                request.exec((error, itemUpdated) => {
+                request.exec((err, itemUpdated) => {
                     if (err) {
-                        deleteFile(file.location, file.name, res).then(() => {
-                            FileModel.findByIdAndDelete(file._id, (err, file) => {
-                                if (err) {
+                        deleteFile(newFile.location, newFile.name, res).then(() => {
+                            FileModel.findByIdAndDelete(file._id, (err) => {
+                                if (error) {
                                     return res.status(500).json({
                                         ok: false,
                                         error
                                     })
                                 }
-                                return res.status(500).json({
-                                    ok: false,
-                                    error
-                                })
+                                res.status(500).json({ ok: false, err })
                             })
                         })
                     }
                     if (!itemUpdated) {
-                        deleteFile(file.location, file.name, res).then(() => {
-                            FileModel.findByIdAndDelete(file._id, (err, file) => {
+                        deleteFile(newFile.location, newFile.name, res).then(() => {
+                            FileModel.findByIdAndDelete(file._id, (err) => {
                                 if (err) {
                                     return res.status(500).json({
                                         ok: false,

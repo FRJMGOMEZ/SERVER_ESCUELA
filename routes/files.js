@@ -67,7 +67,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
         let location;
         if (response.data) {
-            location = data.Location;
+            location = response.data.Location;
         } else {
             location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
         }
@@ -159,7 +159,7 @@ const recordFile = (res, type, file, id) => {
             })
         } else {
             var params = {
-                Bucket: 'cargomusicfilesstorage',
+                Bucket: process.env.S3_BUCKET_NAME,
                 Body: file.data,
                 Key: fileName
             }

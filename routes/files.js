@@ -75,6 +75,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         console.log(location)
         newFile.save((err, file) => {
             if (err) {
+                console.log(err)
                 deleteFile(newFile.location, newFile, res).then(() => {
                     return res.status(500).json({
                         ok: false,
@@ -166,7 +167,7 @@ const recordFile = (res, type, file, id) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                resolve({ data })
+                resolve({ data, extension })
             });
         }
     })

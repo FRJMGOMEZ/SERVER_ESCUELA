@@ -67,9 +67,8 @@ app.put('/upload/:type/:id/:download', (req, res) => {
         newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
         let location;
         if (response.data) {
-            console.log(response.data)
+            console.log(response.data.Location)
             location = response.data.Location;
-            console.log(location)
         } else {
             location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
         }

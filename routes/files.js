@@ -167,7 +167,7 @@ const recordFile = (res, type, file, id) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                resolve({ data, extension })
+                resolve({ fileName, data, extension })
             });
         }
     })

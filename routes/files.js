@@ -72,10 +72,8 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
         }
         newFile.location = location;
-        console.log(location)
         newFile.save((err, file) => {
             if (err) {
-                console.log(err)
                 deleteFile(newFile.location, newFile, res).then(() => {
                     return res.status(500).json({
                         ok: false,
@@ -85,7 +83,6 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             }
             if (type != 'Project') {
                 let request;
-                console.log(file)
                 switch (type) {
                     case 'User':
                         request = User.findByIdAndUpdate(id, { img: file._id });

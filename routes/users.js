@@ -41,7 +41,7 @@ app.get('/users', verifyToken, (req, res) => {
                             err
                         })
                     }
-                    usersDb = userDb.filter((user) => { return user.email != 'frjmartinezgomez@gmail.com' })
+                    usersDb = usersDb.filter((user) => { return user.email != 'frjmartinezgomez@gmail.com' })
                     res.status(200).json({
                         ok: true,
                         users: usersDb,

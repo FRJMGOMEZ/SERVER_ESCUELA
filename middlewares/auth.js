@@ -36,6 +36,7 @@ let verifyRole = (req, res, next) => {
 
 let verifyStatus = (req, res, next) => {
     let body = req.body;
+    console.log(body.email)
     User.findOne({ email: body.email }, (error, user) => {
         if (error) {
             return res.status(400).json({
@@ -52,11 +53,13 @@ let verifyStatus = (req, res, next) => {
         if (user.status === true) {
             req.user = user;
             next()
+            return
         } else {
             res.status(401).json({
                 ok: false,
                 message: `User ${user.name} is not granted. Talk to the admnistrator of the program to get access`
             })
+            return
         }
     })
 }

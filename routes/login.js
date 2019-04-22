@@ -7,7 +7,6 @@ const { verifyStatus, verifyToken } = require('../middlewares/auth');
 const app = express();
 
 app.post('/login', verifyStatus, (req, res) => {
-
     let body = req.body;
     User.findOne({ email: body.email })
         .populate('img')

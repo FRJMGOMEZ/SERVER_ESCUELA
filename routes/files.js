@@ -84,6 +84,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
             }
             if (type != 'Project') {
                 let request;
+                console.log(file)
                 switch (type) {
                     case 'User':
                         request = User.findByIdAndUpdate(id, { img: file._id });

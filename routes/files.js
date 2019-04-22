@@ -211,4 +211,4 @@ app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, re
 })
 
 
-module.exports = app;z
+module.exports = app;

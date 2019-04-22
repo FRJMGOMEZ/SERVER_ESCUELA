@@ -16,5 +16,5 @@ app.use(require('./events'));
 app.use(require('./weeks'));
 app.use(require('./days'));
 app.use(require('./tasks'));
-
+app.use(require('./password'));
 module.exports = app;

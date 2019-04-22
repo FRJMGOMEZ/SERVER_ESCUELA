@@ -20,7 +20,8 @@ const userSchema = new Schema({
         enum: validRoles
     },
     status: { type: Boolean, default: false },
-    projects: [{ _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, lastConnection: { type: Date } }]
+    projects: [{ _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, lastConnection: { type: Date } }],
+    resetCode: { type: String }
 });
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })

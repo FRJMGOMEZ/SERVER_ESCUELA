@@ -5,6 +5,9 @@ const User = require('../models/user');
 const Project = require('../models/project');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
+const { sendEmail } = require('../utilities/nodeMail');
+
+const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
 
@@ -47,52 +50,9 @@ app.get('/users', verifyToken, (req, res) => {
         })
 })
 
-app.get('/users/admins', (req, res) => {
-    User.find({ role: 'ADMIN_ROLE' }, (err, users) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                err
-            })
-        }
-        if (!users) {
-            return res.status(404).json({
-                ok: false,
-                message: 'There are no user in DB'
-            })
-        }
-        res.status(200).json({ ok: true, users })
-    })
-})
-
-app.put('/changePassword/:password1/:password1', verifyToken, (req, res) => {
-    ///////Encriptar password///
-    let id = req.params.id;
-    let password1 = req.params.password1;
-    let password2 = req.params.password2
-
-    let userOnline = req.user.userDb;
-    if (!bcrypt.compareSync(password1, userOnline.password)) {
-        res.json({ message: 'The passwords do not match' })
-    } else {
-        userOnline.password = bcrypt.hashSync(password2, 10);
-        userOnline.save(() => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    err
-                })
-            }
-            res.status(200).json({ ok: true })
-        })
-    }
-})
-
-app.post('/user', (req, res) => {
-
+app.post('/user', checkDemo, (req, res) => {
     let body = req.body;
-
-    user.find({})
+    User.find({})
         .count()
         .exec((err, users) => {
             if (err) {
@@ -101,29 +61,25 @@ app.post('/user', (req, res) => {
                     err
                 })
             }
-            if (users.length <= 2) {
-                let user = new User({
-                    name: body.name,
-                    email: body.email,
-                    password: bcrypt.hashSync(body.password, 10),
-                    status: false,
-                })
-                user.save((err, userSaved) => {
-                    if (err) {
-                        return res.status(500).json({
-                            ok: false,
-                            err
-                        })
-                    }
-                    res.status(200).json({
-                        ok: true,
-                        message: 'User succesfully saved, wait for the qualification from the admnistrator of the program',
-                        userSaved
+            let user = new User({
+                name: body.name,
+                email: body.email,
+                password: bcrypt.hashSync(body.password, 10),
+                status: false,
+            })
+            user.save((err, userSaved) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
                     })
+                }
+                res.status(200).json({
+                    ok: true,
+                    message: 'Usuario creado y a la espera de habilitación por parte del admnistrador del programa',
+                    userSaved
                 })
-            } else {
-                res.status(403).json({ ok: false, message: 'No se pueden crear más usuarios, app en modo demo' })
-            }
+            })
         })
 })
 
@@ -149,7 +105,7 @@ app.put('/changeRole/:id/:role', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/user/:id', verifyToken, (req, res) => {
+app.put('/user/:id', [checkDemo, verifyToken], (req, res) => {
     let id = req.params.id;
     let body = req.body;
     User.findById(id, (err, user) => {
@@ -235,7 +191,12 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
                                 }
                                 res.status(200).json({ ok: true, user: userDb })
                             })
-                    } else { res.status(200).json({ ok: true, user: userDb }) }
+                    } else {
+                        let message = `Tu cuenta en CARGOMUSICADM ha sido habilitada por ${req.user.userDb.name} `
+                        sendEmail(res, userDb, message, 'Habilitación de cuenta').then(() => {
+                            res.status(200).json({ ok: true, user: userDb })
+                        })
+                    }
                 })
         })
     } else {
@@ -243,7 +204,7 @@ app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
     }
 })
 
-app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/user/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     User.findByIdAndDelete(id, (err, userDeleted) => {
@@ -253,6 +214,7 @@ app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
         if (!userDeleted) {
             return res - status(404).json({ ok: false, message: 'No users have been found' })
         }
+        userDeleted.status = false;
         Project.update({}, { $pull: { participants: userDeleted._id, administrators: userDeleted._id } })
             .exec((err) => {
                 if (err) {
@@ -265,4 +227,4 @@ app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
 
 
 
-module.exports = app
+module.exports = app;

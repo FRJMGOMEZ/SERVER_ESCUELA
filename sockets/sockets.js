@@ -126,12 +126,15 @@ io.on('connection', (client) => {
     })
 
     client.on('disconnect', async() => {
+        console.log('disconnected')
+        console.log(rooms)
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
                 room.removeUser(user).then((users) => {
                     if (users.length === 0) {
                         rooms = rooms.filter((myRoom) => { return myRoom.id != room.id });
                     }
+                    console.log(rooms, 'here')
                 })
             }
         })

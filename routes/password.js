@@ -81,7 +81,9 @@ app.put('/forgotPassword/:email', (req, res) => {
 
         if (process.env.DEMO) {
             userDb.email = 'usuariotestcargomusicapp@gmail.com'
-            res.status(200).json({ ok: true, message })
+            sendEmail(res, userDb, `${message} ${userDb.name}`, 'Código de reseteo').then(() => {
+                res.status(200).json({ ok: true, message })
+            })
         } else {
             sendEmail(res, userDb, message, 'Código de reseteo').then(() => {
                 res.status(200).json({ ok: true })

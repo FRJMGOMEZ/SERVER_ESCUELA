@@ -181,13 +181,14 @@ const deleteFile = (location, fileName, res) => {
             var params = { Bucket: 'cargomusicfilesstore', Key: fileName };
             s3.deleteObject(params, function(err, data) {
                 if (err) { reject(res.status(500).json({ ok: false, err })) } else resolve()
+
             });
         }
     })
 };
 
-app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, res) => {
-    let type = req.params.type;
+app.delete('/deleteFile/:fileId', [verifyToken, verifyRole], async(req, res) => {
+
     let fileId = req.params.fileId;
 
     FileModel.findByIdAndDelete(fileId, (err, fileDeleted) => {
@@ -199,7 +200,7 @@ app.delete('/deleteFile/:fileId/:type', [verifyToken, verifyRole], async(req, re
         if (!fileDeleted) {
             return res.status(404).json({ ok: false, message: 'There are no files with the ID provided' })
         }
-        deleteFile(fileDeleted.location, file.name).then(() => {
+        deleteFile(fileDeleted.location, fileDeleted.name).then(() => {
             res.status(200).json({ ok: true, file: fileDeleted })
         })
     })

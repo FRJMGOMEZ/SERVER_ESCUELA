@@ -36,7 +36,6 @@ let verifyRole = (req, res, next) => {
 
 let verifyStatus = (req, res, next) => {
     let body = req.body;
-    console.log(body.email)
     User.findOne({ email: body.email }, (error, user) => {
         if (error) {
             return res.status(400).json({

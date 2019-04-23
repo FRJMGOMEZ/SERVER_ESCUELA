@@ -1,4 +1,6 @@
-require('../config/config');
+if (process.env.NODE_ENV === 'desarrollo') {
+    require('../config/mailjetUser')
+}
 
 const nodeMailer = require('nodemailer');
 

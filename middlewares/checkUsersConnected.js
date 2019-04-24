@@ -2,7 +2,7 @@ const User = require('../models/user');
 
 let usersConnected = []
 
-const checkUsersOn = (res, req, next) => {
+const checkUsersOn = (req, res, next) => {
     User.findOne({ email: req.body.email })
         .populate('img')
         .lean()

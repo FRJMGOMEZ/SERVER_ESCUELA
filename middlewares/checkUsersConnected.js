@@ -19,9 +19,10 @@ const checkUsersOn = (req, res, next) => {
                     message: 'User not valid'
                 })
             }
+            console.log(usersConnected, 'test1')
             if (usersConnected.indexOf(userDb._id) >= 0 && process.env.DEMO) {
                 let message = `El usuario ${userDb.name} modo DEMO está siendo usado, prueba a loggearte con otro usuario, gracias.`
-                res.status(200).json({ message })
+                return res.status(200).json({ message })
             } else {
                 req.userDb = userDb
                 next()
@@ -30,9 +31,9 @@ const checkUsersOn = (req, res, next) => {
 }
 
 const addUser = (user) => {
-    console.log(user)
+
     usersConnected.push(user)
-    console.log(usersConnected)
+    console.log(usersConnected, 'test2')
 }
 
 const removeUser = (user) => {

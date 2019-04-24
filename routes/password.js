@@ -153,7 +153,7 @@ app.put('/setNewPassword/:email/:resetCode/:newPassword', (req, res) => {
             let demoMessage;
             if (process.env.DEMO) {
                 userDb.password = bcrypt.hashSync('123', 10)
-                demoMessage = `La nueva contraseña es 123 `
+                demoMessage = `La contraseña es 123, por razones de seguridad no se permite el cambio de password cuando el programa está en modo DEMO`
             } else {
                 userDb.password = bcrypt.hashSync(newPassword, 10)
             }

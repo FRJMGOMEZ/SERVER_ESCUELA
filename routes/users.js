@@ -84,7 +84,7 @@ app.post('/user', (req, res) => {
         })
 })
 
-app.put('/changeRole/:id/:role', [verifyToken, verifyRole], (req, res) => {
+app.put('/changeRole/:id/:role', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let newRole = req.params.role;
@@ -154,7 +154,7 @@ app.put('/user/:id', verifyToken, (req, res) => {
     })
 })
 
-app.put('/changeUserStatus/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/changeUserStatus/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     if (String(req.user.userDb.role) === 'ADMIN_ROLE') {

@@ -22,6 +22,8 @@ class Room {
 
 let rooms = []
 
+let usersConected = []
+
 io.on('connection', (client) => {
 
     //////////////// DASHBOARD //////////////
@@ -42,6 +44,7 @@ io.on('connection', (client) => {
             rooms.push(dashboardRoom)
             await client.join('dashboard')
         }
+        usersConected.push(newUser)
     })
 
     client.on('/dashboardOut', async(payload) => {
@@ -136,5 +139,9 @@ io.on('connection', (client) => {
                 })
             }
         })
+        usersConected = usersConected.filter((usersIn) => { return usersIn != user })
     })
 })
+
+
+module.exports = { usersConnected };

@@ -4,6 +4,7 @@ const User = require('../models/user');
 const Task = require('../models/task');
 const Message = require('../models/message');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
+const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
 
@@ -182,7 +183,7 @@ app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.delete('/project/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/project/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     Project.findByIdAndDelete(id, (err, projectDeleted) => {

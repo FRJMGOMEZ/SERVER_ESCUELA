@@ -157,7 +157,7 @@ const checkPermanecy = async(res, body, eventDb) => {
         if (eventDb.endDate) {
             eventDbEndDate = new Date(eventDb.endDate);
             if (body.endDate) {
-                updatedEventEndDate = body.endDate
+                updatedEventEndDate = new Date(body.endDate)
             } else {
                 updatedEventEndDate = new Date(8630000000000000)
             }

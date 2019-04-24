@@ -20,8 +20,8 @@ const checkUsersOn = (req, res, next) => {
                 })
             }
             console.log(process.env.DEMO)
-            console.log(usersConnected, JSON.stringify(userDb._id))
-            console.log(usersConnected.indexOf(JSON.stringify(userDb._id)))
+            console.log(usersConnected.indexOf(userDb._id))
+
             if (usersConnected.indexOf(userDb._id) >= 0 && process.env.DEMO) {
                 let message = `El usuario ${userDb.name} modo DEMO está siendo usado, prueba a loggearte con otro usuario, gracias.`
                 return res.status(200).json({ message })
@@ -33,8 +33,7 @@ const checkUsersOn = (req, res, next) => {
 }
 
 const addUser = (user) => {
-
-    usersConnected.push(user)
+    usersConnected.push(String(user))
     console.log(usersConnected, 'test2')
 }
 

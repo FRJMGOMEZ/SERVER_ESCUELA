@@ -36,7 +36,6 @@ app.put('/checkToken', (req, res) => {
             return res.send(false)
         }
         console.log(userDb)
-        console.log('Is ok?')
         res.send(true)
     })
 })

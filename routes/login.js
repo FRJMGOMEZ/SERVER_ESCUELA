@@ -1,10 +1,9 @@
 const express = require('express');
-
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { verifyStatus, verifyToken } = require('../middlewares/auth');
 const app = express();
-const { checkUsersOn } = require('../middlewares/checkUsersConnected');
+const { checkUsersOn, usersConnected } = require('../middlewares/checkUsersConnected');
 
 app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
@@ -35,7 +34,10 @@ app.put('/checkToken', (req, res) => {
         if (err) {
             return res.send(false)
         }
-        console.log(userDb)
+        console.log(usersConnected)
+        if (usersConnected.includes(userDb._id)) {
+            return res.send(false)
+        }
         res.send(true)
     })
 })

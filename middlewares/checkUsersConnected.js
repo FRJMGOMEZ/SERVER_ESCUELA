@@ -40,4 +40,4 @@ const removeUser = (user) => {
     console.log(usersConnected)
 }
 
-module.exports = { addUser, removeUser, checkUsersOn }
+module.exports = { addUser, removeUser, checkUsersOn, usersConnected }

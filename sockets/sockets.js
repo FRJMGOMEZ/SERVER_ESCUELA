@@ -1,5 +1,5 @@
 const { io } = require('../app');
-const { usersConnected } = require('../middlewares/checkUsersConnected')
+const { addUser, removeUser } = require('../middlewares/checkUsersConnected')
 
 class Room {
     constructor(id) {
@@ -25,6 +25,8 @@ let rooms = []
 
 io.on('connection', (client) => {
 
+    let user;
+
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
         client.broadcast.emit('userSocket', payload)
@@ -43,7 +45,8 @@ io.on('connection', (client) => {
             rooms.push(dashboardRoom)
             await client.join('dashboard')
         }
-        usersConnected.push(newUser)
+        user = payload.user
+        addUser(payload.user)
     })
 
     client.on('/dashboardOut', async(payload) => {
@@ -67,20 +70,17 @@ io.on('connection', (client) => {
             client.broadcast.emit('facilitie', faciliteOrder)
         })
         //////// INSIDE ROOM//////////
-    let user;
 
     client.on('userIn', async(payload, callback) => {
         if (rooms.map((room) => { return room.id }).indexOf(payload.room) < 0) {
             newRoom = new Room(payload.room)
             rooms.push(newRoom)
-            user = payload.user
             newRoom.addUser(payload.user)
             callback([payload.user])
             await client.join(payload.room)
             return
         } else {
             if (rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].users.indexOf(payload.user) < 0) {
-                user = payload.user
                 rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].addUser(payload.user)
                 await client.join(payload.room)
             }
@@ -95,7 +95,6 @@ io.on('connection', (client) => {
         if (payload.room) {
             if (rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)]) {
                 await rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].removeUser(payload.user)
-                user = undefined;
                 await client.leave(payload.room)
                 let usersOnline = await rooms[rooms.map((room) => { return room.id }).indexOf(payload.room)].users;
                 if (usersOnline.length === 0) {
@@ -138,6 +137,6 @@ io.on('connection', (client) => {
                 })
             }
         })
-        usersConnected = usersConnected.filter((usersIn) => { return usersIn != user })
+        removeUser(user)
     })
 })

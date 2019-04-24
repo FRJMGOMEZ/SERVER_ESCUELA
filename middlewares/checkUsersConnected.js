@@ -30,4 +30,14 @@ const checkUsersOn = (req, res, next) => {
         })
 }
 
-module.exports = { usersConnected, checkUsersOn }
+const addUser = (user) => {
+    usersConnected.push(user)
+}
+
+const removeUser = (user) => {
+    usersConnected = usersConnected.filter(usersIn => {
+        return usersIn != user
+    })
+}
+
+module.exports = { addUser, removeUser, checkUsersOn }

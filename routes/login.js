@@ -11,8 +11,6 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
     let body = req.body;
     let userDb = req.userDb;
 
-    console.log(userDb)
-
     if (!bcrypt.compareSync(body.password, userDb.password)) {
         return res
             .status(400)

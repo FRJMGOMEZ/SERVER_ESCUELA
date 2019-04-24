@@ -34,13 +34,10 @@ const addUser = (user) => {
 }
 
 const removeUser = (user) => {
-    return new Promise((resolve, reject) => {
-        usersConnected = usersConnected.filter(usersIn => {
-            return usersIn != user
-        });
-        console.log(usersConnected)
-        resolve()
-    })
+    usersConnected = usersConnected.filter(usersIn => {
+        return usersIn != user
+    });
+    console.log(usersConnected)
 }
 
 module.exports = { addUser, removeUser, checkUsersOn }

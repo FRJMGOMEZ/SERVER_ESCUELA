@@ -127,7 +127,7 @@ io.on('connection', (client) => {
     })
 
     client.on('logOut', async(payload, callback) => {
-        await removeUser(payload.user)
+        removeUser(payload.user)
         callback()
     })
 
@@ -140,7 +140,7 @@ io.on('connection', (client) => {
                     }
                 })
             }
-            await removeUser(user)
+            removeUser(user)
         })
     })
 })

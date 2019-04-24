@@ -44,7 +44,7 @@ io.on('connection', (client) => {
             rooms.push(dashboardRoom)
             await client.join('dashboard')
         }
-        usersConected.push(newUser)
+        usersConnected.push(newUser)
     })
 
     client.on('/dashboardOut', async(payload) => {
@@ -139,7 +139,7 @@ io.on('connection', (client) => {
                 })
             }
         })
-        usersConected = usersConected.filter((usersIn) => { return usersIn != user })
+        usersConnected = usersConnected.filter((usersIn) => { return usersIn != user })
     })
 })
 

@@ -46,7 +46,7 @@ io.on('connection', (client) => {
             await client.join('dashboard')
         }
         user = payload.user
-        addUser(payload.user)
+        addUser(user)
     })
 
     client.on('/dashboardOut', async(payload) => {

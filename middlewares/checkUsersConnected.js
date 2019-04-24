@@ -32,6 +32,7 @@ const checkUsersOn = (req, res, next) => {
 
 const addUser = (user) => {
     usersConnected.push(user)
+    console.log(usersConnected)
 }
 
 const removeUser = (user) => {

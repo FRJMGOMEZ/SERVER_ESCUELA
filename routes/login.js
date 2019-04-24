@@ -2,13 +2,11 @@ const express = require('express');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
 const { verifyStatus, verifyToken } = require('../middlewares/auth');
 const app = express();
-
 const { checkUsersOn } = require('../middlewares/checkUsersConnected');
 
-app.post('/login', [checkUsersOn, verifyStatus], (req, res) => {
+app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
     let body = req.body;
     let userDb = req.userDb

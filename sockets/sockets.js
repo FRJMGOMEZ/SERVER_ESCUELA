@@ -126,10 +126,9 @@ io.on('connection', (client) => {
         client.broadcast.to('dashboard').emit('dashboard', dashboardPayload)
     })
 
-    client.on('logOut', async(payload, callback) => {
+    client.on('logOut', async(payload) => {
         console.log(payload, 'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
         removeUser(payload.user)
-        callback()
     })
 
     client.on('disconnect', async() => {

@@ -127,7 +127,7 @@ io.on('connection', (client) => {
     })
 
     client.on('logOut', async(payload, callback) => {
-        console.log(payload.user, 'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
+        console.log(payload, 'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
         removeUser(payload.user)
         callback()
     })

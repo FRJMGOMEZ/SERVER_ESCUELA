@@ -22,7 +22,7 @@ class Room {
 
 let rooms = []
 
-let usersConected = []
+let usersConnected = []
 
 io.on('connection', (client) => {
 

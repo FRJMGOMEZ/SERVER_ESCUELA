@@ -31,10 +31,12 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
 app.put('/checkToken', (req, res) => {
     let token = req.get('token');
-    jwt.verify(token, process.env.SEED, (err) => {
+    jwt.verify(token, process.env.SEED, (err, userDb) => {
         if (err) {
             return res.send(false)
         }
+        console.log(userDb)
+        console.log('Is ok?')
         res.send(true)
     })
 })

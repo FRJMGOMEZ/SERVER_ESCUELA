@@ -126,6 +126,10 @@ io.on('connection', (client) => {
         client.broadcast.to('dashboard').emit('dashboard', dashboardPayload)
     })
 
+    client.on('logOut', async(payload) => {
+        await removeUser(payload.user)
+    })
+
     client.on('disconnect', async() => {
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
@@ -135,7 +139,7 @@ io.on('connection', (client) => {
                     }
                 })
             }
+            await removeUser(user)
         })
-        await removeUser(user)
     })
 })

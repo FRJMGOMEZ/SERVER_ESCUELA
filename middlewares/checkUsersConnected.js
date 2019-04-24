@@ -34,8 +34,12 @@ const addUser = (user) => {
 }
 
 const removeUser = (user) => {
-    usersConnected = usersConnected.filter(usersIn => {
-        return usersIn != user
+    return new Promise((resolve, reject) => {
+        usersConnected = usersConnected.filter(usersIn => {
+            return usersIn != user
+        });
+        console.log(usersConnected)
+        resolve()
     })
 }
 

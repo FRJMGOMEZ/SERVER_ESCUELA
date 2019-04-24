@@ -29,10 +29,23 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
     })
 })
 
+app.put('/checkToken', (req, res) => {
+    let token = req.get('token');
+    jwt.verify(token, process.env.SEED, (err) => {
+        if (err) {
+            return res.send(false)
+        }
+        res.send(true)
+    })
+})
+
 app.get('/updateToken', verifyToken, async(req, res) => {
     let userDb = req.user.userDb;
     let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
     res.status(200).json({ ok: true, token })
 })
+
+
+
 
 module.exports = app;

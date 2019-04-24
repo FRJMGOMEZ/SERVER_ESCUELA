@@ -11,47 +11,47 @@ const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
 
+
 app.get('/users', verifyToken, (req, res) => {
 
-        let from = Number(req.query.from) || 0;
-        let limit = Number(req.query.limit) || 5;
+    let from = Number(req.query.from) || 0;
+    let limit = Number(req.query.limit) || 5;
 
-        User.find({ $nor: [{ _id: req.user.userDb._id }] })
-            .skip(from)
-            .limit(limit)
-            .populate('projects', 'name _id description img')
-            .populate('img')
-            .exec((err, usersDb) => {
+    User.find({ $nor: [{ _id: req.user.userDb._id }] })
+        .skip(from)
+        .limit(limit)
+        .populate('projects', 'name _id description img')
+        .populate('img')
+        .exec((err, usersDb) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                })
+            }
+            if (!usersDb) {
+                return res.status(404).json({
+                    ok: false,
+                    message: 'There are no user in DB'
+                })
+            }
+            User.countDocuments({ $nor: [{ _id: req.user.userDb._id }] }, (err, count) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,
                         err
                     })
                 }
-                if (!usersDb) {
-                    return res.status(404).json({
-                        ok: false,
-                        message: 'There are no user in DB'
-                    })
-                }
-                User.countDocuments({ $nor: [{ _id: req.user.userDb._id }] }, (err, count) => {
-                    if (err) {
-                        return res.status(500).json({
-                            ok: false,
-                            err
-                        })
-                    }
-                    usersDb = usersDb.filter((user) => { return user.email != 'frjmartinezgomez@gmail.com' })
-                    res.status(200).json({
-                        ok: true,
-                        users: usersDb,
-                        count
-                    })
+                usersDb = usersDb.filter((user) => { return user.email != 'frjmartinezgomez@gmail.com' })
+                res.status(200).json({
+                    ok: true,
+                    users: usersDb,
+                    count
                 })
             })
-    })
-    ///checkDemo///
-app.post('/user', (req, res) => {
+        })
+})
+app.post('/user', checkDemo, (req, res) => {
     let body = req.body;
     User.find({})
         .count()
@@ -107,7 +107,7 @@ app.put('/changeRole/:id/:role', [checkDemo, verifyToken, verifyRole], (req, res
 })
 
 ///CheckDemo//
-app.put('/user/:id', verifyToken, (req, res) => {
+app.put('/user/:id', [checkDemo, verifyToken], (req, res) => {
     let id = req.params.id;
     let body = req.body;
     User.findById(id, (err, user) => {

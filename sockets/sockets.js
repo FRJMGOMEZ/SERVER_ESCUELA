@@ -1,4 +1,5 @@
 const { io } = require('../app');
+const { usersConnected } = require('../middlewares/checkUsersConnected')
 
 class Room {
     constructor(id) {
@@ -21,8 +22,6 @@ class Room {
 }
 
 let rooms = []
-
-let usersConnected = []
 
 io.on('connection', (client) => {
 
@@ -142,6 +141,3 @@ io.on('connection', (client) => {
         usersConnected = usersConnected.filter((usersIn) => { return usersIn != user })
     })
 })
-
-
-module.exports = { usersConnected };

@@ -20,8 +20,7 @@ const checkUsersOn = (req, res, next) => {
                 })
             }
 
-            console.log(usersConnected, String(userDb._id))
-            console.log(usersConnected.includes(String(userDb._id)))
+            console.log(usersConnected && process.env.DEMO)
             if (usersConnected.includes(userDb._id) && process.env.DEMO) {
                 let message = `El usuario ${userDb.name} modo DEMO está siendo usado, prueba a loggearte con otro usuario, gracias.`
                 return res.status(200).json({ message })

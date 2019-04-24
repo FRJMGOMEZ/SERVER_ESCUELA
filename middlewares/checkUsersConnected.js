@@ -19,6 +19,7 @@ const checkUsersOn = (req, res, next) => {
                     message: 'User not valid'
                 })
             }
+            console.log(usersConnected)
             if (usersConnected.indexOf(userDb._id) >= 0 && process.env.DEMO) {
                 let message = `El usuario ${userDb.name} modo DEMO está siendo usado, prueba a loggearte con otro usuario, gracias.`
                 res.status(200).json({ message })

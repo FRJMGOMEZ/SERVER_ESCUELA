@@ -36,6 +36,7 @@ app.put('/checkToken', (req, res) => {
         }
         console.log(usersConnected)
         if (usersConnected.includes(userDb._id)) {
+            console.log('Yeeeees it includes it')
             return res.send(false)
         }
         res.send(true)

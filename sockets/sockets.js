@@ -127,7 +127,6 @@ io.on('connection', (client) => {
     })
 
     client.on('disconnect', async() => {
-
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
                 room.removeUser(user).then((users) => {
@@ -137,6 +136,6 @@ io.on('connection', (client) => {
                 })
             }
         })
-        removeUser(user)
+        await removeUser(user)
     })
 })

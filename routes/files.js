@@ -187,6 +187,8 @@ const deleteFile = (location, fileName, res) => {
     })
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 app.delete('/deleteFile/:fileId', [verifyToken, verifyRole], async(req, res) => {
 
     let fileId = req.params.fileId;

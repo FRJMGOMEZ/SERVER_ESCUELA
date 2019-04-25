@@ -116,6 +116,7 @@ const searchUsers = (res, regExp, from, limit) => {
         User.find({ name: regExp })
             .skip(from)
             .limit(limit)
+            .populate('img')
             .exec((err, usersDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))

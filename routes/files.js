@@ -194,7 +194,6 @@ const deleteFile = (location, fileName, res) => {
 app.delete('/deleteFile/:fileId', [checkDemo, verifyToken, verifyRole], async(req, res) => {
 
     let fileId = req.params.fileId;
-
     FileModel.findByIdAndDelete(fileId, (err, fileDeleted) => {
         if (err)
             return res.status(500).json({

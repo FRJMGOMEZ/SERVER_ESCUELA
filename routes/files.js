@@ -8,6 +8,8 @@ const User = require('../models/user');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
+const { checkDemo } = require('../middlewares/demo');
+
 const app = express();
 
 let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];

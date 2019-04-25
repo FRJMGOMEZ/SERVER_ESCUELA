@@ -180,8 +180,8 @@ const deleteFile = (location, fileName, res) => {
         } else {
             var params = { Bucket: 'cargomusicfilesstore', Key: fileName };
             s3.deleteObject(params, function(err, data) {
-                if (err) { reject(res.status(500).json({ ok: false, err })) } else resolve()
-
+                if (err) { reject(res.status(500).json({ ok: false, err })) }
+                resolve()
             });
         }
     })

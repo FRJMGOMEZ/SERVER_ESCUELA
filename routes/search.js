@@ -8,6 +8,7 @@ const EventModel = require('../models/event');
 const Day = require('../models/day');
 const FileModel = require('../models/file');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
+const Task = require('../models/task');
 
 const app = express()
 
@@ -31,6 +32,9 @@ app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => 
             break;
         case 'users':
             promise = searchUsers(res, regExp, from, limit);
+            break;
+        case 'tasks':
+            promise = searchTasks(res, regExp, from, limit);
             break;
         default:
             res.status(404).json({ ok: false, message: 'The collection required does not exist' });
@@ -85,7 +89,7 @@ const searchAlumnis = (res, regExp, from, limit) => {
                     reject(res.status(500).json({ ok: false, err }))
                 }
                 if (!alumnisDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis with the ID provided' }))
+                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis' }))
                 }
                 resolve(alumnisDb)
             })
@@ -104,7 +108,7 @@ const searchProfessors = (res, regExp, from, limit) => {
                     reject(res.status(500).json({ ok: false, err }))
                 }
                 if (!professorsDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no professors with the ID provided' }))
+                    reject(res.status(404).json({ ok: false, message: 'There are no professors' }))
                 }
                 resolve(professorsDb)
             })
@@ -122,9 +126,28 @@ const searchUsers = (res, regExp, from, limit) => {
                     reject(res.status(500).json({ ok: false, err }))
                 }
                 if (!usersDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no professors with the ID provided' }))
+                    reject(res.status(404).json({ ok: false, message: 'There are no users' }))
                 }
                 resolve(usersDb)
+            })
+    })
+}
+
+const searchTasks = (res, regExp, from, limit) => {
+    return new Promise((resolve, reject) => {
+        Task.find({ name: regExp })
+            .skip(from)
+            .limit(limit)
+            .populate('assignedBy')
+            .populate('user')
+            .exec((err, tasksDb) => {
+                if (err) {
+                    reject(res.status(500).json({ ok: false, err }))
+                }
+                if (!tasksDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no tasks' }))
+                }
+                resolve(tasksDb)
             })
     })
 }

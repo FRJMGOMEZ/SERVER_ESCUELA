@@ -2,6 +2,7 @@ const express = require('express');
 const Indexcard = require('../models/indexCard');
 const Alumni = require('../models/alumni');
 const Professor = require('../models/professor');
+const Artist = require('../models/artist');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -32,10 +33,12 @@ app.post('/indexcard', [verifyToken, verifyRole], (req, res) => {
         if (indexcardDb) {
             Promise.all([
                 checkProfessor(res, indexcardDb.name),
-                checkAlumni(res, indexcardDb.name)
+                checkAlumni(res, indexcardDb.name),
+                checkArtist(res, indexcardDb.name)
             ]).then(responses => {
                 let professorId = responses[0];
                 let alumniId = responses[1];
+                let artistId = response[2];
                 if (alumniId) {
                     Alumni.updateOne({ id: alumniId }, { indexcard: indexcardDb._id })
                         .exec((err, alumniUpdated) => {
@@ -51,6 +54,14 @@ app.post('/indexcard', [verifyToken, verifyRole], (req, res) => {
                                 return res.status(500).json({ ok: false, err })
                             }
                             res.status(200).json({ ok: true, indexcard: indexcardDb, professor: professorUpdated.name })
+                        })
+                } else if (artistId) {
+                    Artist.updateOne({ id: artistId }, { indexcard: indexcardDb._Id })
+                        .exec((err, artistUpdated) => {
+                            if (err) {
+                                return res.status(500).json({ ok: false, err })
+                            }
+                            res.status(200).json({ ok: true, indexcard: indexcardDb, artist: artistUpdated.name })
                         })
                 } else {
                     res.status(200).json({ ok: true, indexcard: indexcardDb })
@@ -137,6 +148,9 @@ app.put('/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
                     case 'PROFESSOR':
                         request = Professor.findOneAndUpdate({ name: previousName }, { name: indexcardUpdated.name }, { upsert: true, new: true })
                         break;
+                    case 'ARTIST':
+                        request = Artist.findOneAndUpdate({ name: previousName }, { name: indexcardUpdated.name }, { upsert: true, new: true })
+                        break;
                 }
                 request.exec((err, itemUpdated) => {
                     if (err) {
@@ -177,6 +191,23 @@ let checkAlumni = (res, name) => {
                     resolve()
                 } else {
                     resolve(alumniDb._id)
+                }
+            })
+        } else { resolve() }
+    })
+}
+
+let checkArtist = (res, name) => {
+    return new Promise((resolve, reject) => {
+        if (name) {
+            Artist.find({ name: name }, (err, artistDb) => {
+                if (err) {
+                    reject(res.status(500).json({ ok: false, err }))
+                }
+                if (!artistDb) {
+                    resolve()
+                } else {
+                    resolve(artistDb._id)
                 }
             })
         } else { resolve() }

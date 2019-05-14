@@ -20,5 +20,4 @@ const indexcardSchema = new Schema({
 
 indexcardSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })
 
-
 module.exports = mongoose.model('Indexcard', indexcardSchema);

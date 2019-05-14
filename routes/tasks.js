@@ -13,7 +13,7 @@ app.get('/tasks', verifyToken, (req, res) => {
             return res.status(500).json({ ok: false, mensaje: err })
         }
         let projects = user.projects.map((project) => { return project._id })
-        Task.find({ user: userOnline._id, project: projects }, { ok: false })
+        Task.find({ user: userOnline._id, project: projects, ok: false })
             .populate('project', 'name _id')
             .exec((err, tasks) => {
                 if (err) {

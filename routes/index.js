@@ -17,4 +17,9 @@ app.use(require('./weeks'));
 app.use(require('./days'));
 app.use(require('./tasks'));
 app.use(require('./password'));
+app.use(require('./artists'));
+app.use(require('./albums'));
+app.use(require('./assignations'));
+app.use(require('./tracks'));
+
 module.exports = app;

@@ -37,7 +37,6 @@ const removeUser = (user) => {
     usersConnected = usersConnected.filter(usersIn => {
         return usersIn != user
     });
-    console.log(usersConnected)
 }
 
 module.exports = { addUser, removeUser, checkUsersOn, usersConnected }

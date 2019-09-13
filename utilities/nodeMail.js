@@ -12,14 +12,18 @@ let transporter = nodeMailer.createTransport({
     }
 });
 
-const sendEmail = (res, user, message, title) => {
-    return new Promise((resolve, reject) => {
+
+const sendEmail = (res, userMail, title,from,message,template) => {
+    return new Promise(async(resolve, reject) => {
         let mailOptions = {
-            from: 'frjmartinezgomez@gmail.com',
-            to: user.email,
+            to: 'frjmartinezgomez@gmail.com',
             subject: title,
-            text: message
         };
+
+        mailOptions.from = await from? from :'frjmartinezgomez@gmail.com';
+        mailOptions.text = await message ? message  : '';
+        mailOptions.html =  await template ? template : ''; 
+        
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 reject(res.status(500).json({ ok: false, error }))

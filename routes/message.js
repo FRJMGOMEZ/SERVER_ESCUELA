@@ -15,7 +15,11 @@ app.get('/messages/:id', verifyToken, (req, res) => {
     Message.find({ project: projectId })
         .skip(from)
         .limit(limit)
-        .populate('user', 'name _id')
+        .populate({
+            path: 'user',
+            model: 'User',
+            select:'user name _id'
+        })
         .populate('file')
         .exec((err, messagesDb) => {
             if (err) {
@@ -36,27 +40,24 @@ app.get('/messages/:id', verifyToken, (req, res) => {
 app.get('/lastMessages', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let requests = [];
-    User.findById(userOnline, (err, user) => {
-        if (err) {
-            return res.status(500).json({ ok: false, err })
-        }
-        user.projects.forEach((project) => {
-            requests.push(findMessages(project._id, project.lastConnection, res))
-        })
+    User.findById(userOnline._id,(err,userDb)=>{
+      userDb.projects.forEach((project) => {
+      requests.push(findMessages(project._id, project.lastConnection, res))
+       })
         if (requests.length === 0) {
-            return res.status(200).json({ ok: true, messages: [] })
+          return res.status(200).json({ ok: true, messages: [] })
         } else {
-            Promise.all(requests).then((responses) => {
-                let messages = []
-                responses.forEach((response) => {
-                    response.forEach((message) => {
-                        messages.push(message)
-                    })
-                })
-                res.status(200).json({ ok: true, messages })
+          Promise.all(requests).then((responses) => {
+            let messages = []
+              responses.forEach((response) => {
+                response.forEach((message) => {
+                 messages.push(message)
+              })
             })
-        }
-    })
+           res.status(200).json({ ok: true, messages })
+          })
+      }
+    })    
 })
 
 const findMessages = (projectId, userLastConnection, res) => {
@@ -87,7 +88,11 @@ app.post('/message', verifyToken, (req, res) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        message.populate('user', `name`).populate({ path: 'file' }, (err, messageDb) => {
+        message.populate({
+            path: 'user',
+            model: 'User',
+            select:'name email _id'
+        }).populate({ path: 'file' }, (err, messageDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
@@ -107,11 +112,11 @@ app.post('/message', verifyToken, (req, res) => {
 app.delete('/message/:id', verifyToken, (req, res) => {
 
     let id = req.params.id;
-    Message.findByIdAndDelete(id, (err, message) => {
+    Message.findByIdAndDelete(id, (err, messageDeleted) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        if (!message) {
+        if (!messageDeleted) {
             return res.status(404).json({ ok: false, message: 'There are no messages with the ID provided' })
         }
         Project.updateOne({ messages: messageDeleted._id }, { $pull: { messages: messageDeleted._id } }, { new: true }, (err, projectUpdated) => {

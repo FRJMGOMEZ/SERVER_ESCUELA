@@ -17,6 +17,7 @@ const daySchema = new Schema({
     hour9: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventModel', default: null }],
     hour10: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventModel', default: null }],
     hour11: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventModel', default: null }],
+    hour12: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventModel', default: null }],
 })
 
 module.exports = mongoose.model('Day', daySchema);

@@ -1,40 +1,34 @@
 const express = require('express');
+const Assignation = require('../models/assignation');
 const app = express();
 
-const Assignation = require('../models/assignation');
+app.get('/assignations/:artistId',(req, res) => {
 
-app.post('/assignation', (req, res) => {
+    let artistId = req.params.artistId;
 
-    let assignation = req.body;
-    assignation = new Assignation({ artist: assignation.artist, percent: assignation.percent });
-
-    assignation.save((err) => {
-        if (err) {
-            return res.status(500).json({ ok: false, err })
-        }
-        assignation.populate({ path: 'artist', select: 'name _id' }, (err, assignationDb) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
+    Assignation.find({ artist: artistId })
+        .populate({
+            path: 'album',
+            model: 'Album',
+            populate: {
+                path: 'tracks',
+                model: 'Track',
+                select: 'title _id assignations'
             }
-            res.status(200).json({ ok: true, assignation: assignationDb })
-        })
-    })
-})
-
-app.delete('/assignation/:id', (req, res) => {
-
-    let id = req.params.id;
-
-    Assignation.findByIdAndDelete(id, (err, assignationDeleted) => {
+        }).exec(async(err, assignations) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        if (!assignationDeleted) {
-            return res.status(404).json({ ok: false, message: 'There are no assignations with the ID provided' })
-        }
-        res.status(200).json({ ok: true, assignation: assignationDeleted })
+          await assignations.forEach((assignation,index)=>{
+           assignations[index].track = assignation.album.tracks.filter((track)=>{
+                if(track.assignations.indexOf(String(assignation._id))>=0){
+                    return track;
+                }
+            })[0]
+            assignations[index].album = assignation.album._id;
+           })
+        res.status(200).json({ ok: true, assignations })
     })
-
 })
 
 module.exports = app;

@@ -26,7 +26,6 @@ let rooms = []
 io.on('connection', (client) => {
 
     let user;
-
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
         client.broadcast.emit('userSocket', payload)
@@ -106,6 +105,10 @@ io.on('connection', (client) => {
                 }
             }
         }
+    })
+
+    client.on('files',async(payload)=>{
+        client.broadcast.to(payload.room).emit('files',payload.fileOrder)
     })
 
     client.on('message', async(payload) => {

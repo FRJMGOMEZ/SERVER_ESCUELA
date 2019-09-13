@@ -58,39 +58,41 @@ app.put('/forgotPassword/:email', (req, res) => {
         maximumLength: maxNum
     }
     let resetCode = passwordGenerator.generatePassword(options);
-    User.findOneAndUpdate({ email }, { password: bcrypt.hashSync(resetCode, 10) }, (err, userDb) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                err
-            })
-        }
-        if (!userDb) {
-            return res.status(400).json({
-                ok: false,
-                message: 'User not valid'
-            })
-        }
-        if (userDb.status === false) {
-            return res.status(400).json({
-                ok: false,
-                message: 'El usuario no está validado'
-            })
-        }
-        let message = `Este es tu código de reseteo de la cuenta: ${resetCode}`
+        User.findOneAndUpdate({ email:email }, { password: bcrypt.hashSync(resetCode, 10) })
+            .exec((err, userDb) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    })
+                }
+                if (!userDb) {
+                    return res.status(400).json({
+                        ok: false,
+                        message: 'User not valid'
+                    })
+                }
+                if (userDb.status === false) {
+                    return res.status(400).json({
+                        ok: false,
+                        message: 'El usuario no está validado'
+                    })
+                }
+                let message = `Este es tu código de reseteo de la cuenta: ${resetCode}`
 
-        if (process.env.DEMO) {
-            userDb.email = 'usuariotestcargomusicapp@gmail.com'
-            sendEmail(res, userDb, `${message} ${userDb.name}`, 'Código de reseteo').then(() => {
-                res.status(200).json({ ok: true, message })
+                if (process.env.DEMO) {
+                    userDb.email = 'usuariotestcargomusicapp@gmail.com'
+                    res, userMail, title, from, message, template
+                    sendEmail(res, userDb.email, 'Código de reseteo', '', `${message} ${userDb.name}`,'').then(() => {
+                        res.status(200).json({ ok: true, message })
+                    })
+                } else {
+                    sendEmail(res, userDb.email,'Código de reseteo','',message,'').then(() => {
+                        res.status(200).json({ ok: true })
+                    })
+                }
             })
-        } else {
-            sendEmail(res, userDb, message, 'Código de reseteo').then(() => {
-                res.status(200).json({ ok: true })
-            })
-        }
     })
-})
 
 app.put('/checkResetCode/:email/:resetCode', (req, res) => {
 
@@ -150,12 +152,13 @@ app.put('/setNewPassword/:email/:resetCode/:newPassword', (req, res) => {
                     message: "El código de reseteo no es válido"
                 });
         } else {
-            let demoMessage;
+            let message;
             if (process.env.DEMO) {
                 userDb.password = bcrypt.hashSync('123', 10)
-                demoMessage = `La contraseña es 123, por razones de seguridad no se permite el cambio de password cuando el programa está en modo DEMO`
+                message = `La contraseña es 123, por razones de seguridad no se permite el cambio de password cuando el programa está en modo DEMO`
             } else {
-                userDb.password = bcrypt.hashSync(newPassword, 10)
+                userDb.password = bcrypt.hashSync(newPassword, 10);
+                message = 'La contraseña se ha actualizado'
             }
             userDb.save(() => {
                 if (err) {
@@ -164,7 +167,7 @@ app.put('/setNewPassword/:email/:resetCode/:newPassword', (req, res) => {
                         err
                     })
                 }
-                res.status(200).json({ ok: true, message: `${demoMessage}` })
+                res.status(200).json({ ok: true, message })
             })
         }
     })

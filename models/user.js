@@ -8,9 +8,13 @@ const validRoles = {
     message: '{VALUE} is not a valid role'
 };
 
+const validTypes = {
+    values: [`ARTIST`, 'ALUMNI', 'PROFESSOR']
+}
+
 const userSchema = new Schema({
-    name: { type: String, unique: true, required: [true, "Name is required"] },
-    email: { type: String, unique: true, required: [true, "Email is required"] },
+    name:{type:String,require:true, unique:true},
+    email:{type:String,require:true, unique:true},
     password: { type: String, required: [true, "Password is required"] },
     img: { type: mongoose.Schema.Types.ObjectId, ref: 'FileModel' },
     role: {
@@ -19,6 +23,11 @@ const userSchema = new Schema({
         default: "USER_ROLE",
         enum: validRoles
     },
+    type: [{
+        type: String,
+        required: false,
+        enum: validTypes
+    }],
     status: { type: Boolean, default: false },
     projects: [{ _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, lastConnection: { type: Date } }],
     resetCode: { type: String }

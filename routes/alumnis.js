@@ -2,7 +2,6 @@ const express = require('express');
 
 const Alumni = require('../models/alumni');
 const Subject = require('../models/subject');
-const Indexcard = require('../models/indexCard');
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -11,10 +10,10 @@ const app = express()
 app.get('/alumni', [verifyToken, verifyRole], (req, res) => {
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
-
     Alumni.find({})
         .skip(from)
         .limit(limit)
+        .populate('indexcard', 'name _id')
         .populate('subjects', 'name _id')
         .exec((err, alumnisDb) => {
             if (err) { return res.status(500).json({ ok: false, message: err }) }
@@ -32,14 +31,20 @@ app.get('/alumni', [verifyToken, verifyRole], (req, res) => {
 app.post('/alumni', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let alumni = new Alumni({
-        name: body.name,
         indexcard: body.indexcard
     })
     alumni.save((err, alumniSaved) => {
         if (err) {
+
             return res.status(500).json({ ok: false, err })
         }
-        res.status(200).json({ ok: true, alumni: alumniSaved })
+        alumni.populate({ path: 'indexcard', select: 'name _id' }, (err, alumniDb) => {
+            if (err) {
+                return res.status(500).json({ ok: false, err })
+            }
+            res.status(200).json({ ok: true, alumni: alumniDb })
+        })
+
     })
 })
 
@@ -50,6 +55,7 @@ app.put('alumni/addSubject/:id', [verifyToken, verifyRole], (req, res) => {
     let subjectId = req.body.materia;
 
     Alumni.updateOne({ id: id }, { $push: { subjects: subjectId } })
+        .populate('indexcard', 'name _id')
         .exec((err, alumniUpdated) => {
             if (err) {
                 return res.status(500).json({
@@ -95,17 +101,13 @@ app.delete('/alumni/:id', [verifyToken, verifyRole], (req, res) => {
                 message: 'There are no alumnis with de ID provided'
             })
         }
-        Subject.updateOne({}, { $pull: { alumnis: alumniDeleted._id } })
-            .exec((err, subjectUpdated) => {
+
+        Subject.update({}, { $pull: { alumnis: alumniDeleted._id } })
+            .exec((err) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                Indexcard.findByIdAndUpdate({ _id: alumniDeleted._id }, { status: false }, (err, indexcardUpdated) => {
-                    if (err) {
-                        return res.status(500).json({ ok: false, err })
-                    }
-                    res.status(200).json({ alumni: alumniDeleted, subject: subjectUpdated, indexcard: indexcardUpdated })
-                })
+                res.status(200).json({ ok: true, alumni: alumniDeleted })
             })
     })
 })

@@ -41,15 +41,16 @@ app.post('/project', [verifyToken, verifyRole], (req, res) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        User.findByIdAndUpdate(userOnline._id, { $push: { projects: { _id: projectSaved._id, lastConnection: new Date() } } }, { new: true }, (err, userUpdated) => {
-            if (err) {
-                return res.status(500).json({ ok: false, mensaje: err })
-            }
-            if (!userUpdated) {
-                return res.status(404).json({ ok: false, message: 'No users have been found' })
-            }
-            res.status(200).json({ user: userUpdated, project: projectSaved })
-        })
+        User.findByIdAndUpdate(userOnline._id, { $push: { projects: { _id: projectSaved._id, lastConnection: new Date() } } }, { new: true })
+            .exec((err, userUpdated) => {
+                if (err) {
+                    return res.status(500).json({ ok: false, mensaje: err })
+                }
+                if (!userUpdated) {
+                    return res.status(404).json({ ok: false, message: 'No users have been found' })
+                }
+                res.status(200).json({ user: userUpdated, project: projectSaved })
+            })
     })
 })
 
@@ -166,20 +167,21 @@ app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
         } else {
             request = Project.findByIdAndUpdate(projectDb._id, { $pull: { administrators: participantId } })
         }
-        request.exec((err) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            User.findById(participantId, (err, userDb) => {
+        request
+            .exec((err) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                if (!userDb) {
-                    return res.status(404).json({ ok: false, message: 'No users have been found' })
-                }
-                res.status(200).json({ ok: true, administrator: userDb })
+                User.findById(participantId, (err, userDb) => {
+                    if (err) {
+                        return res.status(500).json({ ok: false, err })
+                    }
+                    if (!userDb) {
+                        return res.status(404).json({ ok: false, message: 'No users have been found' })
+                    }
+                    res.status(200).json({ ok: true, administrator: userDb })
+                })
             })
-        })
     })
 })
 

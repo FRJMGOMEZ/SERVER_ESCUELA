@@ -1,5 +1,4 @@
 const express = require('express');
-
 const Subject = require('../models/subject');
 const Professor = require('../models/professor');
 const Alumni = require('../models/alumni')
@@ -14,8 +13,22 @@ app.get('/subject', [verifyToken, verifyRole], (req, res) => {
     Subject.find({})
         .skip(from)
         .limit(limit)
-        .populate('alumnis', 'name _id')
-        .populate('professors', 'name _id')
+        .populate({
+            path: 'alumnis',
+            model: 'Alumni',
+            populate: {
+                path: 'indexcard',
+                select: 'name _id'
+            }
+        })
+        .populate({
+            path: 'professors',
+            model: 'Professor',
+            populate: {
+                path: 'indexcard',
+                select: 'name _id'
+            }
+        })
         .exec((err, subjectsDb) => {
             if (err) {
                 return res.status(500).json({
@@ -69,8 +82,22 @@ app.put('/subject/:id', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
 
     Subject.findByIdAndUpdate(id, { name: body.name }, { new: true })
-        .populate('alumnis', 'name _id')
-        .populate('professors', 'name _id')
+        .populate({
+            path: 'alumnis',
+            model: 'Alumni',
+            populate: {
+                path: 'indexcard',
+                select: 'name _id'
+            }
+        })
+        .populate({
+            path: 'professors',
+            model: 'Professor',
+            populate: {
+                path: 'indexcard',
+                select: 'name _id'
+            }
+        })
         .exec((err, subjectDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -136,8 +163,29 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                subjectDb.populate('alumnis', `name _id`)
-                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                subjectDb
+                    .populate({
+                        path: 'alumnis',
+                        model: 'Alumni',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    })
+                    .populate({
+                        path: 'professors',
+                        model: 'Professor',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    }, (err, subjectUpdated) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                err
+                            })
+                        }
                         updateAlumni(res, subjectUpdated._id, alumniId).then((response) => {
                             res.status(200).json({ ok: true, subject: subjectUpdated, alumni: response.alumni })
                         })
@@ -152,8 +200,29 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                subjectDb.populate('alumnis', `name _id`)
-                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                subjectDb
+                    .populate({
+                        path: 'alumnis',
+                        model: 'Alumni',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    })
+                    .populate({
+                        path: 'professors',
+                        model: 'Professor',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    }, (err, subjectUpdated) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                err
+                            })
+                        }
                         updateAlumni(res, subjectUpdated._id, alumniId).then((response) => {
                             res.status(200).json({ ok: true, subject: subjectUpdated, alumni: response.alumni })
                         })
@@ -191,8 +260,23 @@ app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                subjectDb.populate('alumnis', `name _id`)
-                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                subjectDb
+                    .populate({
+                        path: 'alumnis',
+                        model: 'Alumni',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    })
+                    .populate({
+                        path: 'professors',
+                        model: 'Professor',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    }, (err, subjectUpdated) => {
                         updateProfessor(res, subjectUpdated._id, professorId).then((response) => {
                             res.status(200).json({ ok: true, subject: subjectUpdated, professor: response.professor })
                         })
@@ -207,8 +291,23 @@ app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
                         err
                     })
                 }
-                subjectDb.populate('alumnis', `name _id`)
-                    .populate({ path: 'professors', select: 'name _id' }, (err, subjectUpdated) => {
+                subjectDb
+                    .populate({
+                        path: 'alumnis',
+                        model: 'Alumni',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    })
+                    .populate({
+                        path: 'professors',
+                        model: 'Professor',
+                        populate: {
+                            path: 'indexcard',
+                            select: 'name _id'
+                        }
+                    }, (err, subjectUpdated) => {
                         updateProfessor(res, subjectUpdated._id, professorId).then((response) => {
                             res.status(200).json({ ok: true, subject: subjectUpdated, professor: response.professor })
                         })
@@ -220,57 +319,97 @@ app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
 
 let updateAlumni = (res, subjectId, alumniId) => {
     return new Promise((resolve, reject) => {
-        Alumni.findById(alumniId, (err, alumniDb) => {
-            if (err) {
-                reject(res.status(500).json({ ok: false, err }))
-            }
-            if (!alumniDb) {
-                reject(res.status(404).json({ ok: false, message: 'No alumnis have been found with the ID provided' }))
-            }
-            if (alumniDb.subjects.indexOf(subjectId) < 0) {
-                alumniDb.subjects.push(subjectId)
-            } else {
-                alumniDb.subjects = alumniDb.subjects.filter((subject) => { return JSON.stringify(subject) != JSON.stringify(subjectId); })
-            }
-            alumniDb.save((err, alumniUpdated) => {
+        Alumni.findById(alumniId)
+            .populate('indexcard', 'name _id')
+            .exec((err, alumniDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
-                alumniDb.populate({ path: 'subjects', select: 'name _id' }, (err, alumni) => {
-
-                    resolve({ alumni })
+                if (!alumniDb) {
+                    reject(res.status(404).json({ ok: false, message: 'No alumnis have been found with the ID provided' }))
+                }
+                if (alumniDb.subjects.indexOf(subjectId) < 0) {
+                    alumniDb.subjects.push(subjectId)
+                } else {
+                    alumniDb.subjects = alumniDb.subjects.filter((subject) => { return JSON.stringify(subject) != JSON.stringify(subjectId); })
+                }
+                alumniDb.save((err, alumniUpdated) => {
+                    if (err) {
+                        reject(res.status(500).json({ ok: false, err }))
+                    }
+                    alumniDb.populate({ path: 'subjects', select: 'name _id' })
+                        .populate({
+                            path: 'alumnis',
+                            model: 'Alumni',
+                            populate: {
+                                path: 'indexcard',
+                                select: 'name _id'
+                            }
+                        })
+                        .populate({
+                            path: 'professors',
+                            model: 'Professor',
+                            populate: {
+                                path: 'indexcard',
+                                select: 'name _id'
+                            }
+                        }, (err, alumni) => {
+                            if (err) {
+                                return res.status(500).json({
+                                    ok: false,
+                                    err
+                                })
+                            }
+                            resolve({ alumni })
+                        })
                 })
             })
-        })
     })
 }
 
 let updateProfessor = (res, subjectId, idProfessor) => {
 
     return new Promise((resolve, reject) => {
-        Professor.findById(idProfessor, (err, professorDb) => {
-            if (err) {
-                reject(res.status(500).json({ ok: false, err }))
-            }
-            if (!professorDb) {
-                reject(res.status(404).json({ ok: false, message: 'No professors have been found with the ID provided' }))
-            }
-            if (professorDb.subjects.indexOf(subjectId) < 0) {
-                professorDb.subjects.push(subjectId)
-            } else {
-                professorDb.subjects = professorDb.subjects.filter((subjects) => { return JSON.stringify(subjects) != JSON.stringify(subjectId) })
-            }
-            professorDb.save((err, professorUpdated) => {
+        Professor.findById(idProfessor)
+            .populate('indexcard', 'name _id')
+            .exec((err, professorDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
+                if (!professorDb) {
+                    reject(res.status(404).json({ ok: false, message: 'No professors have been found with the ID provided' }))
+                }
+                if (professorDb.subjects.indexOf(subjectId) < 0) {
+                    professorDb.subjects.push(subjectId)
+                } else {
+                    professorDb.subjects = professorDb.subjects.filter((subjects) => { return JSON.stringify(subjects) != JSON.stringify(subjectId) })
+                }
+                professorDb.save((err, professorUpdated) => {
+                    if (err) {
+                        reject(res.status(500).json({ ok: false, err }))
+                    }
+                    professorDb.populate({ path: 'subjects', select: 'name _id' })
+                        .populate({
+                            path: 'alumnis',
+                            model: 'Alumni',
+                            populate: {
+                                path: 'indexcard',
+                                select: 'name _id'
+                            }
+                        })
+                        .populate({
+                            path: 'professors',
+                            model: 'Professor',
+                            populate: {
+                                path: 'indexcard',
+                                select: 'name _id'
+                            }
+                        }, (err, professor) => {
 
-                professorDb.populate({ path: 'subjects', select: 'name _id' }, (err, professor) => {
-
-                    resolve({ professor })
+                            resolve({ professor })
+                        })
                 })
             })
-        })
     })
 }
 

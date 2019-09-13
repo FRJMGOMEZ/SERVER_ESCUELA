@@ -3,13 +3,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { verifyStatus, verifyToken } = require('../middlewares/auth');
 const app = express();
-const { checkUsersOn, usersConnected } = require('../middlewares/checkUsersConnected');
+const { checkUsersOn, usersConnected,removeUser } = require('../middlewares/checkUsersConnected');
 
 app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
     let body = req.body;
     let userDb = req.userDb;
-
     if (!bcrypt.compareSync(body.password, userDb.password)) {
         return res
             .status(400)
@@ -18,12 +17,13 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
                 message: "User not valid"
             });
     }
+
     userDb.password = ':)';
     let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
     res.status(200).json({
         ok: true,
         user: userDb,
-        id: userDb._id,
+        _id: userDb._id,
         token
     })
 })

@@ -7,7 +7,7 @@ app.use(require('./professors'))
 app.use(require('./subjects'))
 app.use(require('./facilities'))
 app.use(require('./alumnis'));
-app.use(require('./indexCards'));
+app.use(require('./cards'));
 app.use(require('./projects'));
 app.use(require('./files'));
 app.use(require('./search'));
@@ -19,7 +19,11 @@ app.use(require('./tasks'));
 app.use(require('./password'));
 app.use(require('./artists'));
 app.use(require('./albums'));
-app.use(require('./assignations'));
 app.use(require('./tracks'));
+app.use(require('./assignations'));
+app.use(require('./incomes'));
+app.use(require('./debitors'));
+app.use(require('./payments'));
+app.use(require('./letters'));
 
 module.exports = app;

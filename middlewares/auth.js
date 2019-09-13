@@ -5,6 +5,7 @@ const User = require('../models/user');
 
 let verifyToken = (req, res, next) => {
         let token = req.get('token');
+
         jwt.verify(token, process.env.SEED, (err, userDecoded) => {
             if (err) {
                 return res.status(401).json({
@@ -35,32 +36,19 @@ let verifyRole = (req, res, next) => {
 /////////////// VERIFYING USER STATUS ///////////////
 
 let verifyStatus = (req, res, next) => {
-    let body = req.body;
-    User.findOne({ email: body.email }, (error, user) => {
-        if (error) {
-            return res.status(400).json({
-                ok: false,
-                error
-            })
-        }
-        if (!user) {
-            return res.status(500).json({
-                ok: false,
-                message: 'No users have been found'
-            })
-        }
+    let user = req.userDb;
         if (user.status === true) {
             req.user = user;
             next()
             return
         } else {
-            res.status(401).json({
+            return res.status(401).json({
                 ok: false,
                 message: `User ${user.name} is not granted. Talk to the admnistrator of the program to get access`
             })
-            return
+
         }
-    })
+    
 }
 
 module.exports = { verifyToken, verifyRole, verifyStatus };

@@ -8,12 +8,8 @@ const { verifyToken } = require('../middlewares/auth');
 
 app.get('/tasks', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
-    User.findById(req.user.userDb._id, (err, user) => {
-        if (err) {
-            return res.status(500).json({ ok: false, mensaje: err })
-        }
-        let projects = user.projects.map((project) => { return project._id })
-        Task.find({ user: userOnline._id, project: projects, ok: false })
+    let projects = userOnline.projects.map((project) => { return project._id })
+    Task.find({ user: userOnline._id, project: projects, ok: false })
             .populate('project', 'name _id')
             .exec((err, tasks) => {
                 if (err) {
@@ -24,15 +20,31 @@ app.get('/tasks', verifyToken, (req, res) => {
                 }
                 res.status(200).json({ ok: true, tasks })
             })
-    })
+    
 })
 
 app.get('/tasksByProject/:project', verifyToken, (req, res) => {
 
     let project = req.params.project;
     Task.find({ project })
-        .populate('user')
-        .populate('assignedBy')
+        .populate({
+            path: 'user',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
+        .populate({
+            path: 'assignedBy',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
         .exec((err, tasksDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -61,8 +73,24 @@ app.get('/tasksByUser/:project/:user', verifyToken, (req, res) => {
         let usersId = usersDb.map((user) => { return user._id })
 
         Task.find({ project, user: usersId })
-            .populate('user')
-            .populate('assignedBy')
+            .populate({
+                path: 'user',
+                model: 'User',
+                populate: {
+                    path: 'indexcard',
+                    model: 'Indexcard',
+                    select: 'name _id'
+                }
+            })
+            .populate({
+                path: 'assignedBy',
+                model: 'User',
+                populate: {
+                    path: 'indexcard',
+                    model: 'Indexcard',
+                    select: 'name _id'
+                }
+            })
             .exec((err, tasksDb) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
@@ -95,17 +123,34 @@ app.post('/task', verifyToken, (req, res) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        task.populate('user').populate({ path: 'assignedBy' }, (err, taskPopulated) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            Project.findByIdAndUpdate(taskPopulated.project, { $push: { tasks: taskPopulated._id } }, (err) => {
+        task.populate({
+                path: 'user',
+                model: 'User',
+                populate: {
+                    path: 'indexcard',
+                    model: 'Indexcard',
+                    select: 'name _id'
+                }
+            })
+            .populate({
+                path: 'assignedBy',
+                model: 'User',
+                populate: {
+                    path: 'indexcard',
+                    model: 'Indexcard',
+                    select: 'name _id'
+                }
+            }, (err, taskPopulated) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                res.status(200).json({ ok: true, task: taskPopulated })
+                Project.findByIdAndUpdate(taskPopulated.project, { $push: { tasks: taskPopulated._id } }, (err) => {
+                    if (err) {
+                        return res.status(500).json({ ok: false, err })
+                    }
+                    res.status(200).json({ ok: true, task: taskPopulated })
+                })
             })
-        })
     })
 })
 
@@ -115,8 +160,24 @@ app.put('/task/:id', (req, res) => {
     body.dateLimit = new Date(body.dateLimit);
     body.dateLimit = new Date(body.dateLimit.getFullYear(), body.dateLimit.getMonth(), body.dateLimit.getDate(), 0, -body.dateLimit.getTimezoneOffset(), 0, 0);
     Task.findByIdAndUpdate(id, { dateLimit: body.dateLimit, description: body.description }, { new: true })
-        .populate('user')
-        .populate('assignedBy')
+        .populate({
+            path: 'user',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
+        .populate({
+            path: 'assignedBy',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
         .exec((err, task) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -132,8 +193,24 @@ app.put('/task/:id', (req, res) => {
 app.put('/checkTask/:taskId', verifyToken, (req, res) => {
     let taskId = req.params.taskId;
     Task.findByIdAndUpdate(taskId, { checked: true }, { new: true })
-        .populate('user')
-        .populate('assignedBy')
+        .populate({
+            path: 'user',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
+        .populate({
+            path: 'assignedBy',
+            model: 'User',
+            populate: {
+                path: 'indexcard',
+                model: 'Indexcard',
+                select: 'name _id'
+            }
+        })
         .exec((err, task) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -168,9 +245,24 @@ app.put('/taskDone/:taskId', verifyToken, (req, res) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
-
-            taskDb.populate('user')
-                .populate({ path: 'assignedBy' }, (err, task) => {
+            taskDb.populate({
+                    path: 'user',
+                    model: 'User',
+                    populate: {
+                        path: 'indexcard',
+                        model: 'Indexcard',
+                        select: 'name _id'
+                    }
+                })
+                .populate({
+                    path: 'assignedBy',
+                    model: 'User',
+                    populate: {
+                        path: 'indexcard',
+                        model: 'Indexcard',
+                        select: 'name _id'
+                    }
+                }, (err, task) => {
                     if (err) {
                         return res.status(500).json({ ok: false, err })
                     }

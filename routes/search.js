@@ -13,6 +13,7 @@ const Album = require('../models/album');
 const Track = require('../models/track');
 const Artist = require('../models/artist');
 const Payment = require('../models/payment');
+const Indexcard = require('../models/card')
 
 const app = express()
 
@@ -29,13 +30,16 @@ app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => 
 
     switch (collection) {
         case 'alumnis':
-            promise = searchAlumnis(res, regExp, from, limit);
+            promise = searchIndexcards(res, regExp, from, limit, Alumni);
             break;
         case 'professors':
-            promise = searchProfessors(res, regExp, from, limit);
+            promise = searchIndexcards(res, regExp, from, limit, Professor);
             break;
         case 'users':
-            promise = searchUsers(res, regExp, from, limit);
+            promise = searchUsers(res, regExp, from, limit, User);
+            break;
+        case 'artists':
+            promise = searchIndexcards(res, regExp, from, limit, Artist);
             break;
         case 'tasks':
             promise = searchTasks(res, regExp, from, limit);
@@ -45,9 +49,6 @@ app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => 
             break;
         case 'tracks':
             promise = searchTracks(res, regExp, from, limit);
-            break;
-        case 'artists':
-            promise = searchArtists(res, regExp, from, limit);
             break;
         case 'payments':
             promise = searchPayments(res, search, from, limit);
@@ -101,63 +102,58 @@ const countItems = (collection, regExp) => {
     })
 }
 
-
-const searchAlumnis = (res, regExp, from, limit) => {
-
-    return new Promise((resolve, reject) => {
-        Alumni.find({ name: regExp })
+const searchUsers = (res, regExp, from, limit)=>{
+    return new Promise((resolve,reject)=>{
+        User.find({name:regExp})
             .skip(from)
             .limit(limit)
-            .populate('subjects', 'name _id')
-            .exec((err, alumnisDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                if (!alumnisDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no alumnis' }))
-                }
-                resolve(alumnisDb)
-            })
+            .exec((err,usersDb)=>{
+            if (err) {
+                reject(res.status(500).json({ ok: false, err }))
+            }
+            resolve(usersDb) 
+        })
     })
 }
 
-const searchProfessors = (res, regExp, from, limit) => {
-
+const searchIndexcards = (res, regExp, from, limit, collection) => {
     return new Promise((resolve, reject) => {
-        Professor.find({ name: regExp })
-            .skip(from)
-            .limit(limit)
-            .populate('subjects', 'name _id')
-            .exec((err, professorsDb) => {
+        Indexcard.find({ name: regExp })
+            .exec((err, indexcardsDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
-                if (!professorsDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no professors' }))
+                if (!indexcardsDb) {
+                    reject(res.status(404).json({ ok: false, message: 'There are no indexcards' }))
                 }
-                resolve(professorsDb)
+                let indexcardIds = indexcardsDb.map((indexcard) => { return indexcard._id })
+                collection.find({ indexcard: indexcardIds })
+                    .skip(from)
+                    .limit(limit)
+                    .populate('indexcard', 'name _id email')
+                    .exec((err, itemsDb) => {
+                        if (err) {
+                            reject(res.status(500).json({ ok: false, err }))
+                        }
+                        if (itemsDb.length === 0) {
+                            let message;
+                            switch (collection) {
+                                case Alumni:
+                                    message = 'No hay alumnos que coincidan con la búsqueda';
+                                    break;
+                                case Professor:
+                                    message = 'No hay profesores que coincidan con la búsqueda';
+                                    break;
+                                case Artist:
+                                    message = 'No hay artistas que coincidan con la búsqueda';
+                            }
+                            reject(res.status(404).json({ ok: false, message }))
+                        }
+                        resolve(itemsDb)
+                    })
             })
     })
 }
-const searchUsers = (res, regExp, from, limit) => {
-
-    return new Promise((resolve, reject) => {
-        User.find({ name: regExp })
-            .skip(from)
-            .limit(limit)
-            .populate('img')
-            .exec((err, usersDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                if (!usersDb) {
-                    reject(res.status(404).json({ ok: false, message: 'There are no users' }))
-                }
-                resolve(usersDb)
-            })
-    })
-}
-
 const searchTasks = (res, regExp, from, limit) => {
     return new Promise((resolve, reject) => {
         Task.find({ name: regExp })
@@ -182,7 +178,7 @@ const searchAlbums = (res, regExp, from, limit) => {
         Album.find({ title: regExp })
             .skip(from)
             .limit(limit)
-            .populate('tracks')
+            .populate('tracks', 'title _id')
             .exec((err, albumsDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
@@ -198,16 +194,7 @@ const searchTracks = (res, regExp, from, limit) => {
             .skip(from)
             .limit(limit)
             .populate('album', 'name _id')
-            .populate({
-                model: 'Assignation',
-                path: 'assignations',
-                select: 'percent',
-                populate: {
-                    path: 'artist',
-                    model: 'Artist',
-                    select: 'name _id'
-                }
-            }, (err, tracksDb) => {
+            .exec((err, tracksDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))
                 }
@@ -216,27 +203,6 @@ const searchTracks = (res, regExp, from, limit) => {
     })
 }
 
-const searchArtists = (res, regExp, from, limit) => {
-    return new Promise((resolve, reject) => {
-        Artist.find({ name: regExp })
-            .skip(from)
-            .limit(limit)
-            .populate('user', 'name _id')
-            .populate({
-                path: 'payments',
-                model: 'Payment',
-                populate: {
-                    path: 'track',
-                    model: 'Track'
-                }
-            }).exec((err, artistsDb) => {
-                if (err) {
-                    reject(res.status(500).json({ ok: false, err }))
-                }
-                resolve(artistsDb)
-            })
-    })
-}
 
 const searchPayments = (res, date, from, limit) => {
     date = new Date(date);
@@ -325,8 +291,7 @@ const searchFileById = (res, id) => {
 const searchProjectById = (res, id) => {
     return new Promise((resolve, reject) => {
         Project.findOne({ _id: id })
-            .populate('participants')
-            .populate('administrators')
+            .populate({ path: 'participants administrators', model: 'User', populate: { model: 'Indexcard', path: 'indexcard', select: 'name _id' } })
             .populate({
                 model: 'User',
                 path: 'participants',
@@ -341,7 +306,12 @@ const searchProjectById = (res, id) => {
                 path: 'tasks',
                 populate: {
                     path: 'user assignedBy',
-                    model: 'User'
+                    model: 'User',
+                    populate: {
+                        model: 'Indexcard',
+                        path: 'indexcard',
+                        select: 'name _id'
+                    }
                 },
             })
             .populate({
@@ -447,7 +417,12 @@ const searchAlbumById = (res, id) => {
                     model: 'Assignation',
                     populate: {
                         path: 'artist',
-                        model: 'Artist'
+                        model: 'Artist',
+                        populate: {
+                            path: 'indexcard',
+                            model: 'Indexcard',
+                            select: 'name _id '
+                        }
                     }
                 }
             }).exec((err, albumDb) => {
@@ -474,11 +449,11 @@ const searchTrackById = (res, id) => {
                 populate: {
                     path: 'artist',
                     model: 'Artist',
-                    populate: {
-                        path: 'user',
-                        model: 'User',
-                        select: 'name_id'
-                    }
+                        populate: {
+                            path: 'indexcard',
+                            model: 'Indexcard',
+                            select: 'name _id'
+                        }
                 },
             }).exec((err, trackDb) => {
                 if (err) {
@@ -495,7 +470,7 @@ const searchTrackById = (res, id) => {
 const searchArtistById = (res, id) => {
     return new Promise((resolve, reject) => {
         Artist.findById(id)
-            .populate('user', 'name _id')
+            .populate('indexcard', 'name _id')
             .populate({
                 path: 'payments',
                 model: 'Payment',

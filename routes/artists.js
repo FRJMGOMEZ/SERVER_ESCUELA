@@ -30,10 +30,8 @@ app.post('/artist', verifyToken, (req, res) => {
     let body = req.body;
     let newArtist = new Artist({
         indexcard: body.indexcard,
-        payments: [],
-        tracks: [],
+        payments: []
     })
-    console.log(newArtist);
     newArtist.save((err, artist) => {
         if (err) {
             return res.status(500).json({ ok: false, err })

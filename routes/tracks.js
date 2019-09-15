@@ -24,8 +24,10 @@ app.get('/tracks', (req, res) => {
 
 app.post('/track', async(req, res) => {
 
+    console.log(req.body);
+
     let track = req.body;
-    console.log(track);
+    
 
     let assignations = []
     await req.body.assignations.forEach((eachAssignation) => {

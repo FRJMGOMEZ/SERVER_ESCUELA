@@ -24,6 +24,7 @@ app.get('/dayByDate/:date', verifyToken, (req, res) => {
         .populate('hour9')
         .populate('hour10')
         .populate('hour11')
+        .populate('hour12')
         .exec((err, dayDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, message: err })
@@ -31,6 +32,8 @@ app.get('/dayByDate/:date', verifyToken, (req, res) => {
             if (!dayDb) {
                 return res.status(200).json({ ok: false, message: 'No day has been found whose date match with yours', day: null })
             }
+            console.log(dayDb);
+            
             res.status(200).json({ ok: true, day: dayDb })
         })
 })

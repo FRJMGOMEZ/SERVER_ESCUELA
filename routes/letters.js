@@ -31,7 +31,7 @@ app.post('/letter',(req,res)=>{
 app.put('/letter/:id',(req,res)=>{
     let id = req.params.id;
     let body = req.body;
-    Letter.findOneAndUpdate(id,{content:body.content,bottom:body.bottom,user:body.user,name:body.name},{new:true},(err,letterUpdated)=>{
+    Letter.findByIdAndUpdate(id,{content:body.content,bottom:body.bottom,user:body.user,name:body.name},{new:true},(err,letterUpdated)=>{
        if(err){
            return res.status(500).json({ok:false,err})
        }

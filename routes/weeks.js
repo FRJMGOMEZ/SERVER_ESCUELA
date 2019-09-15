@@ -164,6 +164,8 @@ let checkPermanentEvents = (res, day, date) => {
                 day.hour10 = hour10.map((event) => { return event._id })
                 let hour11 = eventsDb.filter((event) => { return event.hour === 11 }) || null;
                 day.hour11 = hour11.map((event) => { return event._id })
+                let hour12 = eventsDb.filter((event) => { return event.hour === 12 }) || null;
+                day.hour12 = hour12.map((event) => { return event._id })
                 resolve(day)
             })
     })

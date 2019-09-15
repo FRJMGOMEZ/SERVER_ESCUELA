@@ -374,6 +374,7 @@ const searchDayById = (res, id) => {
             .populate('hour9')
             .populate('hour10')
             .populate('hour11')
+            .populate('hour12')
             .exec((err, dayDb) => {
                 if (err) {
                     reject(res.status(500).json({ ok: false, err }))

@@ -18,7 +18,8 @@ app.get('/tracks', (req, res) => {
             if (err) {
                 return res.status(505).json({ ok: false, err })
             }
-            res.status(200).json({ ok: true, tracks: tracksDb })
+            res.status(200).json({ 
+                ok: true, tracks: tracksDb })
         })
 })
 
@@ -28,22 +29,57 @@ app.post('/track', async(req, res) => {
 
     let track = req.body;
     
-
     let assignations = []
-    await req.body.assignations.forEach((eachAssignation) => {
-        let assignation = new Assignation({ artist: eachAssignation.artist, percent: eachAssignation.percent,album:eachAssignation.album })
-        assignations.push(assignation)
-    })
+    if(res.body.assignations.length > 0){
+        await req.body.assignations.forEach((eachAssignation) => {
+            let assignation = new Assignation({ artist: eachAssignation.artist, percent: eachAssignation.percent, album: eachAssignation.album })
+            assignations.push(assignation)
+        })
+        Assignation.insertMany(assignations, (err, assignationsSaved) => {
+            if (err) {
+                return res.status(505).json({ ok: false, err })
+            }
+            let assignationsIds = assignationsSaved.map((assignation) => { return assignation._id })
 
- 
+            let newTrack = new Track({ title: track.title, assignations: assignationsIds, album: track.album, percent: track.percent })
+            newTrack.save((err, trackSaved) => {
+                if (err) {
+                    return res.status(505).json({ ok: false, err })
+                }
+                Album.findByIdAndUpdate(trackSaved.album, { $push: { tracks: trackSaved._id } }, { new: true })
+                    .populate('tracks')
+                    .exec((err, albumSaved) => {
+                        if (err) {
+                            return res.status(505).json({ ok: false, err })
+                        }
+                        if (!albumSaved) {
+                            return res.status(404).json({ ok: false, message: 'There are no albums wih the ID provided' })
+                        }
 
-    Assignation.insertMany(assignations, (err, assignationsSaved) => {
-        if (err) {
-            return res.status(505).json({ ok: false, err })
-        }
-        let assignationsIds = assignationsSaved.map((assignation) => { return assignation._id })
-
-        let newTrack = new Track({ title: track.title, assignations: assignationsIds, album: track.album, percent: track.percent })
+                        newTrack.populate('album', 'title _id')
+                            .populate({
+                                path: 'assignations',
+                                model: 'Assignation',
+                                populate: {
+                                    path: 'artist',
+                                    model: 'Artist',
+                                    populate: {
+                                        path: 'indexcard',
+                                        model: 'Indexcard',
+                                        select: 'name _id'
+                                    }
+                                }
+                            }, (err, track) => {
+                                if (err) {
+                                    return res.status(505).json({ ok: false, err })
+                                }
+                                res.status(200).json({ ok: true, album: albumSaved, track })
+                            })
+                    })
+            })
+        })
+    }else{
+        let newTrack = new Track({ title: track.title, assignations, album: track.album, percent: track.percent })
         newTrack.save((err, trackSaved) => {
             if (err) {
                 return res.status(505).json({ ok: false, err })
@@ -79,7 +115,9 @@ app.post('/track', async(req, res) => {
                         })
                 })
         })
-    })
+
+    }
+   
 })
 
 app.put('/track/:id',async (req, res) => {

@@ -19,11 +19,10 @@ app.get('/assignations/:artistId',(req, res) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-
         if(assignations.length === 0){
-            res.status(200).json({ ok: true, assignations:[]})
+            console.log('no assignations');
+           return res.status(200).json({ ok: true, assignations:[]})
         }
-        
           await assignations.forEach((assignation,index)=>{
            assignations[index].track = assignation.album.tracks.filter((track)=>{
                 if(track.assignations.indexOf(String(assignation._id))>=0){

@@ -128,7 +128,6 @@ app.put('/track/:id',async (req, res) => {
     let id = req.body;
 
     Track.findById(id, (err, trackDb) => {
-
         if (err) {
             return res.status(505).json({ ok: false, err })
         }
@@ -140,6 +139,7 @@ app.put('/track/:id',async (req, res) => {
 
         checkAssignations(res, body.assignations, trackDb.assignations).then((assignations) => {
 
+            console.log(assignations);
             trackDb.assignations = assignations;
 
             trackDb.save((err, trackUpdated) => {

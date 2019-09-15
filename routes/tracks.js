@@ -25,6 +25,7 @@ app.get('/tracks', (req, res) => {
 app.post('/track', async(req, res) => {
 
     let track = req.body;
+    console.log(track);
 
     let assignations = []
     await req.body.assignations.forEach((eachAssignation) => {
@@ -32,7 +33,7 @@ app.post('/track', async(req, res) => {
         assignations.push(assignation)
     })
 
-    console.log(track);
+ 
 
     Assignation.insertMany(assignations, (err, assignationsSaved) => {
         if (err) {

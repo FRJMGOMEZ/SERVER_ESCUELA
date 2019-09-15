@@ -32,10 +32,12 @@ app.post('/artist', verifyToken, (req, res) => {
         indexcard: body.indexcard,
         payments: []
     })
-    newArtist.save((err, artist) => {
+    newArtist.save((err, artistSaved) => {
         if (err) {
+            console.log(err);
             return res.status(500).json({ ok: false, err })
         }
+        console.log(artistSaved);
         newArtist.populate({ path: 'indexcard', select: 'name _id' }, (err, artistDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })

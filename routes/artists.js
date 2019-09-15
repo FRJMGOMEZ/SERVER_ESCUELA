@@ -27,7 +27,10 @@ app.get('/artists', verifyToken, (req, res) => {
 
 app.post('/artist', verifyToken, (req, res) => {
 
+
     let body = req.body;
+
+    console.log(body);
     let newArtist = new Artist({
         indexcard: body.indexcard
     })
@@ -37,7 +40,6 @@ app.post('/artist', verifyToken, (req, res) => {
             console.log(err);
             return res.status(500).json({ ok: false, err })
         }
-        console.log(artistSaved);
         newArtist.populate({ path: 'indexcard', select: 'name _id' }, (err, artistDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })

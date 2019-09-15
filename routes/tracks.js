@@ -137,10 +137,10 @@ app.put('/track/:id',async (req, res) => {
         if (trackDb.title != body.title) { trackDb.title = body.title }
         trackDb.percent = body.percent;
 
-        checkAssignations(res, body.assignations, trackDb.assignations).then((assignations) => {
+        checkAssignations(res, body.assignations, trackDb.assignations).then(async(assignations) => {
 
             console.log(assignations);
-            trackDb.assignations = assignations;
+            trackDb.assignations = await assignations;
 
             trackDb.save((err, trackUpdated) => {
                 if (err) {
@@ -167,7 +167,8 @@ app.put('/track/:id',async (req, res) => {
                         if (err) {
                             return res.status(505).json({ ok: false, err })
                         }
-
+                        
+                        console.log(trackDb)
                         res.status(200).json({ ok: true, track:trackPopulated })
                     })
             })

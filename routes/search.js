@@ -149,6 +149,7 @@ const searchIndexcards = (res, regExp, from, limit, collection) => {
                             }
                             reject(res.status(404).json({ ok: false, message }))
                         }
+                        console.log(itemsDb);
                         resolve(itemsDb)
                     })
             })

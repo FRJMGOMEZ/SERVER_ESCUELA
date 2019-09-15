@@ -32,6 +32,8 @@ app.post('/track', async(req, res) => {
         assignations.push(assignation)
     })
 
+    console.log(track);
+
     Assignation.insertMany(assignations, (err, assignationsSaved) => {
         if (err) {
             return res.status(505).json({ ok: false, err })

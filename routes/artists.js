@@ -29,11 +29,10 @@ app.post('/artist', verifyToken, (req, res) => {
 
 
     let body = req.body;
-
-    console.log(body);
     let newArtist = new Artist({
-        indexcard: body.indexcard
-    })
+        indexcard: body.indexcard,
+        payments:[]
+    });
     console.log(newArtist);
     newArtist.save((err, artistSaved) => {
         if (err) {

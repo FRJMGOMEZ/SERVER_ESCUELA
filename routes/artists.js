@@ -28,12 +28,13 @@ app.get('/artists', verifyToken, (req, res) => {
 app.post('/artist', verifyToken, (req, res) => {
 
     let body = req.body;
-    let artist = new Artist({
+    let newArtist = new Artist({
         indexcard: body.indexcard,
         payments: [],
         tracks: [],
     })
-    artist.save((err, artist) => {
+    console.log(artist);
+    newArtist.save((err, artist) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }

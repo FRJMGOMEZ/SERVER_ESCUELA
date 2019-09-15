@@ -29,9 +29,9 @@ app.post('/artist', verifyToken, (req, res) => {
 
     let body = req.body;
     let newArtist = new Artist({
-        indexcard: body.indexcard,
-        payments: []
+        indexcard: body.indexcard
     })
+    console.log(newArtist);
     newArtist.save((err, artistSaved) => {
         if (err) {
             console.log(err);

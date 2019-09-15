@@ -25,23 +25,22 @@ app.get('/tracks', (req, res) => {
 
 app.post('/track', async(req, res) => {
 
-    console.log(req.body);
-
     let track = req.body;
     
     let assignations = []
-    if(res.body.assignations.length > 0){
+    if(req.body.assignations.length > 0){
         await req.body.assignations.forEach((eachAssignation) => {
             let assignation = new Assignation({ artist: eachAssignation.artist, percent: eachAssignation.percent, album: eachAssignation.album })
             assignations.push(assignation)
         })
+        console.log(track)
         Assignation.insertMany(assignations, (err, assignationsSaved) => {
             if (err) {
                 return res.status(505).json({ ok: false, err })
             }
             let assignationsIds = assignationsSaved.map((assignation) => { return assignation._id })
 
-            let newTrack = new Track({ title: track.title, assignations: assignationsIds, album: track.album, percent: track.percent })
+            let newTrack = new Track({ title: track.title, assignations: assignationsIds, album: track.album._id, percent: track.percent })
             newTrack.save((err, trackSaved) => {
                 if (err) {
                     return res.status(505).json({ ok: false, err })

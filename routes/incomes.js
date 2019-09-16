@@ -35,7 +35,7 @@ app.get('/incomesNotLiquidated',[verifyToken,verifyRole],(req,res)=>{
     Income.find({ $nor: [{ notLiquidatedAmount: 0 }] } )
         .skip(from)
         .limit(limit)
-        .populate({path:'payments',populate:{path:'artist',populate:{path:'indexcard'}}})
+        .populate({path:'payments',select:'artist',populate:{path:'artist',populate:{path:'indexcard'}}})
         .populate('debitor')
         .exec((err, incomesDb) => {
             if (err) {
@@ -46,7 +46,7 @@ app.get('/incomesNotLiquidated',[verifyToken,verifyRole],(req,res)=>{
                     if (err) {
                        return res.status(500).json({ ok: false, err })
                     }
-                    console.log(incomesDb[0].payments);
+                    console.log(incomesDb[1].payments);
                     res.status(200).json({ ok: true, incomes: incomesDb, count })
             })
         })

@@ -16,6 +16,7 @@ app.get('/artists', verifyToken, (req, res) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
+            console.log(artists);
             Artist.countDocuments((err, count) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })

@@ -46,7 +46,7 @@ app.get('/incomesNotLiquidated',[verifyToken,verifyRole],(req,res)=>{
                     if (err) {
                        return res.status(500).json({ ok: false, err })
                     }
-                    console.log(incomesDb[1].payments);
+                    console.log(incomesDb[0].payments);
                     res.status(200).json({ ok: true, incomes: incomesDb, count })
             })
         })

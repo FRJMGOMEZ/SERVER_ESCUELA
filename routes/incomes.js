@@ -104,6 +104,7 @@ app.put('/income',[verifyToken,verifyRole],(req,res)=>{
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
+                console.log(incomePopulated);
                 res.status(200).json({ ok: true, income: incomePopulated })
 
             })

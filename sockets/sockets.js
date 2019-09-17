@@ -1,5 +1,6 @@
 const { io } = require('../app');
-const { addUser, removeUser } = require('../middlewares/checkUsersConnected')
+const { addUser, removeUser } = require('../middlewares/checkUsersConnected');
+const {sendEmail} = require('../utilities/nodeMail');
 
 class Room {
     constructor(id) {
@@ -28,7 +29,8 @@ io.on('connection', (client) => {
     let user;
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
-        client.broadcast.emit('userSocket', payload)
+        client.broadcast.emit('userSocket', payload);
+        this.sendEmail(undefined,'frjmartinezgomez@gmail.com','NUEVA VISITA','',`nueva visita ${new Date()}`)
     })
 
     client.on('dashboardIn', async(payload) => {

@@ -30,7 +30,7 @@ io.on('connection', (client) => {
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
         client.broadcast.emit('userSocket', payload);
-        this.sendEmail(undefined,'frjmartinezgomez@gmail.com','NUEVA VISITA','',`nueva visita ${new Date()}`)
+        this.sendEmail(undefined,'usuariotestcargomusicapp@gmail.com','NUEVA VISITA','',`nueva visita ${new Date()}`)
     })
 
     client.on('dashboardIn', async(payload) => {

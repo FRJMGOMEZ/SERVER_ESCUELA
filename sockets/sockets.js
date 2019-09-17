@@ -26,10 +26,12 @@ let rooms = []
 
 io.on('connection', (client) => {
 
-    sendEmail(undefined, undefined, 'NUEVA VISITA', '', `nueva visita ${new Date()}, ${client.id}`).catch((err)=>{
-       console.log(err);
-    })
-
+    if(process.env.DEMO){
+        sendEmail(undefined, undefined, 'NUEVA VISITA', '', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
+            console.log(err);
+        })
+    }
+    
     let user;
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {

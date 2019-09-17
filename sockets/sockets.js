@@ -34,9 +34,9 @@ io.on('connection', (client) => {
     })
 
     client.on('dashboardIn', async(payload) => {
-        console.log(process.env.DEVELOPER);
+        console.log(process.env.DEVELOPER,process.env.DEMO);
 
-        if (process.env.DEMO && process.env.DEVELOPER === false) {
+        if (process.env.DEMO && process.env.DEVELOPER == false) {
             console.log('it is a demo version')
             sendEmail('', '', 'NUEVA VISITA', 'frjmartinezgomez@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
                 console.log(err);

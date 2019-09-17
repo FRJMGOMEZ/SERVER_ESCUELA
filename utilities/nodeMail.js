@@ -29,6 +29,7 @@ const sendEmail = (res, userMail, title,from,message,template) => {
                 console.log(error);
                 reject(res.status(500).json({ ok: false, error }))
             } else {
+                 console.log('mail sent')
                 resolve()
             }
         });

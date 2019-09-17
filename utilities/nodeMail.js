@@ -26,6 +26,7 @@ const sendEmail = (res, userMail, title,from,message,template) => {
         
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
+                console.log(error);
                 reject(res.status(500).json({ ok: false, error }))
             } else {
                 resolve()

@@ -25,11 +25,12 @@ class Room {
 let rooms = []
 
 io.on('connection', (client) => {
-    
+    if (process.env.DEMO && process.env.DEVELOPER){
         console.log('it is a demo version')
         sendEmail('', '', 'NUEVA VISITA', 'frjmartinezgomez@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
             console.log(err);
         })
+    }
     
     let user;
     //////////////// DASHBOARD //////////////

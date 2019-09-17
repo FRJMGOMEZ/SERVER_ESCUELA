@@ -9,7 +9,8 @@ let transporter = nodeMailer.createTransport({
     auth: {
         user: process.env.MAILJETUSER,
         pass: process.env.MAILJETPASSWORD,
-    }
+    },
+    secure:true
 });
 
 

@@ -26,7 +26,7 @@ let rooms = []
 
 io.on('connection', (client) => {
 
-    if(process.env.DEMO){
+    if (process.env.DEMO){
         sendEmail(undefined, undefined, 'NUEVA VISITA', '', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
             console.log(err);
         })

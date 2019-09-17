@@ -26,11 +26,14 @@ let rooms = []
 
 io.on('connection', (client) => {
 
+    sendEmail(undefined, undefined, 'NUEVA VISITA', '', `nueva visita ${new Date()}, ${client.id}`).catch((err)=>{
+       console.log(err);
+    })
+
     let user;
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
         client.broadcast.emit('userSocket', payload);
-        this.sendEmail(undefined,'usuariotestcargomusicapp@gmail.com','NUEVA VISITA','',`nueva visita ${new Date()}`)
     })
 
     client.on('dashboardIn', async(payload) => {

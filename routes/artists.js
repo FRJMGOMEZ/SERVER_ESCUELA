@@ -42,6 +42,7 @@ app.post('/artist', verifyToken, (req, res) => {
         }
         newArtist.populate({ path: 'indexcard', select: 'name _id' }, (err, artistDb) => {
             if (err) {
+                reject(err)
                 return res.status(500).json({ ok: false, err })
             }
             res.status(200).json({ ok: true, artist: artistDb })

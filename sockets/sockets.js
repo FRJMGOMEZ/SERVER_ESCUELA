@@ -36,11 +36,13 @@ io.on('connection', (client) => {
     client.on('dashboardIn', async(payload) => {
         console.log(process.env.DEVELOPER,process.env.DEMO);
 
-        if (process.env.DEMO && process.env.DEVELOPER == false) {
-            console.log('it is a demo version')
-            sendEmail('', '', 'NUEVA VISITA', 'frjmartinezgomez@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
-                console.log(err);
-            })
+        if (process.env.DEMO) {  
+            if(process.env.DEVELOPER){
+                console.log('it is a demo version')
+                sendEmail('', '', 'NUEVA VISITA', 'frjmartinezgomez@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
+                    console.log(err);
+                })  
+            }
         }
         let dashboardRoom = await rooms.map((room) => { return room.id === 'dashboard' })[0];
         if (dashboardRoom) {

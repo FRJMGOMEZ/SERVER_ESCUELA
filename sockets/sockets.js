@@ -34,6 +34,7 @@ io.on('connection', (client) => {
     })
 
     client.on('dashboardIn', async(payload) => {
+        console.log(process.env.DEVELOPER);
 
         if (process.env.DEMO && process.env.DEVELOPER === false) {
             console.log('it is a demo version')

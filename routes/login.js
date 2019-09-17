@@ -39,6 +39,8 @@ app.put('/checkToken', (req, res) => {
         }
         if(userDb.email === 'frjmartinesgomez@gmail'){
             process.env.DEVELOPER = true;
+        }else{
+            process.env.DEVELOPER = false;
         }
         res.send(true)
     })

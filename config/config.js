@@ -19,3 +19,5 @@ if (process.env.NODE_ENV === 'desarrollo') { urlDataBase = 'mongodb://localhost:
 };
 
 process.env.URLDB = urlDataBase;
+
+process.env.DEVELOPER = false;

@@ -25,8 +25,7 @@ class Room {
 let rooms = []
 
 io.on('connection', (client) => {
-    
-    
+        
     let user;
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {

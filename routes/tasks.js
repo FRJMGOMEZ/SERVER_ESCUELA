@@ -10,11 +10,12 @@ app.get('/tasks', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let projects = userOnline.projects.map((project) => { return project._id })
     Task.find({ user: userOnline._id, project: projects, ok: false })
-            .populate('project', 'name _id')
+            .populate({path:'project',model:'Project',select:'name _id'})
             .exec((err, tasks) => {
                 if (err) {
                     return res.status(500).json({ ok: false, mensaje: err })
                 }
+                console.log(tasks);
                 if (!tasks) {
                     return res.status(404).json({ ok: false, message: 'No users have been found' })
                 }

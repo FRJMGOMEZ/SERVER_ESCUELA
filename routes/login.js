@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { verifyStatus, verifyToken } = require('../middlewares/auth');
 const app = express();
-const { checkUsersOn, usersConnected,removeUser } = require('../middlewares/checkUsersConnected');
+const { checkUsersOn, usersConnected } = require('../middlewares/checkUsersConnected');
 
 app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
@@ -17,7 +17,6 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
                 message: "User not valid"
             });
     }
-
     userDb.password = ':)';
     let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
     res.status(200).json({
@@ -30,14 +29,15 @@ app.post('/login', [checkUsersOn, verifyStatus], async(req, res) => {
 
 app.put('/checkToken', (req, res) => {
     let token = req.get('token');
-    jwt.verify(token, process.env.SEED, (err, userDb) => {
+    jwt.verify(token, process.env.SEED, (err, data) => {
         if (err) {
             return res.send(false)
         }
-        if (usersConnected.includes(userDb._id)) {
-            return res.send(false)
+        let userDb = data.userDb;
+        if (process.env.DEMO && usersConnected.includes(userDb._id) ){
+            res.send(false);
         }
-        if(userDb.email === 'frjmartinezgomez@gmail'){
+        if (userDb.email === 'frjmartinezgomez@gmail.com'){
             process.env.DEVELOPER = true;
         }else{
             process.env.DEVELOPER = false;

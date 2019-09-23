@@ -27,18 +27,21 @@ let rooms = []
 io.on('connection', (client) => {
         
     let user;
+
+    if (process.env.DEMO) {
+        if (process.env.DEVELOPER) {
+            sendEmail('', '', 'NUEVA VISITA', 'usuariotestcargomusicapp@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
+                console.log(err);
+            })
+        }
+    }
     //////////////// DASHBOARD //////////////
     client.on('userSocket', async(payload) => {
         client.broadcast.emit('userSocket', payload);
     })
 
     client.on('dashboardIn', async(payload) => {
-        if (process.env.DEMO) {  
-            if(process.env.DEVELOPER){
-                sendEmail('', '', 'NUEVA VISITA', 'frjmartinezgomez@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
-                })  
-            }
-        }
+        
         let dashboardRoom = await rooms.map((room) => { return room.id === 'dashboard' })[0];
         if (dashboardRoom) {
             let newUser = payload.user;

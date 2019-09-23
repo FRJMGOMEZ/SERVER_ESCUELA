@@ -41,6 +41,12 @@ app.get('/lastMessages', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let requests = [];
     User.findById(userOnline._id,(err,userDb)=>{
+        if(err){
+            return res.status(500).json({ok:false,err})
+        }
+        if(!userDb){
+            return res.status(404).json({ok:false,message:'There are no users with the ID provided'})
+        }
       userDb.projects.forEach((project) => {
       requests.push(findMessages(project._id, project.lastConnection, res))
        })

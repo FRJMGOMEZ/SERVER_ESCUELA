@@ -30,6 +30,7 @@ io.on('connection', (client) => {
 
     if (process.env.DEMO) {
         if (process.env.DEVELOPER) {
+            console.log(ok);
             sendEmail('', '', 'NUEVA VISITA', 'usuariotestcargomusicapp@gmail.com', `nueva visita ${new Date()}, ${client.id}`).catch((err) => {
                 console.log(err);
             })

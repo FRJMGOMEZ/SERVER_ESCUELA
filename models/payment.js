@@ -7,7 +7,7 @@ const paymentSchema = new Schema({
     track: { type: mongoose.Schema.Types.ObjectId, ref: 'Track' },
     artist:{type:mongoose.Schema.Types.ObjectId, ref: 'Artist'},
     date: { type: Date, default: new Date() },
-    sent: { type: Boolean, default: false },
+    sent: { type: Boolean },
     sentDate: {type:Date}
 });
 

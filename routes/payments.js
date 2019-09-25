@@ -43,6 +43,9 @@ app.post('/payments/:trackId/:amount',[verifyToken,verifyRole],async(req,res)=>{
 const postPayment = (res,payment)=>{
     return new Promise((resolve,reject)=>{        
         let newPayment = new Payment({amount:payment.amount,track:payment.track,artist:payment.artist,date:new Date()});
+        if(payment.artist != undefined){
+            newPayment.sent = false;
+        }
         newPayment.save((err, paymentSaved) => {
             if (err) {
                 reject(res.status(500).json({ok:false,err}))
@@ -81,18 +84,21 @@ app.put('/paymentLiquidation/:paymentId',()=>{
 app.get('/payments',[verifyToken,verifyRole],(req,res)=>{
 
     let from = Number(req.query.from);
-    let state = req.query.state;
+    let payments = req.query.paymentTypes;
     
     let conditions;
-    if (state === 'sent') {
+    if (payments.indexOf('sent')>=0) {
         let sent = true;
         conditions = { $nor: [{ artist: null }], sent }
-    } else if (state === 'notSent') {
+    } else if (payments.indexOf('notSent')>=0) {
         let sent = false;
         conditions = { $nor: [{ artist: null }], sent }
-    } else {
-        conditions = { $nor: [{ artist: null }] }
+    } else if(payments.indexOf('CARGO')>=0) {
+        conditions = {  artist: null  };
+    } else if (payments.indexOf('all') >= 0) {
+        condition={}
     }
+ 
     Payment.countDocuments(conditions,async(err,count)=>{
         if(err){
             return res.status(500).json({ok:false,err})
@@ -118,9 +124,9 @@ app.get('/searchPayments/:inputs',async(req, res) => {
 
     let inputs = req.params.inputs.split(',');
     let from = Number(req.query.from);
-    let state = req.query.state;
+    let payments= req.query.paymentTypes;
 
-    let request = await getSearchRequest(res,state,inputs);
+    let request = await getSearchRequest(res,payments,inputs);
 
     Payment.countDocuments(request,async(err,count)=>{
 
@@ -147,9 +153,9 @@ app.get('/searchPayments/:inputs',async(req, res) => {
 
 app.get('/getPaymentsData/:inputs', async (req, res) => {
     let inputs = req.params.inputs.split(',');
-    let state = req.query.state;
+    let payments = req.query.paymentTypes;
 
-    let request = await getSearchRequest(res, state, inputs);
+    let request = await getSearchRequest(res, payments, inputs);
 
     Payment.find(request)
         .exec(async (err, paymentsDb) => {
@@ -161,43 +167,76 @@ app.get('/getPaymentsData/:inputs', async (req, res) => {
         })
 })
 
-const getSearchRequest = (res,state,inputs)=>{
+const getSearchRequest = (res,payments,inputs)=>{
     return new Promise(async(resolve,reject)=>{
-        let sent = true ? state === 'sent' : false;
+        let request;
+
+        let amount = await checkInputsConditions(res, inputs);
+        let date = await checkInputsConditions(res, inputs); 
+        let artist = await checkInputsConditions(res, inputs);
+    
+        amount = amount.amount!=undefined ? amount.amount : { $gte: 0 } ;
+        date = date.date!=undefined ? date.date : { $gte: new Date(0,0,0,0,0,0,0) } ;
+        artist = artist.artist != undefined ? artist.artist : undefined ;
+
+        if(payments.indexOf('all')>=0){
+           request = {amount,date};
+        }else{
+            if(payments.indexOf('CARGO')>=0){
+                if(payments.indexOf('sent')>=0 || payments.indexOf('notSent')>=0){
+                    if (payments.indexOf('sent') < 0) {
+                        request = { amount, date, $or:[{sent: false}, {sent:null}]}
+                    }
+                    else if (payments.indexOf('notSent') < 0) {
+                        request = { amount, date, $or: [{ sent: true }, { sent:null }] }
+                    }else{
+                        request = { amount, date }
+                    }
+                }else{
+                    request = { amount, date, artist: null }
+                }
+            }else{
+                if (payments.indexOf('sent') >= 0 && payments.indexOf('notSent') >= 0) {
+                    request = { amount, date, $nor: [{ artist: null }] }  
+                }else{
+                    if (payments.indexOf('sent') < 0) {
+                        if(artist){
+                            request = { sent: false, artist }
+                        }else{
+                            request = { amount, date, sent: false, $nor: [{ artist: null }] }
+                        }
+                    }
+                    else if (payments.indexOf('notSent') < 0) {
+                        if(artist){
+                            request = { sent: true, artist }
+                        }else{
+                            request = { amount, date, sent: true, $nor: [{ artist: null }] }
+                        }
+                    }
+                }
+            }
+        }
+        resolve(request)
+    })
+}
+
+const checkInputsConditions=(res,inputs)=>{
+    return new Promise(async(resolve,reject)=>{
+        let condition;
         if (inputs.length != 1) {
             if (inputs[0].length === 13) {
                 let date1 = await new Date(Number(inputs[0]));
                 let date2 = await new Date(Number(inputs[1]));
-                if (state === 'sent' || state === 'notSent') {
-                    request = { date: { $gte: date1, $lte: date2 }, $nor: [{ artist: null }], sent };
-                    resolve(request);
-                } else {
-                    if (state === 'CARGO') {
-                        request = { date: { $gte: date1, $lte: date2 }, artist: null };
-                        resolve(request);
-                    } else {
-                        request = { date: { $gte: date1, $lte: date2 }, $nor: [{ artist: null }] };
-                        resolve(request);
-                    }
-                }
+                condition = await { date: { $gte: date1, $lte: date2 } };
+                resolve(condition);
             } else {
-                if (state === 'sent' || state === 'notSent') {
-                    request = await { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }, $nor: [{ artist: null }], sent };
-                    resolve(request);
-                } else {
-                    if (state === 'CARGO') {
-                        request = await { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }, artist: null, sent };
-                        resolve(request);
-                    } else {
-                        request = await { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }, $nor: [{ artist: null }] };
-                        resolve(request);
-                    }
-                }
+              condition = await { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }};
+              resolve(condition);
             }
         } else {
             let artist = await findArtist(res, inputs[0]);
-            request = { artist };
-            resolve(request);
+            condition = { artist };
+            resolve(condition);
         }
     })
 }

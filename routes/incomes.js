@@ -5,11 +5,24 @@ const Income = require('../models/income');
 const { verifyToken,verifyRole } = require('../middlewares/auth');
 const Debitor = require('../models/debitor');
 
-app.get('/incomesLiquidated',[verifyToken,verifyRole],(req,res)=>{
+app.get('/incomes',[verifyToken,verifyRole],(req,res)=>{
 
+    let incomeType = req.query.incomeType;
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
-    Income.find({notLiquidatedAmount:0})
+
+    let conditions;
+
+    switch (incomeType ){
+        case 'liquidated': conditions = { notLiquidatedAmount: 0 };
+        break;
+        case 'notLiquidated': conditions = { $nor: [{ notLiquidatedAmount: 0 }] }; 
+        break;
+        default: conditions = {};
+        break;
+    }
+
+    Income.find(conditions)
         .skip(from)
         .limit(limit)
         .populate({ path: 'payments', populate: { path: 'artist', populate: { path: 'indexcard' }, $nor: { artist: undefined } } })
@@ -18,7 +31,7 @@ app.get('/incomesLiquidated',[verifyToken,verifyRole],(req,res)=>{
             if(err){
                return res.status(500).json({ok:false,err})
             }
-            Income.find({ notLiquidatedAmount: 0 })
+            Income.find(conditions)
                   .countDocuments((err,count)=>{
                     if(err){
                       return res.status(500).json({ok:false,err})
@@ -28,28 +41,6 @@ app.get('/incomesLiquidated',[verifyToken,verifyRole],(req,res)=>{
         })
 })
 
-app.get('/incomesNotLiquidated',[verifyToken,verifyRole],(req,res)=>{
-
-    let from = Number(req.query.from);
-    let limit = Number(req.query.limit);
-    Income.find({ $nor: [{ notLiquidatedAmount: 0 }] } )
-        .skip(from)
-        .limit(limit)
-        .populate({path:'payments',select:'artist',populate:{path:'artist',populate:{path:'indexcard'}}})
-        .populate('debitor')
-        .exec((err, incomesDb) => {
-            if (err) {
-                return res.status(500).json({ ok: false, err })
-            }
-            Income.find({ $nor: [{ notLiquidatedAmount: 0 }] })
-                  .countDocuments((err, count) => {
-                    if (err) {
-                       return res.status(500).json({ ok: false, err })
-                    }
-                    res.status(200).json({ ok: true, incomes: incomesDb, count })
-            })
-        })
-})
 
 app.post('/income',[verifyToken,verifyRole],(req,res)=>{
     let debitor = req.body.debitor;
@@ -104,7 +95,6 @@ app.put('/income',[verifyToken,verifyRole],(req,res)=>{
                 if (err) {
                     return res.status(500).json({ ok: false, err })
                 }
-                console.log(incomePopulated);
                 res.status(200).json({ ok: true, income: incomePopulated })
 
             })
@@ -169,6 +159,7 @@ app.get('/getIncomesData/:inputs/:incomeType', async (req, res) => {
         let data = await incomesDb.map((income)=>{return {amount:income.amount,date:income.date}});
 
          res.status(200).json({ ok: true,data })   
+         
         })
 })
 
@@ -182,16 +173,22 @@ const getSearchRequest = (res,inputs,incomeType)=>{
                 if (incomeType === 'liquidated') {
                     request = { date: { $gte: date1, $lte: date2 }, notLiquidatedAmount: '0' };
                     resolve(request)
-                } else {
+                } else if(incomeType === 'notLiquidated') {
                     request = { date: { $gte: date1, $lte: date2 }, $nor: [{ notLiquidatedAmount: '0' }] };
+                    resolve(request)
+                }else{
+                    request = { date: { $gte: date1, $lte: date2 } };
                     resolve(request)
                 }
             } else {
                 if (incomeType === 'liquidated') {
                     request = { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }, notLiquidatedAmount: '0' };
                     resolve(request)
-                } else {
+                } else if(incomeType === 'notLiquidated') {
                     request = { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) }, $nor: [{ notLiquidatedAmount: '0' }] };
+                    resolve(request)
+                }else{
+                    request = { amount: { $gte: Number(inputs[0]), $lte: Number(inputs[1]) } };
                     resolve(request)
                 }
             }
@@ -200,8 +197,11 @@ const getSearchRequest = (res,inputs,incomeType)=>{
             if (incomeType === 'liquidated') {
                 request = { debitor, notLiquidatedAmount: '0' };
                 resolve(request)
-            } else {
+            } else if(incomeType === 'notLiquidated') {
                 request = { debitor, $nor: [{ notLiquidatedAmount: '0' }] };
+                resolve(request)
+            }else{
+                request = { debitor };
                 resolve(request)
             }
         }

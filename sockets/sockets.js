@@ -1,5 +1,5 @@
 const { io } = require('../app');
-const { removeUser,usersConnected } = require('../middlewares/checkUsersConnected');
+const { removeUser,getUsers } = require('../middlewares/checkUsersConnected');
 const {sendEmail} = require('../utilities/nodeMail');
 
 class Room {
@@ -145,7 +145,8 @@ io.on('connection', (client) => {
 
     client.on('disconnect', async() => {
         ///// from usersConnected in middleware ///
-        removeUser(user)
+        removeUser(user);
+        //console.log(getUsers());
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
                 room.removeUser(user).then((users) => {

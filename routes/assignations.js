@@ -20,7 +20,6 @@ app.get('/assignations/:artistId',(req, res) => {
             return res.status(500).json({ ok: false, err })
         }
         if(assignations.length === 0){
-            console.log('no assignations');
            return res.status(200).json({ ok: true, assignations:[]})
         }
           await assignations.forEach((assignation,index)=>{

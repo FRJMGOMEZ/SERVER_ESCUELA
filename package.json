@@ -10,6 +10,7 @@
     "author": "FRJMA",
     "license": "GPL V.3",
     "dependencies": {
+        "atob": "^2.1.2",
         "aws-sdk": "^2.441.0",
         "bcrypt": "^3.0.6",
         "body-parser": "^1.18.3",

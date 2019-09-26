@@ -16,7 +16,6 @@ app.get('/artists', verifyToken, (req, res) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
             }
-            console.log(artists);
             Artist.countDocuments((err, count) => {
                 if (err) {
                     return res.status(500).json({ ok: false, err })
@@ -37,7 +36,6 @@ app.post('/artist', verifyToken, (req, res) => {
 
     newArtist.save((err, artistSaved) => {
         if (err) {
-            console.log(err);
             return res.status(500).json({ ok: false, err })
         }
         newArtist.populate({ path: 'indexcard', select: 'name _id' }, (err, artistDb) => {

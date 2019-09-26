@@ -3,30 +3,14 @@ const Indexcard = require('../models/card');
 
 let usersConnected = []
 
-const checkUsersOn = (req, res, next) => {
-        User.findOne({ email: req.body.email })
-            .populate('img')
-            .exec((err, userDb) => {
-                if (err) {
-                    return res.status(500).json({
-                        ok: false,
-                        err
-                    })
-                }
-                if (!userDb) {
-                    return res.status(400).json({
-                        ok: false,
-                        message: 'User not valid'
-                    })
-                }
-                if (usersConnected.includes(String(userDb._id)) && process.env.DEMO) {
-                    let message = `El usuario ${userDb.name} modo DEMO está siendo usado, prueba a loggearte con otro usuario, gracias.`
-                    return res.status(200).json({ message })
-                } else {
-                    req.userDb = userDb
-                    next()
-                }
-            })
+const checkUsersOn = (req, res, next) => {        
+    let userId=req.body.userId;
+    if(usersConnected.includes(userId)){
+        res.json({message:'El usuario esta actualmente siendo utilizado, disculpa las molestias'})
+    }else{
+        addUser(userId);
+        next();
+    }
 }
 
 const addUser = (user) => {
@@ -39,4 +23,8 @@ const removeUser = (user) => {
     });
 }
 
-module.exports = { addUser, removeUser, checkUsersOn, usersConnected }
+const getUsers = ()=>{
+    return usersConnected
+}
+
+module.exports = { addUser, removeUser, checkUsersOn,getUsers}

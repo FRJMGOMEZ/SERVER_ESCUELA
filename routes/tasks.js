@@ -15,7 +15,6 @@ app.get('/tasks', verifyToken, (req, res) => {
                 if (err) {
                     return res.status(500).json({ ok: false, mensaje: err })
                 }
-                console.log(tasks);
                 if (!tasks) {
                     return res.status(404).json({ ok: false, message: 'No users have been found' })
                 }

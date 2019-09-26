@@ -41,12 +41,10 @@ app.post('/project', [verifyToken, verifyRole], (req, res) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
         }
-        console.log(userOnline._id)
         User.findByIdAndUpdate(userOnline._id, { $push: { projects: { _id: projectSaved._id, lastConnection: new Date() } } }, { new: true },(err, userUpdated) => {
                 if (err) {
                     return res.status(500).json({ ok: false, mensaje: err })
                 }
-                console.log(userUpdated)
                 if (!userUpdated) {
                     return res.status(404).json({ ok: false, message: 'No users have been found' })
                 }

@@ -1,5 +1,5 @@
 const { io } = require('../app');
-const { addUser, removeUser } = require('../middlewares/checkUsersConnected');
+const { removeUser,usersConnected } = require('../middlewares/checkUsersConnected');
 const {sendEmail} = require('../utilities/nodeMail');
 
 class Room {
@@ -55,7 +55,6 @@ io.on('connection', (client) => {
             await client.join('dashboard')
         }
         user = payload.user
-        addUser(user)
     })
 
     client.on('/dashboardOut', async(payload) => {
@@ -140,10 +139,13 @@ io.on('connection', (client) => {
     })
 
     client.on('logOut', async(payload) => {
+          ///// from usersConnected in middleware ///
         removeUser(payload.user)
     })
 
     client.on('disconnect', async() => {
+        ///// from usersConnected in middleware ///
+        removeUser(user)
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
                 room.removeUser(user).then((users) => {
@@ -152,7 +154,6 @@ io.on('connection', (client) => {
                     }
                 })
             }
-            removeUser(user)
         })
     })
 })

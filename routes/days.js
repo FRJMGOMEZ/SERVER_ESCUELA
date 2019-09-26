@@ -32,8 +32,6 @@ app.get('/dayByDate/:date', verifyToken, (req, res) => {
             if (!dayDb) {
                 return res.status(200).json({ ok: false, message: 'No day has been found whose date match with yours', day: null })
             }
-            console.log(dayDb);
-            
             res.status(200).json({ ok: true, day: dayDb })
         })
 })

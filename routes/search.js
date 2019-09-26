@@ -60,7 +60,6 @@ app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => 
 
     promise.then((response) => {
         countItems(collection, regExp).then((count) => {
-            console.log(response);
             res.status(200).json({
                 ok: true,
                 [collection]: response,
@@ -150,7 +149,6 @@ const searchIndexcards = (res, regExp, from, limit, collection) => {
                             }
                             reject(res.status(404).json({ ok: false, message }))
                         }
-                        console.log(itemsDb);
                         resolve(itemsDb)
                     })
             })

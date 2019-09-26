@@ -33,7 +33,6 @@ app.post('/track', async(req, res) => {
             let assignation = new Assignation({ artist: eachAssignation.artist, percent: eachAssignation.percent, album: eachAssignation.album })
             assignations.push(assignation)
         })
-        console.log(track)
         Assignation.insertMany(assignations, (err, assignationsSaved) => {
             if (err) {
                 return res.status(505).json({ ok: false, err })
@@ -138,8 +137,6 @@ app.put('/track/:id',async (req, res) => {
         trackDb.percent = body.percent;
 
         checkAssignations(res, body.assignations, trackDb.assignations).then(async(assignations) => {
-
-            console.log(assignations);
             trackDb.assignations = await assignations;
 
             trackDb.save((err, trackUpdated) => {
@@ -167,8 +164,6 @@ app.put('/track/:id',async (req, res) => {
                         if (err) {
                             return res.status(505).json({ ok: false, err })
                         }
-                        
-                        console.log(trackDb)
                         res.status(200).json({ ok: true, track:trackPopulated })
                     })
             })

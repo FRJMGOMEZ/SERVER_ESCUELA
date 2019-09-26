@@ -25,5 +25,6 @@ app.use(require('./incomes'));
 app.use(require('./debitors'));
 app.use(require('./payments'));
 app.use(require('./letters'));
+app.use(require('./visitors'));
 
 module.exports = app;

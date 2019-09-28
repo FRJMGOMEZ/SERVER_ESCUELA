@@ -4,9 +4,9 @@ const app = express();
 const Album = require('../models/album');
 const Track = require('../models/track');
 
-const { verifyToken } = require('../middlewares/auth');
+const { verifyToken,verifyRole } = require('../middlewares/auth');
 
-app.get('/albums', verifyToken, (req, res) => {
+app.get('/albums', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -27,7 +27,7 @@ app.get('/albums', verifyToken, (req, res) => {
         })
 })
 
-app.post('/album', verifyToken, (req, res) => {
+app.post('/album', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let album = new Album({
         title: body.title,
@@ -46,7 +46,7 @@ app.post('/album', verifyToken, (req, res) => {
     })
 })
 
-app.put('/album/:id', verifyToken, (req, res) => {
+app.put('/album/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let body = req.body;
@@ -81,7 +81,7 @@ app.put('/album/:id', verifyToken, (req, res) => {
         })
 })
 
-app.put('/album/pushTrack/:albumId/:trackId', (req, res) => {
+app.put('/album/pushTrack/:albumId/:trackId', [verifyToken, verifyRole], (req, res) => {
 
     let albumId = req.params.albumId;
     let trackId = req.params.trackId;
@@ -116,7 +116,7 @@ app.put('/album/pushTrack/:albumId/:trackId', (req, res) => {
         })
 })
 
-app.put('/album/pullTrack/:albumId/:trackId', (req, res) => {
+app.put('/album/pullTrack/:albumId/:trackId', [verifyToken, verifyRole], (req, res) => {
 
     let albumId = req.params.albumId;
     let trackId = req.params.trackId;
@@ -132,7 +132,7 @@ app.put('/album/pullTrack/:albumId/:trackId', (req, res) => {
     })
 })
 
-app.delete('/album/:id', (req, res) => {
+app.delete('/album/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
 

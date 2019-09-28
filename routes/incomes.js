@@ -118,7 +118,7 @@ const checkDebitor = (res,debitor)=>{
     })
 }
 
-app.get('/searchIncomes/:inputs/:incomeType',async(req,res)=>{
+app.get('/searchIncomes/:inputs/:incomeType', [verifyToken, verifyRole],async(req,res)=>{
 
     let inputs = req.params.inputs.split(',');
     let from = Number(req.query.from);
@@ -145,7 +145,7 @@ app.get('/searchIncomes/:inputs/:incomeType',async(req,res)=>{
         })
 })
 
-app.get('/getIncomesData/:inputs/:incomeType', async (req, res) => {
+app.get('/getIncomesData/:inputs/:incomeType', [verifyToken, verifyRole] ,async (req, res) => {
     let inputs = req.params.inputs.split(',');
     let incomeType = req.params.incomeType;
 

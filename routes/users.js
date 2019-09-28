@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 
 const User = require('../models/user');
 const Project = require('../models/project');
-const Indexcard = require('../models/card')
 
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
@@ -13,7 +12,7 @@ const { sendEmail } = require('../utilities/nodeMail')
 
 const app = express();
 
-app.get('/users', verifyToken, (req, res) => {
+app.get('/users', [verifyToken,verifyRole], (req, res) => {
 
     let from = Number(req.query.from) || 0;
     let limit = Number(req.query.limit) || 5;

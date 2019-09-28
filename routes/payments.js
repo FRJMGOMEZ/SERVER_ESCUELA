@@ -68,7 +68,7 @@ const postPayment = (res,payment)=>{
     })
 }
 
-app.put('/paymentLiquidation/:paymentId',()=>{
+app.put('/paymentLiquidation/:paymentId', [verifyToken, verifyRole],()=>{
     let paymentId = req.params.paymentId;
     Payment.findByIdAndUpdate(paymentId,{sent:true},{new:true},(err,paymentUpdated)=>{
         if (err) {
@@ -120,7 +120,7 @@ app.get('/payments',[verifyToken,verifyRole],(req,res)=>{
     })
 })
 
-app.get('/searchPayments/:inputs',async(req, res) => {
+app.get('/searchPayments/:inputs', [verifyToken, verifyRole],async(req, res) => {
 
     let inputs = req.params.inputs.split(',');
     let from = Number(req.query.from);
@@ -151,7 +151,7 @@ app.get('/searchPayments/:inputs',async(req, res) => {
     })
 })
 
-app.get('/getPaymentsData/:inputs', async (req, res) => {
+app.get('/getPaymentsData/:inputs', [verifyToken, verifyRole] ,async (req, res) => {
     let inputs = req.params.inputs.split(',');
     let payments = req.query.paymentTypes;
 
@@ -265,7 +265,7 @@ const findArtist = (res, artistName) => {
     })
 }
 
-app.put('/sendPaymentNotification/:paymentId/:letterId',(req,res)=>{
+app.put('/sendPaymentNotification/:paymentId/:letterId', [verifyToken, verifyRole],(req,res)=>{
 
     let id = req.params.paymentId;
     let letterId = req.params.letterId;

@@ -5,7 +5,9 @@ const Track = require('../models/track');
 const Album = require('../models/album');
 const Assignation = require('../models/assignation');
 
-app.get('/tracks', (req, res) => {
+const {verifyToken,verifyRole} = require('../middlewares/auth');
+
+app.get('/tracks',[verifyToken,verifyRole],(req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -23,7 +25,7 @@ app.get('/tracks', (req, res) => {
         })
 })
 
-app.post('/track', async(req, res) => {
+app.post('/track', [verifyToken, verifyRole],async(req, res) => {
 
     let track = req.body;
     
@@ -118,7 +120,7 @@ app.post('/track', async(req, res) => {
    
 })
 
-app.put('/track/:id',async (req, res) => {
+app.put('/track/:id', [verifyToken, verifyRole],async (req, res) => {
 
    let body = req.body;
    await body.assignations.forEach((assignation, index) => {
@@ -200,7 +202,7 @@ const checkAssignations = (res, bodyAssignations, dbAssignations) => {
     })
 }
 
-app.delete('/track/:id', (req, res) => {
+app.delete('/track/:id', [verifyToken, verifyRole] ,(req, res) => {
 
     let id = req.params.id;
     Track.findByIdAndDelete(id, (err, trackDeleted) => {

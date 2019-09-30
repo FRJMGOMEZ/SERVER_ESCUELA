@@ -118,7 +118,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
 app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
 
     let id = req.params.id;
-    let body = req.body;
+    let eventEdited = req.body;
     EventModel.findById(id, async(err, eventDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
@@ -126,17 +126,17 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
         if (!eventDb) {
             return res.status(404).json({ ok: false, message: 'No events have been found wich matches with the ID provided' })
         }
-        await checkPermanecy(res, body, eventDb)
-        eventDb.name = body.name
-        eventDb.description = body.description
-        eventDb.professors = body.professors
-        eventDb.subjects = body.subjects
-        eventDb.duration = Number(body.duration);
-        eventDb.position = Number(body.position)
-        eventDb.repetition = body.repetition;
-        eventDb.endDate = body.endDate;
-        eventDb.startDate = body.startDate;
-        eventDb.permanent = body.permanent;
+        await checkPermanecy(res, eventEdited, eventDb)
+        eventDb.name = eventEdited.name
+        eventDb.description = eventEdited.description
+        eventDb.professors = eventEdited.professors
+        eventDb.subjects = eventEdited.subjects
+        eventDb.duration = Number(eventEdited.duration);
+        eventDb.position = Number(eventEdited.position)
+        eventDb.repetition = eventEdited.repetition;
+        eventDb.endDate = eventEdited.endDate;
+        eventDb.startDate = eventEdited.startDate;
+        eventDb.permanent = eventEdited.permanent;
         eventDb.save((err, eventDb) => {
             if (err) {
                 return res.status(500).json({ ok: false, err })
@@ -146,76 +146,103 @@ app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
 
     })
 })
-const checkPermanecy = async(res, body, eventDb) => {
+
+const checkPermanecy = async(res, eventEdited, eventDb) => {
+    
     let updatedEventEndDate;
     let eventDbEndDate;
-    let from;
-    let to;
-    let request;
     let hour = `hour${parseInt(eventDb.hour)}`;
-    if (body.permanent) {
-        if (eventDb.endDate) {
-            eventDbEndDate = new Date(eventDb.endDate);
-            if (body.endDate) {
-                updatedEventEndDate = new Date(body.endDate)
-            } else {
-                updatedEventEndDate = new Date(8630000000000000)
-            }
-            if (updatedEventEndDate.getTime() > eventDbEndDate.getTime()) {
-                from = new Date(eventDbEndDate);
-                to = new Date(updatedEventEndDate);
-                request = '+';
-            } else if (updatedEventEndDate.getTime() < eventDbEndDate.getTime()) {
-                from = new Date(updatedEventEndDate);
-                to = new Date(eventDbEndDate);
-                request = '-'
-            }
-        } else {
-            if (eventDb.permanent) {
-                from = new Date(body.endDate);
-                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0)
-                to = new Date(8630000000000000);
-                request = '-'
-            } else {
-                if (body.endDate) {
-                    from = new Date(body.startDate);
-                    to = new Date(body.endDate);
-                    request = '+'
-                } else {
-                    from = new Date(body.startDate);
-                    to = new Date(8630000000000000)
-                    request = '+'
-                }
-            }
-        }
-    } else {
-        if (eventDb.permanent) {
-            if (eventDb.endDate) {
-                from = new Date(eventDb.startDate)
-                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
-                to = new Date(eventDb.endDate)
-                request = '-'
-            } else {
-                from = new Date(body.startDate)
-                from = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7, 0, 0, 0, 0);
-                to = new Date(8630000000000000);
-                request = '-'
-            }
+    let requests=[];
+
+     /////// EVENTO UN SOLO DÍA //////
+    if(!eventDb.permanent){
+         ///// startDate ////
+        if(eventEdited.permanent){
+           if(eventEdited.endDate){
+              let from = new Date(eventEdited.startDate);
+              let to = new Date(eventEdited.endDate);
+              requests.push(addEventToDays(res, hour, eventDb, from, to));
+           }else{
+            let from = new Date(eventEdited.startDate);
+            let to = new Date(8630000000000000);
+
+            console.log(from,to);
+            console.log(eventDb);
+
+            requests.push(addEventToDays(res, hour, eventDb, from, to));
+           }
         }
     }
-    if (request === '+') {
-        await addEventToDays(res, hour, eventDb, from, to).then(() => {
-            return
+    
+    ///// EVENTO VARIAS SEMANAS /////
+    if(eventDb.endDate && eventDb.permanent){
+         ///// startDate ////
+          if(new Date(eventDb.startDate).getTime() > new Date(eventEdited.startDate).getTime()){
+             let to = new Date(eventEdited.startDate);
+             let from = new Date(eventDb.startDate);
+             requests.push(addEventToDays(res, hour, eventDb, from, to));
+          }else if(new Date(eventDb.startDate).getTime() < new Date(eventEdited.startDate).getTime()){
+              let from = new Date(eventDb.startDate);
+              let to = new Date(eventEdited.startDate);
+              requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+          }
+          /// endDate /////
+          if(!eventEdited.permanent){
+            let from = new Date(new Date(eventEdited.startDate).getTime()+86400000 );
+            let to = new Date(8630000000000000);
+             requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+          }
+          if(eventEdited.permanent && eventEdited.endDate){
+             if(new Date(eventDb.endDate).getTime()> new Date(eventEdited.endDate).getTime()){
+               let from = new Date(new Date(eventEdited.endDate).getTime()+86400000 );
+               let to = new Date(eventDb.endDate);
+                requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+             } else if (new Date(eventDb.endDate).getTime() < new Date(eventEdited.endDate).getTime()){
+                let from = new Date(eventdb.endDate);
+                let to = new Date(eventEdited.endDate);
+                requests.push(addEventToDays(res, hour, eventDb, from, to));
+             }
+          }
+          if(eventEdited.permanent && !eventEdited.endDate){
+              let from = new Date(eventDb.endDate);
+              let to =  new Date(8630000000000000);
+              requests.push(addEventToDays(res, hour, eventDb, from, to));
+          }
+    }
+
+    ///// EVENTO DURACIÓN INDEFINIDA ////
+    if(eventDb.permanent && !eventDb.endDate){
+        ///// startDate ////
+          if(new Date(eventDb.startDate).getTime() > new Date(eventEdited.startDate).getTime()){
+             let to = new Date(eventEdited.startDate);
+             let from = new Date(eventDb.startDate);+
+             requests.push(addEventToDays(res, hour, eventDb, from, to));
+          }else if(new Date(eventDb.startDate).getTime() < new Date(eventEdited.startDate).getTime()){
+              let from = new Date(eventDb.startDate);
+              let to = new Date(eventEdited.startDate);
+              requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+          }
+           /// endDate /////
+          if(!eventEdited.permanent){
+            let from = new Date(new Date(eventEdited.startDate).getTime() + 86400000 );
+            let to = new Date(8630000000000000);
+             requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+          }
+          if(eventEdited.permanent && eventEdited.endDate){
+             let from = new Date(eventEdited.endDate);
+             let to = new Date(8630000000000000);
+             requests.push(removeEventFromDays(res, hour, eventDb, from, to));
+          }
+    }
+
+    if(requests.length > 0){
+        Promise.all(requests).then(()=>{
+              return 
         })
-    } else if (request === '-') {
-        await removeEventFromDays(res, hour, eventDb, from, to).then(() => {
-            return
-        })
-    } else {
+    }else{
         return
     }
 }
-
 
 const removeEventFromDays = (res, hour, eventDb, from, to) => {
     return new Promise((resolve, reject) => {
@@ -223,6 +250,7 @@ const removeEventFromDays = (res, hour, eventDb, from, to) => {
             day: eventDb.day,
             date: { $gte: from, $lte: to },
             [hour]: eventDb._id
+            
         }, {
             $pull: {
                 [hour]: eventDb._id

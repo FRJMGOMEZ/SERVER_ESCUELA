@@ -1,9 +1,8 @@
 const User = require('../models/user');
-const Indexcard = require('../models/card');
 
 let usersConnected = []
 
-const checkUsersOn = (req, res, next) => {        
+const checkUsersOn = (req, res, next) => {
     let userId=req.body.userId;
     if(usersConnected.includes(userId)){
         res.json({message:'El usuario esta actualmente siendo utilizado, disculpa las molestias'})

@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { verifyStatus } = require('../middlewares/auth');
 const app = express();
 const { checkUsersOn} = require('../middlewares/checkUsersConnected');
+const {assignUser} = require('../middlewares/userAssignation');
 var atob = require('atob');
 const User = require('../models/user');
 const Visit = require('../models/visit');
@@ -50,11 +51,11 @@ const sumVisit = (credentials)=>{
     }
 }
 
-app.put('/checkToken',checkUsersOn,(req, res) => {
+app.put('/checkToken',[assignUser,checkUsersOn],(req, res) => {
     let token = req.get('token');
     jwt.verify(token, process.env.SEED,async(err, data) => {
         if (err) {
-            return res.json({message:'Vuelva a intentar validarse, por favor'})
+            return res.json({message:'Vuelva a intentar validarse, por favor'});
         }
         if(!data){
             return res.json({ message: 'Vuelva a intentar validarse, por favor' })
@@ -86,5 +87,6 @@ const verifyUpdate=(dateExp,userDb,token)=> {
         }
     })
 }
+
 
 module.exports = app;

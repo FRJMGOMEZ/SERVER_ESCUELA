@@ -2,7 +2,6 @@
 const express = require('express');
 const app = express();
 const Payment = require('../models/payment');
-const Income = require('../models/income');
 const Artist = require('../models/artist');
 const Track = require('../models/track');
 const Indexcard = require('../models/card');
@@ -67,19 +66,6 @@ const postPayment = (res,payment)=>{
         })
     })
 }
-
-app.put('/paymentLiquidation/:paymentId', [verifyToken, verifyRole],()=>{
-    let paymentId = req.params.paymentId;
-    Payment.findByIdAndUpdate(paymentId,{sent:true},{new:true},(err,paymentUpdated)=>{
-        if (err) {
-            return res.json(500).json({ ok: false, err })
-        }
-        if (!paymentUpdated) {
-            return res.status(404).json({ ok: false, message: 'No payments have been found' })
-        }
-        res.status(200).json({ok:true})
-    })
-})
 
 app.get('/payments',[verifyToken,verifyRole],(req,res)=>{
 

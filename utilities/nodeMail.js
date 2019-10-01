@@ -20,7 +20,7 @@ const sendEmail = (res, userMail, title,from,message,template) => {
             subject: title,
         };
 
-        mailOptions.from = await from? from :'frjmartinezgomez@gmail.com';
+        mailOptions.from = 'frjmartinezgomez@gmail.com';
         mailOptions.text = await message ? message  : '';
         mailOptions.html =  await template ? template : ''; 
         

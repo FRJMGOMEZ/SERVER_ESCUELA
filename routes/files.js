@@ -174,16 +174,16 @@ const recordFile = (res, type, file, id) => {
 }
 
 const deleteFile = (location, fileName, res) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         if (fs.existsSync(location)) {
             fs.unlinkSync(location);
             if (!fs.existsSync(location)) {
                 resolve()
             }
         } else {
-            var params = { Bucket: process.env.S3_BUCKET_NAME, Key: fileName };
+            var params = await { Bucket: process.env.S3_BUCKET_NAME, Key: fileName };
             s3.deleteObject(params, function(err, data) {
-                if (err) { reject(res.status(500).json({ ok: false, err })) } else {
+                if (err) {  reject(res.status(500).json({ ok: false, err })) } else {
                     resolve()
                 }
             });

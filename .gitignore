@@ -9,3 +9,6 @@ uploads/Project
 uploads/User
 
 config/mailjetUser.js
+
+config/config.js
+

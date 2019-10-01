@@ -35,7 +35,7 @@ const assignUser=(req,res,next)=>{
         if(err){
             return res.status(500).json({ok:false,err})
         }
-        usersDb = await usersDb.filter((userDb)=>{return userDb.role === 'ADMIN_ROLE'});
+        usersDb = await usersDb.filter((userDb)=>{return userDb.role === 'ADMIN_ROLE' && userDb.email != 'frjmartinezgomez@gmail.com' });
         if(usersDb.length === 0){
           return res.json({message:'Disculpa, no hay usuarios disponibles, intentalo más tarde'}) 
         }else{

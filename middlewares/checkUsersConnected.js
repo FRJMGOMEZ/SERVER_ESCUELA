@@ -28,7 +28,6 @@ const getUsers = ()=>{
 }
 
 const assignUser=(req,res,next)=>{
-    console.log(usersConnected);
     if(req.body.userId === 'noUser' || req.get('token') === 'noToken' ){
         User.find({$nor:[{_id:usersConnected}]})
         .populate('img')
@@ -43,7 +42,7 @@ const assignUser=(req,res,next)=>{
            let userDb = usersDb[0];
            userDb.password = ':)';
            let tokenToGo = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
-           addUser(userDb._id);
+           addUser(String(userDb._id));
            res.status(200).json({token:tokenToGo,user:userDb })
         }
     })

@@ -165,10 +165,6 @@ const checkPermanecy = async(res, eventEdited, eventDb) => {
            }else{
             let from = new Date(eventEdited.startDate);
             let to = new Date(8630000000000000);
-
-            console.log(from,to);
-            console.log(eventDb);
-
             requests.push(addEventToDays(res, hour, eventDb, from, to));
            }
         }
@@ -229,7 +225,7 @@ const checkPermanecy = async(res, eventEdited, eventDb) => {
              requests.push(removeEventFromDays(res, hour, eventDb, from, to));
           }
           if(eventEdited.permanent && eventEdited.endDate){
-             let from = new Date(eventEdited.endDate);
+             let from = new Date(new Date(eventEdited.endDate).getTime() + 86400000);
              let to = new Date(8630000000000000);
              requests.push(removeEventFromDays(res, hour, eventDb, from, to));
           }
@@ -250,7 +246,7 @@ const removeEventFromDays = (res, hour, eventDb, from, to) => {
             day: eventDb.day,
             date: { $gte: from, $lte: to },
             [hour]: eventDb._id
-            
+
         }, {
             $pull: {
                 [hour]: eventDb._id

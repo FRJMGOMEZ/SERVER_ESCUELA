@@ -9,6 +9,7 @@ uploads/Project
 uploads/User
 
 config/mailjetUser.js
+config/awsCredentials.js
 
 config/config.js
 

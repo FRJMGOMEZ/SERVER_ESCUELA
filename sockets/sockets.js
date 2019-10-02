@@ -1,12 +1,12 @@
 const { io } = require('../app');
 const { removeUser} = require('../middlewares/checkUsersConnected');
 
-class Room {
+class  Room {
     constructor(id) {
         this.id = id;
         this.users = []
     }
-    addUser(user) {
+    async addUser(user) {
         return new Promise((resolve, reject) => {
             this.users.push(user);
             resolve(this.users)

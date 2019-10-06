@@ -54,6 +54,27 @@ app.get('/files/:type/:fileName', (req, res, next) => {
     }
 })
 
+app.get('/signedAwsUrl/:type/:name',(req,res)=>{
+    let fileType = req.params.type;
+    let fileName = req.params.name;
+    var params = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Expires: 60,
+                ContentType: fileType
+            };
+    s3.getSignedUrl('getObject', params, function (err, data) {
+                if (err) {
+                    console.log(err);
+                    return err;
+                } else {
+                    console.log(data);
+                    res.status(200).json({ok:true,data})
+                }
+            });     
+})
+    
+
 app.put('/upload/:type/:id/:download', (req, res) => {
     let type = req.params.type;
     let id = req.params.id;

@@ -49,6 +49,8 @@ app.get('/getAwsFileBuffer/:name',(req,res)=>{
                 Bucket: process.env.S3_BUCKET_NAME,
                 Key: fileName
             };
+
+    console.log(process.env.AWS_SECRET_ACCESS_KEY)
     s3.getObject(params, function (err, data) {
         if (err)
             return err;   

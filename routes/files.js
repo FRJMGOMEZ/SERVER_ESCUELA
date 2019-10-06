@@ -5,9 +5,7 @@ const fileUpload = require('express-fileupload');
 const FileModel = require('../models/file');
 const AWS = require('aws-sdk');
 const User = require('../models/user');
-
 const { verifyToken, verifyRole } = require('../middlewares/auth');
-
 const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
@@ -16,17 +14,9 @@ let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
 
 app.use(fileUpload());
 
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-});
-
-const s3 = new AWS.S3();
-
 app.get('/files/:type/:fileName', (req, res, next) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
-
     if (type === 'icons') {
         let pathImage = path.resolve(__dirname, `../assets/${type}/${fileName}`);
         if (fs.existsSync(pathImage)) {
@@ -43,35 +33,27 @@ app.get('/files/:type/:fileName', (req, res, next) => {
             let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
             res.sendFile(pathNoImage)
         }
-    } else {
-        let pathImage = path.resolve(__dirname, `../uploads/${type}/${fileName}`);
-        if (fs.existsSync(pathImage)) {
-            res.sendFile(pathImage)
-        } else {
-            let pathNoImage = path.resolve(__dirname, '../assets/no-image.png');
-            res.sendFile(pathNoImage)
-        }
-    }
+    } 
 })
 
-app.get('/signedAwsUrl/:type/:name',(req,res)=>{
-    let fileType = req.params.type;
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
+app.get('/getAwsFileBuffer/:name',(req,res)=>{
     let fileName = req.params.name;
     var params = {
                 Bucket: process.env.S3_BUCKET_NAME,
-                Key: fileName,
-                Expires: 60,
-                ContentType: fileType
+                Key: fileName
             };
-    s3.getSignedUrl('getObject', params, function (err, data) {
-                if (err) {
-                    console.log(err);
-                    return err;
-                } else {
-                    console.log(data);
-                    res.status(200).json({ok:true,data})
-                }
-            });     
+    s3.getObject(params, function (err, data) {
+        if (err)
+            return err;   
+        res.send(data.Body)
+    });     
 })
     
 
@@ -88,14 +70,13 @@ app.put('/upload/:type/:id/:download', (req, res) => {
     }
     let newFile;
     recordFile(res, type, file, id).then(async(response) => {
-        newFile = await new FileModel({ name: response.fileName, title: file.name, download: req.params.download, format: response.extension, type: type })
-        let location;
-        if (response.data) {
-            location = response.data.Location;
-        } else {
-            location = path.resolve(__dirname, `../../SERVER/uploads/${type}/${response.fileName}`);
-        }
-        newFile.location = location;
+        newFile = await new FileModel({ name: response.fileName,
+                                        title: file.name, 
+                                        download: req.params.download, 
+                                        format: response.extension,
+                                        type: type,
+                                        location: response.data.Location,
+                                         production: true ? process.env.URLDB != 'mongodb://localhost:27017/escuelaAdminDb' : false })
         newFile.save((err, file) => {
             if (err) {
                 deleteFile(newFile.location, newFile, res).then(() => {
@@ -148,7 +129,7 @@ app.put('/upload/:type/:id/:download', (req, res) => {
                 res.status(200).json({ file })
             }
         })
-    })
+    })            
 });
 
 const recordFile = (res, type, file, id) => {
@@ -169,16 +150,6 @@ const recordFile = (res, type, file, id) => {
             })
         }
         let fileName = `${id}-${new Date().getMilliseconds()}.${extension}`;
-        if (process.env.URLDB === 'mongodb://localhost:27017/escuelaAdminDb') {
-            file.mv(`uploads/${type}/${fileName}`, (err) => {
-                if (err)
-                    return res.status(500).json({
-                        ok: false,
-                        err
-                    });
-                resolve({ fileName, extension })
-            })
-        } else {
             var params = {
                 Bucket: process.env.S3_BUCKET_NAME,
                 Body: file.data,
@@ -190,32 +161,11 @@ const recordFile = (res, type, file, id) => {
                 }
                 resolve({ fileName, data, extension })
             });
-        }
-    })
+        })
 }
-
-const deleteFile = (location, fileName, res) => {
-    return new Promise(async(resolve, reject) => {
-        if (fs.existsSync(location)) {
-            fs.unlinkSync(location);
-            if (!fs.existsSync(location)) {
-                resolve()
-            }
-        } else {
-            var params = await { Bucket: process.env.S3_BUCKET_NAME, Key: fileName };
-            s3.deleteObject(params, function(err, data) {
-                if (err) {  reject(res.status(500).json({ ok: false, err })) } else {
-                    resolve()
-                }
-            });
-        }
-    })
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 
 app.delete('/deleteFile/:fileId', [verifyToken, checkDemo, verifyRole], async(req, res) => {
-
     let fileId = req.params.fileId;
     FileModel.findByIdAndDelete(fileId, (err, fileDeleted) => {
         if (err)
@@ -226,11 +176,22 @@ app.delete('/deleteFile/:fileId', [verifyToken, checkDemo, verifyRole], async(re
         if (!fileDeleted) {
             return res.status(404).json({ ok: false, message: 'There are no files with the ID provided' })
         }
-        deleteFile(fileDeleted.location, fileDeleted.name, res).then(() => {
+        deleteFile(fileDeleted.name, res).then(() => {
             res.status(200).json({ ok: true, file: fileDeleted })
         })
     })
 })
+
+const deleteFile = (fileName, res) => {
+    return new Promise(async (resolve, reject) => {
+        var params = await { Bucket: process.env.S3_BUCKET_NAME, Key: fileName };
+        s3.deleteObject(params, function (err, data) {
+            if (err) { reject(res.status(500).json({ ok: false, err })) } else {
+                resolve()
+            }
+        });
+    })
+};
 
 
 module.exports = app;

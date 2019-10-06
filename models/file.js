@@ -8,7 +8,8 @@ const fileSchema = new Schema({
     title: { type: String },
     download: { type: Boolean },
     format: { type: String },
-    type: { type: String }
+    type: { type: String },
+    production:{type:Boolean,required:true}
 });
 
 module.exports = mongoose.model('FileModel', fileSchema);

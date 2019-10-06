@@ -22,9 +22,6 @@ process.env.URLDB = urlDataBase;
 
 process.env.DEVELOPER = false;
 
-process.env.AWS_ACCESS_KEY_ID = 'AKIAQ2AXEBQ4IXJZWMEC';
-process.env.AWS_SECRET_ACCESS_KEY = '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';
-process.env.S3_BUCKET_NAME = 'cargomusicfilesstorage'
 
 
 

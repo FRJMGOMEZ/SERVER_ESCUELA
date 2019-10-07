@@ -14,6 +14,13 @@ let validExtensions = ['png', 'jpg', 'gif', 'jpeg', 'pdf', 'JPG'];
 
 app.use(fileUpload());
 
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
 app.get('/files/:type/:fileName', (req, res, next) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
@@ -36,12 +43,6 @@ app.get('/files/:type/:fileName', (req, res, next) => {
     } 
 })
 
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-});
-
-const s3 = new AWS.S3();
 
 app.get('/getAwsFileBuffer/:name',(req,res)=>{
     let fileName = req.params.name;

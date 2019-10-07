@@ -45,12 +45,11 @@ const s3 = new AWS.S3();
 
 app.get('/getAwsFileBuffer/:name',(req,res)=>{
     let fileName = req.params.name;
+    console.log(process.env.AWS_SECRET_ACCESS_KEY,process.env.AWS_ACCESS_KEY_ID)
     var params = {
                 Bucket: process.env.S3_BUCKET_NAME,
                 Key: fileName
             };
-
-    console.log(process.env.AWS_SECRET_ACCESS_KEY)
     s3.getObject(params, function (err, data) {
         if (err)
             return err;   

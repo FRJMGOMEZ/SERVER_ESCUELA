@@ -1,7 +1,7 @@
 const express = require('express');
 
 const User = require('../models/user');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const PasswordGenerator = require('strict-password-generator').default;
 const { sendEmail } = require('../utilities/nodeMail');
 const { verifyToken } = require('../middlewares/auth')

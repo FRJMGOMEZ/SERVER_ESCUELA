@@ -7,19 +7,21 @@ const mongoose = require('mongoose');
 const bodyParser = require("body-parser");
 const path = require('path');
 const compression = require('compression')
+const cors = require('cors')
 
 const app = express()
 
 app.use(compression())
 
-app.use(function(req, res, next) {
+app.use(cors())
+/* app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Credentials, token ,query,Access-Control-Allow-Request-Method");
     res.header('Access-Control-Allow-Methods', "POST, GET, PUT, DELETE, OPTIONS");
     res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
     next();
 });
-
+ */
 //Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())

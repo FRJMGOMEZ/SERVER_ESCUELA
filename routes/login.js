@@ -8,7 +8,7 @@ var atob = require('atob');
 const User = require('../models/user');
 const Visit = require('../models/visit');
 
-app.post('/login', [verifyStatus], async(req, res) => {
+app.post('/login', async(req, res) => {
     let credentials= req.body;
     User.findOne({email:credentials.email})
         .populate('img')

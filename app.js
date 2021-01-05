@@ -44,8 +44,8 @@ db.once('open', () => {
 })
 
 // Connection to the FRONTEND
-/* const frontEndPath = path.resolve(__dirname, './dist/ADMINESCUELA');
-app.use(express.static(frontEndPath)); */
+const frontEndPath = path.resolve(__dirname, './dist/ADMINESCUELA');
+app.use(express.static(frontEndPath));
 
 //Listening request
 server.listen(process.env.PORT, () => {

@@ -28,7 +28,7 @@ app.post('/login', async(req, res) => {
                     });
         }
         userDb.password = ':)';
-        let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
+            let token = await jwt.sign({ userDb }, '184FG32Di124', { expiresIn: 432000 });
          res.status(200).json({
            ok: true,
            user: userDb,

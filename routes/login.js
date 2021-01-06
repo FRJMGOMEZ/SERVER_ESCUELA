@@ -8,7 +8,7 @@ var atob = require('atob');
 const User = require('../models/user');
 const Visit = require('../models/visit');
 
-app.post('/login', async(req, res) => {
+app.post('/login', [verifyStatus], async(req, res) => {
     let credentials= req.body;
     User.findOne({email:credentials.email})
         .populate('img')
@@ -28,7 +28,7 @@ app.post('/login', async(req, res) => {
                     });
         }
         userDb.password = ':)';
-            let token = await jwt.sign({ userDb }, '184FG32Di124', { expiresIn: 432000 });
+        let token = await jwt.sign({ userDb }, process.env.SEED, { expiresIn: 432000 });
          res.status(200).json({
            ok: true,
            user: userDb,

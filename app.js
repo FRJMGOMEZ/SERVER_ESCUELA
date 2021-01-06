@@ -35,7 +35,7 @@ let server = http.createServer(app);
 module.exports.io = socketIO(server);
 require('./sockets/sockets')
 
-mongoose.connection.openUri(process.env.URLDB, {
+mongoose.connect(process.env.URLDB, {
     useNewUrlParser: true
 });
 

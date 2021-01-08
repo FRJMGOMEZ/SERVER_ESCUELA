@@ -4,7 +4,7 @@ const {verifyToken} = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/visitors',verifyToken,(req,res)=>{
+app.get('/api/visitors',verifyToken,(req,res)=>{
    Visit.find({},(err,visitorsDb)=>{
        if(err){
            return res.status(500).json({ok:false,err})
@@ -12,7 +12,7 @@ app.get('/visitors',verifyToken,(req,res)=>{
        res.status(200).json({ ok: true, visitors: visitorsDb})
    })
 })
-app.delete('/visitor/:id',(req,res)=>{
+app.delete('/api/visitor/:id',(req,res)=>{
 
     const id = req.params.id;
 

@@ -12,7 +12,7 @@ const { sendEmail } = require('../utilities/nodeMail')
 
 const app = express();
 
-app.get('/users', [verifyToken,verifyRole], (req, res) => {
+app.get('/api/users', [verifyToken,verifyRole], (req, res) => {
 
     let from = Number(req.query.from) || 0;
     let limit = Number(req.query.limit) || 5;
@@ -54,7 +54,7 @@ app.get('/users', [verifyToken,verifyRole], (req, res) => {
         })
 })
 
-app.post('/user', checkDemo, (req, res) => {
+app.post('/api/user', checkDemo, (req, res) => {
 
     let body = req.body;
     let user = new User({
@@ -79,7 +79,7 @@ app.post('/user', checkDemo, (req, res) => {
 })
 
 
-app.put('/changeRole/:id/:role', [checkDemo, verifyToken, verifyRole], (req, res) => {
+app.put('/api/changeRole/:id/:role', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let newRole = req.params.role;
@@ -104,7 +104,7 @@ app.put('/changeRole/:id/:role', [checkDemo, verifyToken, verifyRole], (req, res
 })
 
 ///CheckDemo//
-app.put('/user/:id', [checkDemo, verifyToken], (req, res) => {
+app.put('/api/user/:id', [checkDemo, verifyToken], (req, res) => {
     let id = req.params.id;
     let body = req.body;
 
@@ -130,7 +130,7 @@ app.put('/user/:id', [checkDemo, verifyToken], (req, res) => {
 
 
 
-app.put('/changeUserStatus/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
+app.put('/api/changeUserStatus/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     if (String(req.user.userDb.role) === 'ADMIN_ROLE') {
@@ -186,7 +186,7 @@ app.put('/changeUserStatus/:id', [checkDemo, verifyToken, verifyRole], (req, res
     }
 })
 
-app.delete('/user/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
+app.delete('/api/user/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     User.findByIdAndDelete(id, (err, userDeleted) => {

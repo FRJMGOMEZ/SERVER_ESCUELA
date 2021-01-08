@@ -5,7 +5,7 @@ const Alumni = require('../models/alumni')
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const app = express();
 
-app.get('/subject', [verifyToken, verifyRole], (req, res) => {
+app.get('/api/subject', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -58,7 +58,7 @@ app.get('/subject', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.post('/subject', [verifyToken, verifyRole], (req, res) => {
+app.post('/api/subject', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
 
@@ -76,7 +76,7 @@ app.post('/subject', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/subject/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/subject/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let body = req.body;
@@ -110,7 +110,7 @@ app.put('/subject/:id', [verifyToken, verifyRole], (req, res) => {
 
 })
 
-app.delete('/subject/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/api/subject/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     Subject.findByIdAndDelete(id, (err, subjectDeleted) => {
@@ -136,7 +136,7 @@ app.delete('/subject/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let alumniId = req.body.alumniId;
@@ -233,7 +233,7 @@ app.put('/addOrDeleteAlumni/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/addOrDeleteProfessor/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let professorId = req.body.professorId;

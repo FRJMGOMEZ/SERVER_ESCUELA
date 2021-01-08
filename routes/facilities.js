@@ -7,7 +7,7 @@ const EventModel = require('../models/event');
 const Day = require('../models/day');
 
 
-app.get('/facilities', verifyToken, (req, res) => {
+app.get('/api/facilities', verifyToken, (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit)
@@ -30,7 +30,7 @@ app.get('/facilities', verifyToken, (req, res) => {
         })
 })
 
-app.post('/facilitie', [verifyToken, verifyRole], (req, res) => {
+app.post('/api/facilitie', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let facilitie = new Facilitie({ name: body.name });
     facilitie.save((err, facilitieSaved) => {
@@ -41,7 +41,7 @@ app.post('/facilitie', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let facilitie = req.body;
@@ -69,7 +69,7 @@ app.put('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.delete('/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/api/facilitie/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
 

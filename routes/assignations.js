@@ -3,7 +3,7 @@ const Assignation = require('../models/assignation');
 const app = express();
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
-app.get('/assignations/:artistId', [verifyToken, verifyRole],(req, res) => {
+app.get('/api/assignations/:artistId', [verifyToken, verifyRole],(req, res) => {
 
     let artistId = req.params.artistId;
 

@@ -5,7 +5,7 @@ const app = express();
 const { verifyToken } = require('../middlewares/auth');
 
 
-app.get('/dayByDate/:date', verifyToken, (req, res) => {
+app.get('/api/dayByDate/:date', verifyToken, (req, res) => {
 
     let date = new Date(Number(req.params.date));
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0);

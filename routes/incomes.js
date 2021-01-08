@@ -5,7 +5,7 @@ const Income = require('../models/income');
 const { verifyToken,verifyRole } = require('../middlewares/auth');
 const Debitor = require('../models/debitor');
 
-app.get('/incomes',[verifyToken,verifyRole],(req,res)=>{
+app.get('/api/incomes',[verifyToken,verifyRole],(req,res)=>{
 
     let incomeType = req.query.incomeType;
     let from = Number(req.query.from);
@@ -42,7 +42,7 @@ app.get('/incomes',[verifyToken,verifyRole],(req,res)=>{
 })
 
 
-app.post('/income',[verifyToken,verifyRole],(req,res)=>{
+app.post('/api/income',[verifyToken,verifyRole],(req,res)=>{
     let debitor = req.body.debitor;
     let income = req.body.income;
     checkDebitor(res,debitor).then((debitorId)=>{
@@ -63,7 +63,7 @@ app.post('/income',[verifyToken,verifyRole],(req,res)=>{
     })
 })
 
-app.put('/income',[verifyToken,verifyRole],(req,res)=>{
+app.put('/api/income',[verifyToken,verifyRole],(req,res)=>{
 
     let body= req.body;
 
@@ -118,7 +118,7 @@ const checkDebitor = (res,debitor)=>{
     })
 }
 
-app.get('/searchIncomes/:inputs/:incomeType', [verifyToken, verifyRole],async(req,res)=>{
+app.get('/api/searchIncomes/:inputs/:incomeType', [verifyToken, verifyRole],async(req,res)=>{
 
     let inputs = req.params.inputs.split(',');
     let from = Number(req.query.from);
@@ -145,7 +145,7 @@ app.get('/searchIncomes/:inputs/:incomeType', [verifyToken, verifyRole],async(re
         })
 })
 
-app.get('/getIncomesData/:inputs/:incomeType', [verifyToken, verifyRole] ,async (req, res) => {
+app.get('/api/getIncomesData/:inputs/:incomeType', [verifyToken, verifyRole] ,async (req, res) => {
     let inputs = req.params.inputs.split(',');
     let incomeType = req.params.incomeType;
 

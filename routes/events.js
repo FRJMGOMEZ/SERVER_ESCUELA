@@ -7,7 +7,7 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 const app = express()
 
 
-app.get('/permanentEvents', verifyToken, (req, res) => {
+app.get('/api/permanentEvents', verifyToken, (req, res) => {
     EventModel.find({ permanent: true }, (err, eventsDb) => {
         if (err) {
             return res.status(500).json({ ok: false, err })
@@ -16,7 +16,7 @@ app.get('/permanentEvents', verifyToken, (req, res) => {
     })
 })
 
-app.get('/events/projects/:projectId', verifyToken, (req, res) => {
+app.get('/api/events/projects/:projectId', verifyToken, (req, res) => {
     let projectId = req.params.projectId;
     EventModel.find({ project: projectId })
         .populate('user')
@@ -28,7 +28,7 @@ app.get('/events/projects/:projectId', verifyToken, (req, res) => {
         })
 })
 
-app.get('/events', verifyToken, (req, res) => {
+app.get('/api/events', verifyToken, (req, res) => {
     let today = new Date()
     let from = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0)
     from.setTime(from.getTime() - 604800000 * 2);
@@ -47,7 +47,7 @@ app.get('/events', verifyToken, (req, res) => {
         })
 })
 
-app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
+app.post('/api/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
 
     let dayId = req.params.dayId;
 
@@ -115,7 +115,7 @@ app.post('/event/:dayId/:limitDate', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/event/:id', [verifyToken, verifyRole], async(req, res) => {
+app.put('/api/event/:id', [verifyToken, verifyRole], async(req, res) => {
 
     let id = req.params.id;
     let eventEdited = req.body;
@@ -278,7 +278,7 @@ const addEventToDays = (res, hour, eventDb, from, to) => {
     })
 }
 
-app.put('/pullEvent/:dayId/:eventId', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/pullEvent/:dayId/:eventId', [verifyToken, verifyRole], (req, res) => {
     let dayId = req.params.dayId;
     let eventId = req.params.eventId;
     EventModel.findById(eventId, (err, eventDb) => {
@@ -324,7 +324,7 @@ app.put('/pullEvent/:dayId/:eventId', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/checkPermanentEvents', verifyToken, (req, res) => {
+app.put('/api/checkPermanentEvents', verifyToken, (req, res) => {
 
     let myEvent = req.body;
     EventModel.find({ permanent: true, day: myEvent.day, facilitie: myEvent.facilitie }, async(err, eventsDb) => {
@@ -402,7 +402,7 @@ const checkEventsInDays = (event) => {
     })
 }
 
-app.delete('/event/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/api/event/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
     EventModel.findByIdAndDelete(id, (err, eventDb) => {
         if (err) {

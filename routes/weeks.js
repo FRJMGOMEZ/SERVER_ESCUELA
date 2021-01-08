@@ -4,7 +4,7 @@ const EventModel = require('../models/event');
 const Day = require('../models/day');
 const app = express()
 
-app.get('/week/:date', (req, res) => {
+app.get('/api/week/:date', (req, res) => {
     let date = new Date(Number(req.params.date));
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), -date.getTimezoneOffset(), 0, 0)
     Week.findOne({
@@ -27,7 +27,7 @@ app.get('/week/:date', (req, res) => {
         })
 })
 
-app.post('/week', (req, res) => {
+app.post('/api/week', (req, res) => {
 
     let body = req.body;
     let date = new Date(body.date);
@@ -171,7 +171,7 @@ let checkPermanentEvents = (res, day, date) => {
     })
 }
 
-app.get('/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
+app.get('/api/weekByDay/:dayId/:dayOfTheWeek', async(req, res) => {
 
     let dayId = req.params.dayId;
     let dayOfTheWeek = Number(req.params.dayOfTheWeek)

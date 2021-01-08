@@ -8,7 +8,7 @@ var atob = require('atob');
 const User = require('../models/user');
 const Visit = require('../models/visit');
 
-app.post('/login', [verifyStatus], async(req, res) => {
+app.post('/api/login', [verifyStatus], async(req, res) => {
     let credentials= req.body;
     User.findOne({email:credentials.email})
         .populate('img')
@@ -50,7 +50,7 @@ const sumVisit = (credentials)=>{
     }
 }
 
-app.put('/checkToken',[assignUser,checkUsersOn],(req, res) => {
+app.put('/api/checkToken',[assignUser,checkUsersOn],(req, res) => {
     let token = req.get('token');
     jwt.verify(token, process.env.SEED,async(err, data) => {
         if (err) {

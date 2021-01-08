@@ -6,7 +6,7 @@ const User = require('../models/user');
 
 const { verifyToken } = require('../middlewares/auth');
 
-app.get('/tasks', verifyToken, (req, res) => {
+app.get('/api/tasks', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let projects = userOnline.projects.map((project) => { return project._id })
     Task.find({ user: userOnline._id, project: projects, ok: false })
@@ -23,7 +23,7 @@ app.get('/tasks', verifyToken, (req, res) => {
     
 })
 
-app.get('/tasksByProject/:project', verifyToken, (req, res) => {
+app.get('/api/tasksByProject/:project', verifyToken, (req, res) => {
 
     let project = req.params.project;
     Task.find({ project })
@@ -56,7 +56,7 @@ app.get('/tasksByProject/:project', verifyToken, (req, res) => {
         })
 })
 
-app.get('/tasksByUser/:project/:user', verifyToken, (req, res) => {
+app.get('/api/tasksByUser/:project/:user', verifyToken, (req, res) => {
 
     let project = req.params.project;
     let user = req.params.user;
@@ -104,7 +104,7 @@ app.get('/tasksByUser/:project/:user', verifyToken, (req, res) => {
 })
 
 
-app.post('/task', verifyToken, (req, res) => {
+app.post('/api/task', verifyToken, (req, res) => {
     let body = req.body;
     body.dateLimit = new Date(body.dateLimit)
     body.date = new Date(body.date)
@@ -154,7 +154,7 @@ app.post('/task', verifyToken, (req, res) => {
     })
 })
 
-app.put('/task/:id', (req, res) => {
+app.put('/api/task/:id', (req, res) => {
     let id = req.params.id;
     let body = req.body;
     body.dateLimit = new Date(body.dateLimit);
@@ -190,7 +190,7 @@ app.put('/task/:id', (req, res) => {
         })
 })
 
-app.put('/checkTask/:taskId', verifyToken, (req, res) => {
+app.put('/api/checkTask/:taskId', verifyToken, (req, res) => {
     let taskId = req.params.taskId;
     Task.findByIdAndUpdate(taskId, { checked: true }, { new: true })
         .populate({
@@ -222,7 +222,7 @@ app.put('/checkTask/:taskId', verifyToken, (req, res) => {
         })
 })
 
-app.put('/taskDone/:taskId', verifyToken, (req, res) => {
+app.put('/api/taskDone/:taskId', verifyToken, (req, res) => {
     let taskId = req.params.taskId;
 
     let request;
@@ -276,7 +276,7 @@ app.put('/taskDone/:taskId', verifyToken, (req, res) => {
     })
 })
 
-app.delete('/task/:id', (req, res) => {
+app.delete('/api/task/:id', (req, res) => {
     let id = req.params.id;
     Task.findByIdAndDelete(id, (err, task) => {
 

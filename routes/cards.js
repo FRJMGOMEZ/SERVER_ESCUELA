@@ -7,7 +7,7 @@ const app = express();
 
 ///// CONECTAR OTRA BASE DE DATOS PARA LAS INDEXCARD No enseñar el _id de las indexcard /////
 
-app.get('/searchIndexcardById/:id', [verifyToken, verifyRole], (req, res) => {
+app.get('/api/searchIndexcardById/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
 
     Indexcard.findById(id, (err, indexcardDb) => {
@@ -22,7 +22,7 @@ app.get('/searchIndexcardById/:id', [verifyToken, verifyRole], (req, res) => {
 })
 
 
-app.post('/indexcard', (req, res) => {
+app.post('/api/indexcard', (req, res) => {
 
     let body = req.body;
 
@@ -45,7 +45,7 @@ app.post('/indexcard', (req, res) => {
 
 
 
-app.put('/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/indexcard/:id', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let id = req.params.id;

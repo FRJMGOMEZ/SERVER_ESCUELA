@@ -7,7 +7,7 @@ const Assignation = require('../models/assignation');
 
 const {verifyToken,verifyRole} = require('../middlewares/auth');
 
-app.get('/tracks',[verifyToken,verifyRole],(req, res) => {
+app.get('/api/tracks',[verifyToken,verifyRole],(req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -25,7 +25,7 @@ app.get('/tracks',[verifyToken,verifyRole],(req, res) => {
         })
 })
 
-app.post('/track', [verifyToken, verifyRole],async(req, res) => {
+app.post('/api/track', [verifyToken, verifyRole],async(req, res) => {
 
     let track = req.body;
     
@@ -120,7 +120,7 @@ app.post('/track', [verifyToken, verifyRole],async(req, res) => {
    
 })
 
-app.put('/track/:id', [verifyToken, verifyRole],async (req, res) => {
+app.put('/api/track/:id', [verifyToken, verifyRole],async (req, res) => {
 
    let body = req.body;
    await body.assignations.forEach((assignation, index) => {
@@ -202,7 +202,7 @@ const checkAssignations = (res, bodyAssignations, dbAssignations) => {
     })
 }
 
-app.delete('/track/:id', [verifyToken, verifyRole] ,(req, res) => {
+app.delete('/api/track/:id', [verifyToken, verifyRole] ,(req, res) => {
 
     let id = req.params.id;
     Track.findByIdAndDelete(id, (err, trackDeleted) => {

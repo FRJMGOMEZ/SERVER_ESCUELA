@@ -1,0 +1,8 @@
+## Run api
+
+npm start nodemon
+
+
+## Deploying to herokugit.
+
+push heroku master

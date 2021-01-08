@@ -4,7 +4,7 @@ const Artist = require('../models/artist');
 const Indexcard = require('../models/card');
 const { verifyToken,verifyRole } = require('../middlewares/auth');
 
-app.get('/artists', [verifyToken, verifyRole], (req, res) => {
+app.get('/api/artists', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit);
@@ -25,7 +25,7 @@ app.get('/artists', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.post('/artist', [verifyToken, verifyRole],(req, res) => {
+app.post('/api/artist', [verifyToken, verifyRole],(req, res) => {
 
 
     let body = req.body;
@@ -50,7 +50,7 @@ app.post('/artist', [verifyToken, verifyRole],(req, res) => {
 })
 
 
-app.put('/artist/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/artist/:id', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let id = req.params.id
     Artist.findByIdAndUpdate(id, { name: body.name }, { new: true })
@@ -66,7 +66,7 @@ app.put('/artist/:id', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.delete('/artist/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/api/artist/:id', [verifyToken, verifyRole], (req, res) => {
     let id = req.params.id;
     Artist.findByIdAndDelete(id, (err, artistDeleted) => {
         if (err) {

@@ -8,7 +8,7 @@ const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
 
-app.get('/projects', verifyToken, (req, res) => {
+app.get('/api/projects', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     Project.find({ participants: userOnline._id })
         .exec((err, projectsDb) => {
@@ -28,7 +28,7 @@ app.get('/projects', verifyToken, (req, res) => {
         })
 })
 
-app.post('/project', [verifyToken, verifyRole], (req, res) => {
+app.post('/api/project', [verifyToken, verifyRole], (req, res) => {
     let body = req.body;
     let userOnline = req.user.userDb
     let project = new Project({
@@ -53,7 +53,7 @@ app.post('/project', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/lastConnection/:projectId', verifyToken, (req, res) => {
+app.put('/api/lastConnection/:projectId', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let projectId = req.params.projectId;
     let newProject = { _id: projectId, lastConnection: new Date() }
@@ -70,7 +70,7 @@ app.put('/lastConnection/:projectId', verifyToken, (req, res) => {
         })
 })
 
-app.put('/project/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/project/:id', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let id = req.params.id;
@@ -85,7 +85,7 @@ app.put('/project/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/project/changeStatus/:id', (req, res) => {
+app.put('/api/project/changeStatus/:id', (req, res) => {
 
     let id = req.params.id;
     Project.findById(id, (err, projectDb) => {
@@ -110,7 +110,7 @@ app.put('/project/changeStatus/:id', (req, res) => {
     })
 })
 
-app.put('/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) => {
 
     let participantId = req.body.participant;
     let id = req.params.id;
@@ -149,7 +149,7 @@ app.put('/pullOrPushOutParticipant/:id', [verifyToken, verifyRole], (req, res) =
     })
 })
 
-app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
 
     let participantId = req.body.participant;
     let id = req.params.id;
@@ -184,7 +184,7 @@ app.put('/pullOrPushAdmin/:id', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.delete('/project/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
+app.delete('/api/project/:id', [checkDemo, verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     Project.findByIdAndDelete(id, (err, projectDeleted) => {

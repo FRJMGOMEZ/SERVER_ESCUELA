@@ -8,7 +8,7 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const app = express();
 
-app.get('/professor', [verifyToken, verifyRole], (req, res) => {
+app.get('/api/professor', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from) || 0;
     let limit = Number(req.query.limit) || 5;
@@ -47,7 +47,7 @@ app.get('/professor', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.post('/professor', [verifyToken, verifyRole], (req, res) => {
+app.post('/api/professor', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let newProfessor = new Professor({
@@ -67,7 +67,7 @@ app.post('/professor', [verifyToken, verifyRole], (req, res) => {
     })
 })
 
-app.put('/professor/addSubject/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/professor/addSubject/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     let subjectId = req.body.materia;
@@ -106,7 +106,7 @@ app.put('/professor/addSubject/:id', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.put('/professor/:id', [verifyToken, verifyRole], (req, res) => {
+app.put('/api/professor/:id', [verifyToken, verifyRole], (req, res) => {
 
     let body = req.body;
     let id = req.params.id;
@@ -130,7 +130,7 @@ app.put('/professor/:id', [verifyToken, verifyRole], (req, res) => {
         })
 })
 
-app.delete('/professor/:id', [verifyToken, verifyRole], (req, res) => {
+app.delete('/api/professor/:id', [verifyToken, verifyRole], (req, res) => {
 
     let id = req.params.id;
     Professor.findByIdAndRemove(id, (err, professorDeleted) => {

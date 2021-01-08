@@ -3,7 +3,7 @@ const app = express();
 const Letter = require('../models/letter');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
-app.get('/letters',[verifyToken,verifyRole],(req,res)=>{
+app.get('/api/letters',[verifyToken,verifyRole],(req,res)=>{
     Letter.find({},(err,lettersDb)=>{
         if(err){
             return res.status(500).json({ok:false,err})
@@ -12,7 +12,7 @@ app.get('/letters',[verifyToken,verifyRole],(req,res)=>{
     })
 })
 
-app.post('/letter', [verifyToken, verifyRole],(req,res)=>{
+app.post('/api/letter', [verifyToken, verifyRole],(req,res)=>{
 
     let body = req.body;
     let newLetter = new Letter({
@@ -29,7 +29,7 @@ app.post('/letter', [verifyToken, verifyRole],(req,res)=>{
     })
 })
 
-app.put('/letter/:id', [verifyToken, verifyRole],(req,res)=>{
+app.put('/api/letter/:id', [verifyToken, verifyRole],(req,res)=>{
     let id = req.params.id;
     let body = req.body;
     Letter.findByIdAndUpdate(id,{content:body.content,bottom:body.bottom,user:body.user,name:body.name},{new:true},(err,letterUpdated)=>{

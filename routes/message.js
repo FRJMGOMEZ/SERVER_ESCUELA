@@ -8,7 +8,7 @@ const User = require('../models/user');
 
 const app = express()
 
-app.get('/messages/:id', verifyToken, (req, res) => {
+app.get('/api/messages/:id', verifyToken, (req, res) => {
     let projectId = req.params.id;
     let from = Number(req.query.from);
     let limit = Number(req.query.limit)
@@ -37,7 +37,7 @@ app.get('/messages/:id', verifyToken, (req, res) => {
         })
 })
 
-app.get('/lastMessages', verifyToken, (req, res) => {
+app.get('/api/lastMessages', verifyToken, (req, res) => {
     let userOnline = req.user.userDb;
     let requests = [];
     User.findById(userOnline._id,(err,userDb)=>{
@@ -82,7 +82,7 @@ const findMessages = (projectId, userLastConnection, res) => {
     })
 }
 
-app.post('/message', verifyToken, (req, res) => {
+app.post('/api/message', verifyToken, (req, res) => {
     let message = new Message({
         user: req.body.user,
         project: req.body.project,
@@ -115,7 +115,7 @@ app.post('/message', verifyToken, (req, res) => {
     })
 })
 
-app.delete('/message/:id', verifyToken, (req, res) => {
+app.delete('/api/message/:id', verifyToken, (req, res) => {
 
     let id = req.params.id;
     Message.findByIdAndDelete(id, (err, messageDeleted) => {

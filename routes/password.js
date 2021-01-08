@@ -9,7 +9,7 @@ const { checkDemo } = require('../middlewares/demo');
 
 const app = express();
 
-app.put('/changePassword/:password1/:password2', [checkDemo, verifyToken], (req, res) => {
+app.put('/api/changePassword/:password1/:password2', [checkDemo, verifyToken], (req, res) => {
 
     let password1 = req.params.password1;
     let password2 = req.params.password2;
@@ -43,7 +43,7 @@ app.put('/changePassword/:password1/:password2', [checkDemo, verifyToken], (req,
     })
 })
 
-app.put('/forgotPassword/:email', (req, res) => {
+app.put('/api/forgotPassword/:email', (req, res) => {
 
     let email = req.params.email;
     var minNum = Math.floor(Math.random() * (10 - 5)) + 10;
@@ -93,7 +93,7 @@ app.put('/forgotPassword/:email', (req, res) => {
             })
     })
 
-app.put('/checkResetCode/:email/:resetCode', (req, res) => {
+app.put('/api/checkResetCode/:email/:resetCode', (req, res) => {
 
     let userMail = req.params.email;
     let resetCode = req.params.resetCode;
@@ -124,7 +124,7 @@ app.put('/checkResetCode/:email/:resetCode', (req, res) => {
     })
 })
 
-app.put('/setNewPassword/:email/:resetCode/:newPassword', (req, res) => {
+app.put('/api/setNewPassword/:email/:resetCode/:newPassword', (req, res) => {
 
     let userMail = req.params.email;
     let newPassword = req.params.newPassword;

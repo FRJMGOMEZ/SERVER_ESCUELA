@@ -17,7 +17,7 @@ const Indexcard = require('../models/card')
 
 const app = express()
 
-app.get('/search/:collection/:search', [verifyToken, verifyRole], (req, res) => {
+app.get('/api/search/:collection/:search', [verifyToken, verifyRole], (req, res) => {
 
     let from = Number(req.query.from);
     let limit = Number(req.query.limit) || 5;
@@ -229,7 +229,7 @@ const searchPayments = (res, date, from, limit) => {
 }
 
 
-app.get('/searchById/:collection/:id', verifyToken, (req, res) => {
+app.get('/api/searchById/:collection/:id', verifyToken, (req, res) => {
 
     let collection = req.params.collection;
     let id = req.params.id;

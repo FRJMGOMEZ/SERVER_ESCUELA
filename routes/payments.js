@@ -9,7 +9,7 @@ const Letter = require('../models/letter');
 const {sendEmail} = require('../utilities/nodeMail');
 const {verifyToken,verifyRole} = require('../middlewares/auth');
 
-app.post('/payments/:trackId/:amount',[verifyToken,verifyRole],async(req,res)=>{
+app.post('/api/payments/:trackId/:amount',[verifyToken,verifyRole],async(req,res)=>{
 
  let trackId = req.params.trackId;
  let amountAssigned = req.params.amount;
@@ -67,7 +67,7 @@ const postPayment = (res,payment)=>{
     })
 }
 
-app.get('/payments',[verifyToken,verifyRole],(req,res)=>{
+app.get('/api/payments',[verifyToken,verifyRole],(req,res)=>{
 
     let from = Number(req.query.from);
     let payments = req.query.paymentTypes;
@@ -106,7 +106,7 @@ app.get('/payments',[verifyToken,verifyRole],(req,res)=>{
     })
 })
 
-app.get('/searchPayments/:inputs', [verifyToken, verifyRole],async(req, res) => {
+app.get('/api/searchPayments/:inputs', [verifyToken, verifyRole],async(req, res) => {
 
     let inputs = req.params.inputs.split(',');
     let from = Number(req.query.from);
@@ -137,7 +137,7 @@ app.get('/searchPayments/:inputs', [verifyToken, verifyRole],async(req, res) => 
     })
 })
 
-app.get('/getPaymentsData/:inputs', [verifyToken, verifyRole] ,async (req, res) => {
+app.get('/api/getPaymentsData/:inputs', [verifyToken, verifyRole] ,async (req, res) => {
     let inputs = req.params.inputs.split(',');
     let payments = req.query.paymentTypes;
 
@@ -251,7 +251,7 @@ const findArtist = (res, artistName) => {
     })
 }
 
-app.put('/sendPaymentNotification/:paymentId/:letterId', [verifyToken, verifyRole],(req,res)=>{
+app.put('/api/sendPaymentNotification/:paymentId/:letterId', [verifyToken, verifyRole],(req,res)=>{
 
     let id = req.params.paymentId;
     let letterId = req.params.letterId;

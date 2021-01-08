@@ -21,7 +21,7 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-app.get('/files/:type/:fileName', (req, res, next) => {
+app.get('/api/files/:type/:fileName', (req, res, next) => {
     let type = req.params.type;
     let fileName = req.params.fileName;
     if (type === 'icons') {
@@ -44,7 +44,7 @@ app.get('/files/:type/:fileName', (req, res, next) => {
 })
 
 
-app.get('/getAwsFileBuffer/:name',(req,res)=>{
+app.get('/api/getAwsFileBuffer/:name',(req,res)=>{
     let fileName = req.params.name;
     console.log(process.env.AWS_SECRET_ACCESS_KEY,process.env.AWS_ACCESS_KEY_ID)
     var params = {
@@ -59,7 +59,7 @@ app.get('/getAwsFileBuffer/:name',(req,res)=>{
 })
     
 
-app.put('/upload/:type/:id/:download', (req, res) => {
+app.put('/api/upload/:type/:id/:download', (req, res) => {
     let type = req.params.type;
     let id = req.params.id;
     let file = req.files.file;
@@ -167,7 +167,7 @@ const recordFile = (res, type, file, id) => {
 }
 ////////////////////////////////////////////////////////////////////////////////
 
-app.delete('/deleteFile/:fileId', [verifyToken, checkDemo, verifyRole], async(req, res) => {
+app.delete('/api/deleteFile/:fileId', [verifyToken, checkDemo, verifyRole], async(req, res) => {
     let fileId = req.params.fileId;
     FileModel.findByIdAndDelete(fileId, (err, fileDeleted) => {
         if (err)

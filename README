@@ -6,3 +6,7 @@ npm start nodemon
 ## Deploying to herokugit.
 
 push heroku master
+
+##Restart heroku server
+
+heroku restart

@@ -1,5 +1,4 @@
 const { io } = require('../app');
-const { removeUser} = require('../middlewares/checkUsersConnected');
 
 class  Room {
     constructor(id) {
@@ -27,6 +26,9 @@ io.on('connection', (client) => {
         
     let user;
 
+
+   console.log('connection initialized')
+
     //////////////// DASHBOARD ROOM /////////////
     client.on('dashboardIn', async(payload) => {
         let dashboardRoom = await rooms.map((room) => { return room.id === 'dashboard' })[0];
@@ -43,9 +45,10 @@ io.on('connection', (client) => {
         }
         user = payload.user
     })
-    client.on('/dashboardOut', async(payload) => {
-        await room[rooms.map((room) => { return room.id }).indexOf('dashboard')].removeUser(payload.user)
-        if (room[rooms.map((room) => { return room.id }).indexOf('dashboard')].users.length === 0) {
+    client.on('dashboardOut', async(payload) => {
+        let room = rooms[rooms.map((room) => { return room.id }).indexOf('dashboard')];
+        room ?room.removeUser(payload.user):null;
+        if (room && room.users.length === 0) {
             rooms = rooms.filter((room) => { return room.id != 'dashboard' })
         }
         client.leave('dashboard')
@@ -127,19 +130,18 @@ io.on('connection', (client) => {
 
     /////// LOGOUT ///////////
     client.on('logOut', async(payload) => {
-          ///// from usersConnected in middleware ///
-          console.log('Usuario fuera');
-        removeUser(payload.user)
+   
+      
     })
     client.on('disconnect', async() => {
-        ///// from usersConnected in middleware ///
-        removeUser(user);
+        console.log('disconnected')
         await rooms.forEach(async(room) => {
             if (room.users.indexOf(user) >= 0) {
                 room.removeUser(user).then((users) => {
                     if (users.length === 0) {
                         rooms = rooms.filter((myRoom) => { return myRoom.id != room.id });
                     }
+
                 })
             }
         })

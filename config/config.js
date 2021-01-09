@@ -20,9 +20,12 @@ if (process.env.NODE_ENV === 'desarrollo') { urlDataBase = 'mongodb://localhost:
 
 process.env.URLDB = urlDataBase;
 
-process.env.DEVELOPER = false;
+process.env.DEVELOPMENT = process.env.DEVELOPMENT ||true;
 
-
+if(process.env.DEVELOPMENT){
+    require('./awsCredentials')
+    require('./mailjetUser')
+}
 
 
 

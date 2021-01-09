@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { verifyStatus } = require('../middlewares/auth');
 const app = express();
-const { checkUsersOn,assignUser} = require('../middlewares/checkUsersConnected');
 var atob = require('atob');
 const User = require('../models/user');
 const Visit = require('../models/visit');
@@ -50,7 +49,7 @@ const sumVisit = (credentials)=>{
     }
 }
 
-app.put('/api/checkToken',[assignUser,checkUsersOn],(req, res) => {
+app.put('/api/checkToken',(req, res) => {
     let token = req.get('token');
     jwt.verify(token, process.env.SEED,async(err, data) => {
         if (err) {
